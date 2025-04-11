@@ -1,0 +1,25 @@
+#ifndef HTTPPARSER_HPP
+# define HTTPPARSER_HPP
+
+# include <iostream>
+# include <map>
+# include <cstring>
+# include <exception>
+# include <sstream>
+# include <fstream>
+class HTTPParser
+{
+public:
+    // Default Constructor
+    HTTPParser(std::string request);
+    // Destructor
+    ~HTTPParser();    
+
+	std::string							method;
+	std::string							path;
+	std::string							version;
+	std::map<std::string, std::string>	headers;
+	std::string							body;
+};
+
+#endif

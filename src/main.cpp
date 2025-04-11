@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include "File.hpp"
+#include "HTTPParser.hpp"
 
 int main(int argc, char **argv, char **envp)
 {
@@ -14,9 +15,8 @@ int main(int argc, char **argv, char **envp)
 	std::cout << config_file_name << std::endl;
 	try
 	{
-		File test = config_file_name;
-		std::cout << test.getLine(0);
-		std::cout << test.getContent();
+		File		content(config_file_name);
+		HTTPParser	test("<Method> <Path> <Version>\r\nHeader1: Value1\r\nHeader2: Value2\r\n...\r\n\r\n<Body> (optionnel)");
 	}
 	catch(const std::exception& e)
 	{

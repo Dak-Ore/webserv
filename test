@@ -1,0 +1,6 @@
+<Method> <Path> <Version>\r\n
+Header1: Value1\r\n
+Header2: Value2\r\n
+...\r\n
+\r\n
+<Body> (optionnel)

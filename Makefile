@@ -10,7 +10,7 @@ INC = -I./includes
 SRCDIR = src
 OBJDIR = obj
 
-SOURCES = ./File.cpp ./main.cpp 
+SOURCES = ./File.cpp ./HTTPParser.cpp ./main.cpp 
 
 OBJS = $(addprefix $(OBJDIR)/, $(SOURCES:.cpp=.o))
 
