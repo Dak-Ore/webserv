@@ -16,13 +16,35 @@ int main(int argc, char **argv, char **envp)
 	try
 	{
 		File		content(config_file_name);
-		HTTPParser	test("<Method> <Path> <Version>\r\nHeader1: Value1\r\nHeader2: Value2\r\n...\r\n\r\n<Body> (optionnel)");
-		std::cout << test.headers["Header1"] << std::endl;
+		HTTPParser	test("PUT /index.html HTTP/1.1\r\nHost: localhost\r\n\r\n");
 	}
 	catch(const std::exception& e)
 	{
 		std::cerr << e.what() << '\n';
 	}
-	
+	try
+	{
+		HTTPParser	test("GET / HTTP/2.0\r\nHost: localhost\r\n\r\n");
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << '\n';
+	}
+	try
+	{
+		HTTPParser	test("GET / HTTP/1.1\r\nHost: localhost\r\nContent-Length: 10\r\n\r\n");
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << '\n';
+	}
+	try
+	{
+		HTTPParser	test("POST /submit HTTP/1.1\r\nHost: localhost\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\nname=bob&age=42");
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << '\n';
+	}
 	
 }

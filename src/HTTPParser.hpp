@@ -14,7 +14,8 @@ public:
     HTTPParser(std::string request);
     // Destructor
     ~HTTPParser();    
-
+	void	checkHeader();
+	void	checkAllowed(std::string allowedHeaders[], size_t allowedCount);
 	std::string							method;
 	std::string							path;
 	std::string							version;
