@@ -2,40 +2,76 @@
 
 // Default Constructor
 HTTPParser::HTTPParser(std::string request) {
-	std::istringstream	stream(request);
-	std::string 		line;
-
 	if (request.empty())
 		throw std::runtime_error("Error: when trying to read a HTTP request.");
+
+	std::istringstream stream(request);
+
+	parseRequestLine(stream);
+	parseHeaders(stream);
+
+	if (this->headers.size() > MAX_HEADERS)
+		throw std::runtime_error("431 Request Header Fields Too Large");
+
+	parseBody(stream);
+	checkHeader();
+	if (method == "POST")
+		validateBodySize();
+}
+
+void HTTPParser::parseRequestLine(std::istringstream& stream) {
+	std::string line;
 	std::getline(stream, line);
-	size_t	pos = line.find("\r");
-	if (pos == line.npos)
-		throw std::runtime_error("Error: Invalid request");
+	size_t pos = line.find("\r");
+	if (pos == std::string::npos)
+		throw std::runtime_error("400 Bad Request: Invalid request line");
 	line = line.substr(0, pos);
+
 	std::istringstream request_line(line);
-	request_line >> this->method >> this->path >> this->version;
+	if (!(request_line >> this->method >> this->path >> this->version))
+		throw std::runtime_error("400 Bad Request: Malformed request line");
+
 	if (this->version != "HTTP/1.1")
-		throw std::runtime_error("505 HTTP Version not supported");
-	while (std::getline(stream, line) && line.compare("\r") != 0)
-	{
-		pos = line.find("\r");
-		if (pos == line.npos)
-			throw std::runtime_error("Error: Invalid request");
+		throw std::runtime_error("505 HTTP Version Not Supported");
+}
+
+void HTTPParser::parseHeaders(std::istringstream& stream) {
+	std::string line;
+	while (std::getline(stream, line) && line != "\r") {
+		size_t pos = line.find("\r");
+		if (pos == std::string::npos)
+			throw std::runtime_error("400 Bad Request: Invalid header line");
+
 		line = line.substr(0, pos);
 		pos = line.find(": ");
-		if (pos != line.npos)
-		{
+		if (pos != std::string::npos) {
 			std::string key = line.substr(0, pos);
-			if (this->headers.find(key) != this->headers.end())
-				throw std::runtime_error("Duplicate header");
-			this->headers[key] = line.substr(pos + 2);
+			if (headers.find(key) != headers.end())
+				throw std::runtime_error("400 Bad Request: Duplicate header");
+			headers[key] = line.substr(pos + 2);
 		}
 	}
-	if (this->headers.find("Host") == this->headers.end())
-		throw std::runtime_error("400 Bad request: Host header is missing");
+
+	if (headers.find("Host") == headers.end() || headers["Host"].empty() )
+		throw std::runtime_error("400 Bad Request");
+}
+
+void HTTPParser::parseBody(std::istringstream& stream) {
+	std::string line;
 	while (std::getline(stream, line))
 		this->body += line + "\n";
-	checkHeader();
+}
+
+void HTTPParser::validateBodySize() {
+	std::map<std::string, std::string>::iterator len = headers.find("Content-Length");
+	if (len == headers.end() || len->second.empty())
+		throw std::runtime_error("411 Length Required");
+
+	size_t expectedLength = std::strtoul(len->second.c_str(), NULL, 10);
+	size_t actualLength = body.size();
+
+	if (actualLength != expectedLength)
+		throw std::runtime_error("400 Bad Request: Body size does not match Content-Length");
 }
 
 void HTTPParser::checkHeader()
@@ -69,8 +105,6 @@ void HTTPParser::checkHeader()
 
 void HTTPParser::checkAllowed(std::string allowedHeaders[], size_t allowedCount)
 {
-	if (this->method == "POST" && (this->headers["Content-Type"] == "" || this->headers["Content-Length"] == ""))
-		throw std::runtime_error(this->headers["Content-Length"] == "" ? "411 Length Required" : "400 Bad request");
 	for (std::map<std::string, std::string>::iterator it = this->headers.begin(); it != this->headers.end(); ++it)
 	{
 		bool found = false;
@@ -83,7 +117,7 @@ void HTTPParser::checkAllowed(std::string allowedHeaders[], size_t allowedCount)
 			}
 		}
 		if (!found)
-			throw std::runtime_error("400 Bad Request: Header \"" + it->first + "\" not allowed in GET request");
+			throw std::runtime_error("400 Bad Request: Header \"" + it->first + "\" not allowed in " + this->method + " request");
 	}
 }
 

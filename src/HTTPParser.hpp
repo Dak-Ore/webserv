@@ -6,7 +6,11 @@
 # include <cstring>
 # include <exception>
 # include <sstream>
+# include <cstdlib>
 # include <fstream>
+
+#define MAX_HEADERS 100
+
 class HTTPParser
 {
 public:
@@ -14,6 +18,10 @@ public:
     HTTPParser(std::string request);
     // Destructor
     ~HTTPParser();    
+	void parseRequestLine(std::istringstream& stream);
+	void parseHeaders(std::istringstream& stream);
+	void parseBody(std::istringstream& stream);
+	void validateBodySize();
 	void	checkHeader();
 	void	checkAllowed(std::string allowedHeaders[], size_t allowedCount);
 	std::string							method;
