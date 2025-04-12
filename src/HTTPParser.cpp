@@ -14,7 +14,17 @@ HTTPParser::HTTPParser(std::string request) {
 	line = line.substr(0, pos);
 	std::istringstream request_line(line);
 	request_line >> this->method >> this->path >> this->version;
-	 
+	while (std::getline(stream, line) && line.compare("\r") != 0)
+	{
+		pos = line.find("\r");
+		if (pos != line.npos)
+			line = line.substr(0, pos);
+		pos = line.find(": ");
+		if (pos != line.npos)
+			this->headers[line.substr(0, pos)] = line.substr(pos + 2);
+	}
+	while (std::getline(stream, line))
+		this->body = line + "\n";
 }
 
 HTTPParser::~HTTPParser(){

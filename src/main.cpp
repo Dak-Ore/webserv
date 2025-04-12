@@ -17,12 +17,12 @@ int main(int argc, char **argv, char **envp)
 	{
 		File		content(config_file_name);
 		HTTPParser	test("<Method> <Path> <Version>\r\nHeader1: Value1\r\nHeader2: Value2\r\n...\r\n\r\n<Body> (optionnel)");
+		std::cout << test.headers["Header1"] << std::endl;
 	}
 	catch(const std::exception& e)
 	{
 		std::cerr << e.what() << '\n';
 	}
 	
-
 	
 }
