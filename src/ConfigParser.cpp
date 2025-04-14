@@ -3,7 +3,7 @@
 // Default Constructor
 ConfigParser::ConfigParser(File config) {
 	std::string content;
-	int	nbsub = 0;
+	// int	nbsub = 0;
 	for (size_t i = 0; i < config.GetSize(); i++)
 	{
 		size_t pos = config.getLine(i).find("server");

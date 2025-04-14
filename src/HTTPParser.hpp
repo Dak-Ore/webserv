@@ -22,8 +22,14 @@ public:
 	void parseHeaders(std::istringstream& stream);
 	void parseBody(std::istringstream& stream);
 	void validateBodySize();
-	void	checkHeader();
-	void	checkAllowed(std::string allowedHeaders[], size_t allowedCount);
+	void checkAllowed(std::string allowedHeaders[], size_t allowedCount);
+	void print();
+	std::string							getMethod();
+	std::string							getPath();
+	std::string							getVersion();
+	std::map<std::string, std::string>	getHeaders();
+	std::string							getBody(); 
+private:
 	std::string							method;
 	std::string							path;
 	std::string							version;

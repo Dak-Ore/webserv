@@ -22,9 +22,9 @@ void HTTPParser::parseRequestLine(std::istringstream& stream) {
 	std::string line;
 	std::getline(stream, line);
 	size_t pos = line.find("\r");
-	if (pos == std::string::npos)
-		throw std::runtime_error("400 Bad Request: Invalid request line");
-	line = line.substr(0, pos);
+	if (pos != std::string::npos)
+		line = line.substr(0, pos);
+		// throw std::runtime_error("400 Bad Request: Invalid request line");
 
 	std::istringstream request_line(line);
 	if (!(request_line >> this->method >> this->path >> this->version))
@@ -38,10 +38,9 @@ void HTTPParser::parseHeaders(std::istringstream& stream) {
 	std::string line;
 	while (std::getline(stream, line) && line != "\r") {
 		size_t pos = line.find("\r");
-		// if (pos == std::string::npos)
-		// 	throw std::runtime_error("400 Bad Request: Invalid header line");
-
-		line = line.substr(0, pos);
+		if (pos != std::string::npos)
+			line = line.substr(0, pos);
+			// throw std::runtime_error("400 Bad Request: Invalid header line");
 		pos = line.find(": ");
 		if (pos != std::string::npos) {
 			std::string key = line.substr(0, pos);
@@ -71,6 +70,35 @@ void HTTPParser::validateBodySize() {
 
 	if (actualLength != expectedLength)
 		throw std::runtime_error("400 Bad Request: Body size does not match Content-Length");
+}
+
+void HTTPParser::print()
+{
+	std::cout << "Request: " << std::endl;
+	std::cout << this->method << " - " << this->path << " - " << this->version << std::endl;
+	std::cout << "Headers :" << std::endl;
+	for (std::map<std::string, std::string>::iterator i = this->headers.begin(); i != this->headers.end(); i++)
+		std::cout << i->first << " - " << i->second << std::endl;
+}
+std::string	HTTPParser::getMethod()
+{
+	return (this->method);
+}
+std::string	HTTPParser::getPath()
+{
+	return (this->path);
+}
+std::string	HTTPParser::getVersion()
+{
+	return (this->version);
+}
+std::map<std::string, std::string>	HTTPParser::getHeaders()
+{
+	return (this->headers);
+}
+std::string	HTTPParser::getBody()
+{
+	return (this->body);
 }
 
 // void HTTPParser::checkHeader()

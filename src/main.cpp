@@ -2,10 +2,21 @@
 #include <string>
 #include "File.hpp"
 #include "HTTPParser.hpp"
+#include "Server.hpp"
 
 int main(int argc, char **argv, char **envp)
 {
 	(void)envp;
+	try
+	{
+		Server test("localhost", "8080");
+		test.listen();
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << '\n';
+	}
+	
 	if (argc > 2)
 	{
 		std::cerr << "Usage: " << argv[0] << "[configuration file]" << std::endl;
@@ -16,7 +27,8 @@ int main(int argc, char **argv, char **envp)
 	try
 	{
 		File		content(config_file_name);
-		HTTPParser	test("PUT /index.html HTTP/1.1\r\nHost: localhost\r\n\r\n");
+		HTTPParser	test(content.getContent());
+		std::cout << "here" << std::endl;
 	}
 	catch(const std::exception& e)
 	{
