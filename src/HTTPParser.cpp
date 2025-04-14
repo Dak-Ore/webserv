@@ -14,7 +14,6 @@ HTTPParser::HTTPParser(std::string request) {
 		throw std::runtime_error("431 Request Header Fields Too Large");
 
 	parseBody(stream);
-	checkHeader();
 	if (method == "POST")
 		validateBodySize();
 }
@@ -39,8 +38,8 @@ void HTTPParser::parseHeaders(std::istringstream& stream) {
 	std::string line;
 	while (std::getline(stream, line) && line != "\r") {
 		size_t pos = line.find("\r");
-		if (pos == std::string::npos)
-			throw std::runtime_error("400 Bad Request: Invalid header line");
+		// if (pos == std::string::npos)
+		// 	throw std::runtime_error("400 Bad Request: Invalid header line");
 
 		line = line.substr(0, pos);
 		pos = line.find(": ");
@@ -74,52 +73,52 @@ void HTTPParser::validateBodySize() {
 		throw std::runtime_error("400 Bad Request: Body size does not match Content-Length");
 }
 
-void HTTPParser::checkHeader()
-{
-	std::string methods[] = {"GET", "POST", "DELETE"};
-	int i = 0;
-	while (i < 3 && methods[i] != this->method)
-		i++;
+// void HTTPParser::checkHeader()
+// {
+// 	std::string methods[] = {"GET", "POST", "DELETE"};
+// 	int i = 0;
+// 	while (i < 3 && methods[i] != this->method)
+// 		i++;
 
-	switch (i)
-	{
-		case 0: { // GET
-			std::string allowedHeadersGet[] = {"Host", "Connection", "Accept", "User-Agent", "Referer"};
-			checkAllowed(allowedHeadersGet, 5);
-			break;
-		}
-		case 1: { // POST
-			std::string allowedHeadersPost[] = {"Host", "Connection", "Content-Length", "Content-Type", "User-Agent", "Accept", "Referer"};
-			checkAllowed(allowedHeadersPost, 7);
-			break;
-		}
-		case 2: { // DELETE
-			std::string allowedHeadersDelete[] = {"Host", "Connection", "User-Agent", "Accept"};
-			checkAllowed(allowedHeadersDelete, 4);
-			break;
-		}
-		default:
-			throw std::runtime_error("405 Method Not Allowed");
-	}
-}
+// 	switch (i)
+// 	{
+// 		case 0: { // GET
+// 			std::string allowedHeadersGet[] = {"Host", "Connection", "Accept", "User-Agent", "Referer"};
+// 			checkAllowed(allowedHeadersGet, 5);
+// 			break;
+// 		}
+// 		case 1: { // POST
+// 			std::string allowedHeadersPost[] = {"Host", "Connection", "Content-Length", "Content-Type", "User-Agent", "Accept", "Referer"};
+// 			checkAllowed(allowedHeadersPost, 7);
+// 			break;
+// 		}
+// 		case 2: { // DELETE
+// 			std::string allowedHeadersDelete[] = {"Host", "Connection", "User-Agent", "Accept"};
+// 			checkAllowed(allowedHeadersDelete, 4);
+// 			break;
+// 		}
+// 		default:
+// 			throw std::runtime_error("405 Method Not Allowed");
+// 	}
+// }
 
-void HTTPParser::checkAllowed(std::string allowedHeaders[], size_t allowedCount)
-{
-	for (std::map<std::string, std::string>::iterator it = this->headers.begin(); it != this->headers.end(); ++it)
-	{
-		bool found = false;
-		for (size_t i = 0; i < allowedCount; ++i)
-		{
-			if (it->first == allowedHeaders[i])
-			{
-				found = true;
-				break;
-			}
-		}
-		if (!found)
-			throw std::runtime_error("400 Bad Request: Header \"" + it->first + "\" not allowed in " + this->method + " request");
-	}
-}
+// void HTTPParser::checkAllowed(std::string allowedHeaders[], size_t allowedCount)
+// {
+// 	for (std::map<std::string, std::string>::iterator it = this->headers.begin(); it != this->headers.end(); ++it)
+// 	{
+// 		bool found = false;
+// 		for (size_t i = 0; i < allowedCount; ++i)
+// 		{
+// 			if (it->first == allowedHeaders[i])
+// 			{
+// 				found = true;
+// 				break;
+// 			}
+// 		}
+// 		if (!found)
+// 			throw std::runtime_error("400 Bad Request: Header \"" + it->first + "\" not allowed in " + this->method + " request");
+// 	}
+// }
 
 HTTPParser::~HTTPParser(){
 };
