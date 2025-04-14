@@ -6,7 +6,6 @@
 #include <sys/epoll.h>
 #include <fcntl.h>
 #include <iostream>
-#include <stdio.h>
 #include <cstring>
 
 int setNonBlocking(int fd) {
@@ -46,10 +45,7 @@ void Server::listen()
 	ev.events = EPOLLIN;
 	ev.data.fd = fd;
 	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &ev))
-	{
-		perror("a");
 		throw std::runtime_error("epoll_ctl failed");
-	}
 	epoll_event events[MAX_EVENTS];
 	while (true)
 	{
@@ -68,18 +64,19 @@ void Server::listen()
 				ev.events = EPOLLIN | EPOLLET;
 				ev.data.fd = client_fd;
 				epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &ev);
-				std::cout << "Nouveau client connecté\n";
+				std::cout << "Nouveau client connecté" << std::endl;
 			}
 			else
 			{
-				// Client envoie des données
-				char buf[1024];
-				int count = read(events[i].data.fd, buf, sizeof(buf));
-				if (count <= 0) {
+				std::string request = this->readRequest(events[i].data.fd);
+				if (request.empty())
+				{
 					close(events[i].data.fd);
-					std::cout << "Client déconnecté\n";
-				} else {
-					std::cout << "Reçu : " << std::string(buf, count) << "\n";
+					std::cout << "Client déconnecté" << std::endl;
+				}
+				else
+				{
+					std::cout << "Reçu : " << request << std::endl;
 
 					std::string response = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, World!";
 					write(events[i].data.fd, response.c_str(), response.size());
@@ -94,12 +91,15 @@ std::string Server::readRequest(int fd)
 {
 	std::string request;
 	char buffer[1024];
-	while (true) {
+
+	while (true)
+	{
 		int bytes = recv(fd, buffer, sizeof(buffer), 0);
 		if (bytes <= 0) break;
 		request.append(buffer, bytes);
 
-		if (request.find("\r\n\r\n") != std::string::npos) {
+		if (request.find("\r\n\r\n") != std::string::npos)
+		{
 			// Fin des headers atteinte
 			break;
 		}

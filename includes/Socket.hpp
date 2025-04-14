@@ -7,10 +7,10 @@ class Socket
 {
 private:
 	int _fd;
+	void init(std::string hostname, std::string service);
 public:
 	Socket();
 	Socket(std::string hostname, std::string service);
-	void init(std::string hostname, std::string service);
 	~Socket();
 
 	int getFd();

@@ -14,7 +14,7 @@ private:
 public:
 	Server();
 	Server(std::string hostname, std::string service);
+	~Server();
 	void listen();
 	std::string readRequest(int fd);
-	~Server();
 };
