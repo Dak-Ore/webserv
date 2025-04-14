@@ -1,23 +1,28 @@
 #include "ConfigParser.hpp"
 
 // Default Constructor
-ConfigParser::ConfigParser() {
-    std::cout << "ConfigParser default constructor called" << std::endl;
-}
+ConfigParser::ConfigParser(File config) {
+	std::string content;
+	int	nbsub = 0;
+	for (size_t i = 0; i < config.GetSize(); i++)
+	{
+		size_t pos = config.getLine(i).find("server");
+		if (pos != std::string::npos)
+		{
+			pos = config.getLine(i).find("{");
+			if (pos != std::string::npos)
+			{
 
-// Copy Constructor
-ConfigParser::ConfigParser(const ConfigParser& other) {
-    std::cout << "ConfigParser copy constructor called" << std::endl;
-    *this = other;
-}
-
-// Copy Assignment Operator
-ConfigParser& ConfigParser::operator=(const ConfigParser& other) {
-    std::cout << "ConfigParser copy assignment operator called" << std::endl;
-    if (this != &other) {
-        // Copy attributes here
-    }
-    return *this;
+			}
+			else
+			{
+				i++;
+				pos = config.getLine(i).find("{");
+				if (pos == std::string::npos)
+					throw std::runtime_error("Invalid config file");
+			}
+		}
+	}
 }
 
 // Destructor

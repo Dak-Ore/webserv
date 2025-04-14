@@ -2,19 +2,14 @@
 # define CONFIGPARSER_HPP
 
 # include <iostream>
+# include "ServerConfig.hpp"
+# include "File.hpp"
 
 class ConfigParser
 {
 public:
     // Default Constructor
-    ConfigParser();
-    
-    // Copy Constructor
-    ConfigParser(const ConfigParser& other);
-    
-    // Copy Assignment Operator
-    ConfigParser& operator=(const ConfigParser& other);
-    
+    ConfigParser(File config);
     // Destructor
     ~ConfigParser();
 };

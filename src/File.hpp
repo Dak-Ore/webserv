@@ -18,6 +18,7 @@ public:
 
 	std::string getLine(size_t nb);
 	std::string getContent();
+	size_t		GetSize();
 private:
 	std::string _name;
 	std::vector<std::string> _content; 

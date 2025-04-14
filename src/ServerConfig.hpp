@@ -2,6 +2,8 @@
 # define SERVERCONFIG_HPP
 
 # include <iostream>
+# include "LocationConfig.hpp"
+# include <map>
 
 class ServerConfig
 {
@@ -18,8 +20,14 @@ public:
     // Destructor
     ~ServerConfig();
 private:
-	std::vector<int> ports;
-	std::string
+    std::string _host;
+    std::vector<int> _ports;
+    std::vector<std::string> _serverNames;
+    std::string _root;
+    std::string _index;
+    size_t _clientMaxBodySize;
+    std::map<int, std::string> _errorPages;
+    std::vector<LocationConfig> _locations;
 };
 
 #endif

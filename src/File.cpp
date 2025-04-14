@@ -35,6 +35,11 @@ std::string File::getContent()
 	return content;
 }
 
+size_t File::GetSize()
+{
+	return this->_content.size();
+}
+
 // Destructor
 File::~File() {
 
