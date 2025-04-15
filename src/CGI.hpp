@@ -7,7 +7,7 @@
  * Is connected to a CGI script
  * ??? TODO
  */
-class CGIScript
+class CGI
 {
 
 public:
@@ -15,19 +15,19 @@ public:
 
 private:
 	// default constructor, results in an undefined object.
-	CGIScript();
+	CGI();
 	// copy constructor
-	CGIScript(CGIScript const&);
+	CGI(CGI const&);
 	// copy operator
-	CGIScript& operator=(CGIScript const&);
+	CGI& operator=(CGI const&);
 
 public:
 	/**
-	 * Create a CGIScript (TODO)
+	 * Create a CGI (TODO)
 	 */
-	CGIScript(/* TODO */);
+	CGI(char const* pathname, char const* const argv[] = {});
 
-	virtual ~CGIScript();
+	virtual ~CGI();
 
 	/**
 	 * TODO
@@ -66,7 +66,11 @@ public:
 	 * 
 	 * TODO add timeout
 	 */
-	void execute(std::map<std::string, std::string> metavars, std::string body);
+	void execute(int inout[2], std::map<std::string, std::string> metavars, std::string body);
+
+private:
+	std::string pathname;
+	char* const* argv;
 };
 
 /*
