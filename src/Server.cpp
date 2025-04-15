@@ -26,63 +26,59 @@ Server::Server(std::string hostname, std::string service)
 
 void Server::init(std::string hostname, std::string service)
 {
-	this->sockets.push_back(new Socket(hostname, service));
-	setNonBlocking(this->sockets[0]->getFd());
+	this->_sockets.push_back(new Socket(hostname, service));
+	this->_epoll.addSocket(this->_sockets[0]->getFd());
 }
 
 Server::~Server()
 {
-	for (size_t i = 0; i < sockets.size(); ++i)
-		delete this->sockets[i];
+	for (size_t i = 0; i < _sockets.size(); ++i)
+		delete this->_sockets[i];
+}
+
+bool Server::isServerSocket(int fd)
+{
+	size_t n = this->_sockets.size();
+	for (size_t i = 0; i < n; i++)
+	{
+		if (fd == this->_sockets[i]->getFd())
+			return (true);
+	}
+	return (false);
+}
+
+void Server::acceptClient(int serverFd)
+{
+	int client_fd = accept(serverFd, NULL, NULL);
+	if (client_fd == -1)
+		return ;
+	this->_epoll.addClient(client_fd);
 }
 
 void Server::listen()
 {
-	int serverFd = this->sockets[0]->getFd();
-	EPoll e;
-	const int MAX_EVENTS = 10;
-	const int epoll_fd = epoll_create1(0);
-	epoll_event ev;
-	memset(&ev, 0, sizeof(ev));
-	ev.events = EPOLLIN;
-	ev.data.fd = serverFd;
-	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, serverFd, &ev))
-		throw std::runtime_error("epoll_ctl failed");
-	epoll_event events[MAX_EVENTS];
 	while (true)
 	{
-		int n = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
-		for (int i = 0; i < n; ++i) {
-			if (events[i].data.fd == serverFd)
-			{
-				// Nouveau client
-				int client_fd = accept(serverFd, NULL, NULL);
-				if (client_fd == -1)
-				{
-					std::cerr << "accept failed" << std::endl;
-					continue;
-				}
-				setNonBlocking(client_fd);
-				ev.events = EPOLLIN | EPOLLET;
-				ev.data.fd = client_fd;
-				epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &ev);
-				std::cout << "Nouveau client connecté" << std::endl;
-			}
+		EPollEvent* events = this->_epoll.getEvents();
+		for (int i = 0; i < EPOLL_MAX_EVENTS; ++i)
+		{
+			int fd = events[i].getFd();
+			if (fd == 0)
+				continue;
+
+			if (this->isServerSocket(fd))
+				this->acceptClient(fd);
 			else
 			{
-				std::string request = this->readRequest(events[i].data.fd);
+				std::string request = this->readRequest(fd);
 				if (request.empty())
-				{
-					close(events[i].data.fd);
-					std::cout << "Client déconnecté" << std::endl;
-				}
+					this->_epoll.remove(fd);
 				else
 				{
 					std::cout << "Reçu : " << request << std::endl;
-
-					std::string response = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, World!";
-					write(events[i].data.fd, response.c_str(), response.size());
-					close(events[i].data.fd); // Pas de keep-alive dans cet exemple
+					std::string response = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\nConnection: close\r\n\r\nHello, World!";
+					write(fd, response.c_str(), response.size());
+					this->_epoll.remove(fd); // Pas de keep-alive dans cet exemple
 				}
 			}
 		}

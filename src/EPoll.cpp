@@ -45,6 +45,13 @@ void EPoll::addClient(int fd)
 	this->add(fd, EPOLLIN | EPOLLET);
 }
 
+void EPoll::remove(int fd, bool close_fd)
+{
+	if (close_fd)
+		close(fd);
+	epoll_ctl(this->_fd, EPOLL_CTL_DEL, fd, NULL);
+}
+
 void EPoll::wait()
 {
 	epoll_event raw_events[EPOLL_MAX_EVENTS];

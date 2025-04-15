@@ -10,7 +10,7 @@ INC = -I./includes
 SRCDIR = src
 OBJDIR = obj
 
-SOURCES = ./EPoll.cpp ./EPollEvent.cpp ./HttpResponse.cpp ./main.cpp ./Server.cpp ./Socket.cpp 
+SOURCES = ./EPoll.cpp ./EPollEvent.cpp ./main.cpp ./Server.cpp ./Socket.cpp 
 
 OBJS = $(addprefix $(OBJDIR)/, $(SOURCES:.cpp=.o))
 

@@ -20,5 +20,6 @@ public:
 
 	void addSocket(int fd);
 	void addClient(int fd);
+	void remove(int fd, bool close_fd = true);
 };
 
