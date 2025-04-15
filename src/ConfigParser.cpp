@@ -56,7 +56,7 @@ ConfigParser::ConfigParser(File config) {
 			{
 				inServer --;
 				ServerConfig server(content, location);
-				std::cout << server.getHost()[0] << ":" << server.getPorts()[0] << std::endl;
+				server.print();
 				location.clear();
 				content = "";
 				continue;

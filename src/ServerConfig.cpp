@@ -14,10 +14,10 @@ ServerConfig::ServerConfig(std::string content, std::vector<std::string> locatio
 
 void	ServerConfig::findElement(std::string line)
 {
-	std::string	elements[] = {"listen", "server_name", "root", "index", "client_max_body_size", "error_page", "index"};
+	std::string	elements[] = {"listen", "server_name", "root", "index", "client_max_body_size", "error_page"};
 	int i = 0;
 	size_t pos;
-	for (i = 0; i < 7; i++)
+	for (i = 0; i < 6; i++)
 	{
 		pos = line.find(elements[i]);
 		if (pos != std::string::npos)
@@ -35,26 +35,22 @@ void	ServerConfig::findElement(std::string line)
 			this->_ports.push_back(smartSubstr(line, ":", ";"));
 			break;
 		case 1:
-			this->_serverNames.push_back(smartSubstr(line, "server_name", ";"));
+			this->splitPush(smartSubstr(line, "server_name", ";"), 1);
 			break;
 		case 2:
 			this->_root = smartSubstr(line, "root", ";");
 			break;
 		case 3:
-			this->_index = smartSubstr(line, "index", ";");
+			this->splitPush(smartSubstr(line, "index", ";"), 0);
 			break;
 		case 4:
 			this->_clientMaxBodySize = atoi(smartSubstr(line, "client_max_body_size", ";").c_str());
 			break;
 		case 5:{
 			std::string pLine = smartSubstr(line, "error_pages", "/");
-			this->_errorPages.insert({atoi(pLine.c_str()), smartSubstr(line, pLine, ";")});
+			this->_errorPages.insert(std::pair<int,std::string>(atoi(pLine.c_str()), smartSubstr(line, pLine, ";")));
 			break;
 		}
-		case 6:
-			break;
-		case 7:
-			break;
 		default:
 			throw std::runtime_error("invalid line in config file");
 	}
@@ -78,7 +74,7 @@ std::string ServerConfig::getRoot()
 {
 	return this->_root;
 }
-std::string ServerConfig::getIndex()
+std::vector<std::string> ServerConfig::getIndex()
 {
 	return this->_index;
 }
@@ -100,6 +96,41 @@ std::vector<LocationConfig> ServerConfig::getLocations()
 
 // Destructor
 ServerConfig::~ServerConfig() {
+}
+
+void	ServerConfig::print()
+{
+	std::cout << "My host:" << std::endl;
+	for (std::vector<std::string>::iterator it = this->_host.begin(); it != this->_host.end(); it++)
+		std::cout << *it << std::endl;
+	std::cout << "My port:" << std::endl;
+	for (std::vector<std::string>::iterator it = this->_ports.begin(); it != this->_ports.end(); it++)
+		std::cout << *it << std::endl;
+	std::cout << "Root: " << this->_root << std::endl;
+	std::cout << "Index" << std::endl;
+	for (std::vector<std::string>::iterator it = this->_index.begin(); it != this->_index.end(); it++)
+		std::cout << *it << std::endl;
+	std::cout <<  "Client max body size: " << _clientMaxBodySize << std::endl;
+	std::cout << "Error pages" << std::endl;
+	for (std::map<int, std::string>::iterator it = this->_errorPages.begin(); it != this->_errorPages.end(); it++)
+		std::cout << it->first << " : " << it->second << std::endl;
+	
+}
+
+void	ServerConfig::splitPush(std::string line, int kind)
+{
+	std::istringstream	stream(line);
+	std::string			word;
+
+	while (stream >> word)
+	{
+		if (kind == 0)
+			this->_index.push_back(word);
+		else
+			this->_serverNames.push_back(word);
+	}
+
+
 }
 
 std::string	smartSubstr(std::string line, std::string start, std::string end)
