@@ -3,13 +3,19 @@
 // Default Constructor
 ServerConfig::ServerConfig(std::string content, std::vector<std::string> location)
 {
-	(void) location;
 	std::istringstream stream(content);
 	std::string		line;
 	
 
 	while (std::getline(stream, line))
 		findElement(line);
+
+	for (std::vector<std::string>::iterator it = location.begin(); it != location.end(); it++)
+	{
+		LocationConfig loc(*it);
+		this->_locations.push_back(loc);
+	}
+
 }
 
 void	ServerConfig::findElement(std::string line)

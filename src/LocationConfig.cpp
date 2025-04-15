@@ -2,25 +2,23 @@
 
 // Default Constructor
 LocationConfig::LocationConfig(std::string content) {
-    std::cout << content << std::endl;
+  	std::istringstream stream(content);
+	std::string		line;
+	
+
+	if (!(stream >> this->_path))
+		throw std::runtime_error("invalid location");
+	stream >> this->_path;
+	std::cout << this->_path << std::endl;
+	std::getline(stream, line);
+	while (std::getline(stream, line))
+	{
+
+	}
 }
 
-// Copy Constructor
-LocationConfig::LocationConfig(const LocationConfig& other) {
-    std::cout << "LocationConfig copy constructor called" << std::endl;
-    *this = other;
-}
 
-// Copy Assignment Operator
-LocationConfig& LocationConfig::operator=(const LocationConfig& other) {
-    std::cout << "LocationConfig copy assignment operator called" << std::endl;
-    if (this != &other) {
-        // Copy attributes here
-    }
-    return *this;
-}
 
 // Destructor
 LocationConfig::~LocationConfig() {
-    std::cout << "LocationConfig destructor called" << std::endl;
 }

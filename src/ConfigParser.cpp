@@ -56,7 +56,7 @@ ConfigParser::ConfigParser(File config) {
 			{
 				inServer --;
 				ServerConfig server(content, location);
-				server.print();
+				// server.print();
 				location.clear();
 				content = "";
 				continue;
