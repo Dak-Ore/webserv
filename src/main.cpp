@@ -16,7 +16,7 @@ int main(int argc, char **argv, char **envp)
 
     try
     {
-        Server server("localhost", "8081");
+        Server server("localhost", "8080");
         server.listen();
         std::cout << "Server is now listening for connections..." << std::endl;
     }

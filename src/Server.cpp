@@ -1,4 +1,5 @@
 #include "Server.hpp"
+#include "EPoll.hpp"
 
 #include <stdexcept>
 #include <netdb.h>
@@ -31,30 +32,31 @@ void Server::init(std::string hostname, std::string service)
 
 Server::~Server()
 {
-		for (size_t i = 0; i < sockets.size(); ++i)
-			delete this->sockets[i];
+	for (size_t i = 0; i < sockets.size(); ++i)
+		delete this->sockets[i];
 }
 
 void Server::listen()
 {
-	int fd = this->sockets[0]->getFd();
+	int serverFd = this->sockets[0]->getFd();
+	EPoll e;
 	const int MAX_EVENTS = 10;
 	const int epoll_fd = epoll_create1(0);
 	epoll_event ev;
 	memset(&ev, 0, sizeof(ev));
 	ev.events = EPOLLIN;
-	ev.data.fd = fd;
-	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &ev))
+	ev.data.fd = serverFd;
+	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, serverFd, &ev))
 		throw std::runtime_error("epoll_ctl failed");
 	epoll_event events[MAX_EVENTS];
 	while (true)
 	{
 		int n = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
 		for (int i = 0; i < n; ++i) {
-			if (events[i].data.fd == fd)
+			if (events[i].data.fd == serverFd)
 			{
 				// Nouveau client
-				int client_fd = accept(fd, NULL, NULL);
+				int client_fd = accept(serverFd, NULL, NULL);
 				if (client_fd == -1)
 				{
 					std::cerr << "accept failed" << std::endl;

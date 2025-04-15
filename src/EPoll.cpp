@@ -26,7 +26,7 @@ int EPoll::setNonBlocking(int fd)
 
 void EPoll::add(int fd, int flags)
 {
-	setNonBlocking(fd);
+	EPoll::setNonBlocking(fd);
 	epoll_event ev;
 	std::memset(&ev, 0, sizeof(ev));
 	ev.events = flags;
@@ -45,19 +45,17 @@ void EPoll::addClient(int fd)
 	this->add(fd, EPOLLIN | EPOLLET);
 }
 
-int EPoll::wait()
+void EPoll::wait()
 {
-	return (epoll_wait(this->_fd, this->_events, EPOLL_MAX_EVENTS, -1));
+	epoll_event raw_events[EPOLL_MAX_EVENTS];
+
+	int n = epoll_wait(this->_fd, raw_events, EPOLL_MAX_EVENTS, -1);
+	for (int i = 0; i < n; i++)
+		this->_events[i] = EPollEvent(raw_events[i]);
 }
 
-epoll_event *EPoll::getEvents()
+EPollEvent *EPoll::getEvents()
 {
-	std::memset(this->_events, 0, sizeof(this->_events));
 	this->wait();
 	return (this->_events);
-}
-void EPoll::processEvents(int (*func)(EPoll &e, int fd))
-{
-	for (int i = 0; i < 10; ++i)
-		func(*this, this->_events[i].data.fd);
 }
