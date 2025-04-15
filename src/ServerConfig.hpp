@@ -3,13 +3,15 @@
 
 # include <iostream>
 # include "LocationConfig.hpp"
+# include <sstream>
 # include <map>
+# include <cstdlib>
 
 class ServerConfig
 {
 public:
     // Default Constructor
-    ServerConfig();
+    ServerConfig(std::string content, std::vector<std::string> location);
     
     // Copy Constructor
     ServerConfig(const ServerConfig& other);
@@ -19,15 +21,29 @@ public:
     
     // Destructor
     ~ServerConfig();
+
+	void	findElement(std::string line);
+    std::vector<std::string>  getHost();
+    std::vector<std::string> getPorts();
+	std::vector<std::string> getServerNames();
+    std::string getRoot();
+    std::string getIndex();
+    size_t getClientMaxBodySize();
+    std::map<int, std::string> getErrorPages();
+    std::vector<LocationConfig> getLocations();
 private:
-    std::string _host;
-    std::vector<int> _ports;
-    std::vector<std::string> _serverNames;
+	// listen
+    std::vector<std::string> _host;
+    std::vector<std::string> _ports;
+	//
+	std::vector<std::string> _serverNames;
     std::string _root;
     std::string _index;
     size_t _clientMaxBodySize;
     std::map<int, std::string> _errorPages;
     std::vector<LocationConfig> _locations;
 };
+
+std::string	smartSubstr(std::string line, std::string start, std::string end);
 
 #endif

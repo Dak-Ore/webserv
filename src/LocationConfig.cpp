@@ -1,8 +1,8 @@
 #include "LocationConfig.hpp"
 
 // Default Constructor
-LocationConfig::LocationConfig() {
-    std::cout << "LocationConfig default constructor called" << std::endl;
+LocationConfig::LocationConfig(std::string content) {
+    std::cout << content << std::endl;
 }
 
 // Copy Constructor

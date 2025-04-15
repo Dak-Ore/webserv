@@ -1,7 +1,8 @@
 #include "HTTPParser.hpp"
 
 // Default Constructor
-HTTPParser::HTTPParser(std::string request) {
+HTTPParser::HTTPParser(std::string request)
+{
 	if (request.empty())
 		throw std::runtime_error("Error: when trying to read a HTTP request.");
 
@@ -18,7 +19,8 @@ HTTPParser::HTTPParser(std::string request) {
 		validateBodySize();
 }
 
-void HTTPParser::parseRequestLine(std::istringstream& stream) {
+void HTTPParser::parseRequestLine(std::istringstream& stream)
+{
 	std::string line;
 	std::getline(stream, line);
 	size_t pos = line.find("\r");
@@ -34,7 +36,8 @@ void HTTPParser::parseRequestLine(std::istringstream& stream) {
 		throw std::runtime_error("505 HTTP Version Not Supported");
 }
 
-void HTTPParser::parseHeaders(std::istringstream& stream) {
+void HTTPParser::parseHeaders(std::istringstream& stream)
+{
 	std::string line;
 	while (std::getline(stream, line) && line != "\r") {
 		size_t pos = line.find("\r");
@@ -54,13 +57,15 @@ void HTTPParser::parseHeaders(std::istringstream& stream) {
 		throw std::runtime_error("400 Bad Request");
 }
 
-void HTTPParser::parseBody(std::istringstream& stream) {
+void HTTPParser::parseBody(std::istringstream& stream)
+{
 	std::string line;
 	while (std::getline(stream, line))
 		this->body += line + "\n";
 }
 
-void HTTPParser::validateBodySize() {
+void HTTPParser::validateBodySize()
+{
 	std::map<std::string, std::string>::iterator len = headers.find("Content-Length");
 	if (len == headers.end() || len->second.empty())
 		throw std::runtime_error("411 Length Required");

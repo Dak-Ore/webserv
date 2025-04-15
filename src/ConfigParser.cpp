@@ -55,11 +55,8 @@ ConfigParser::ConfigParser(File config) {
 			if (inServer)
 			{
 				inServer --;
-				std::cout << "server" << std::endl;
-				std::cout << content << std::endl;
-				std::cout << "location" << std::endl;
-				for (std::vector<std::string>::iterator it = location.begin(); it != location.end(); it++)
-					std::cout << *it << std::endl;
+				ServerConfig server(content, location);
+				std::cout << server.getHost()[0] << ":" << server.getPorts()[0] << std::endl;
 				location.clear();
 				content = "";
 				continue;
