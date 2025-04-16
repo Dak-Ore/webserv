@@ -106,7 +106,7 @@ ServerConfig::~ServerConfig() {
 
 void	ServerConfig::print()
 {
-	std::cout << "My host:" << std::endl;
+	std::cout << "Server" << std::endl << "My host:" << std::endl;
 	for (std::vector<std::string>::iterator it = this->_host.begin(); it != this->_host.end(); it++)
 		std::cout << *it << std::endl;
 	std::cout << "My port:" << std::endl;
@@ -120,6 +120,9 @@ void	ServerConfig::print()
 	std::cout << "Error pages" << std::endl;
 	for (std::map<int, std::string>::iterator it = this->_errorPages.begin(); it != this->_errorPages.end(); it++)
 		std::cout << it->first << " : " << it->second << std::endl;
+	for (size_t i = 0; i < this->_locations.size(); i ++)
+		this->_locations[i].print();
+	std::cout << std::endl;
 	
 }
 
