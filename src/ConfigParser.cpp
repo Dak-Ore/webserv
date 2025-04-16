@@ -9,6 +9,7 @@ ConfigParser::ConfigParser(File config) {
 	bool	waitBrace = false;
 	std::string line;
 	std::vector<std::string> location;
+	this->_nbserv = 0;
 
 	for (size_t i = 0; i < config.GetSize(); i++)
 	{
@@ -17,13 +18,11 @@ ConfigParser::ConfigParser(File config) {
 		line = trim(config.getLine(i));
 		if (line.empty() || line[0] == '#')
 			continue;
-		
 		if (line == "server")
 		{
 			waitBrace = true;
 			continue;
 		}
-
 		if (waitBrace)
 		{
 			if (line == "{")
@@ -33,16 +32,13 @@ ConfigParser::ConfigParser(File config) {
 				continue;
 			}
 		}
-
 		if (line == "server {")
 		{
 			inServer++;
 			continue;
 		}
-
 		if (line.find("location") != std::string::npos && line.find("{") != std::string::npos)
 			inLocation++;
-
 		if (line == "}")
 		{
 			if (inLocation)
@@ -55,9 +51,8 @@ ConfigParser::ConfigParser(File config) {
 			if (inServer)
 			{
 				inServer --;
-				ServerConfig server(content, location);
-				server.print();
-				//export somewhere
+				AddServer(content,location);
+				this->_nbserv++;
 				location.clear();
 				content = "";
 				continue;
@@ -67,7 +62,6 @@ ConfigParser::ConfigParser(File config) {
 			content += line + '\n';
 		else
 			locationContent += line + '\n';
-
 	}
 }
 
@@ -75,6 +69,14 @@ ConfigParser::ConfigParser(File config) {
 ConfigParser::~ConfigParser() {
 }
 
+void	ConfigParser::AddServer(std::string content, std::vector<std::string> location)
+{
+	ServerConfig newServ(content, location);
+	this->_server.push_back(newServ);
+}
+
+std::vector<ServerConfig>	ConfigParser::getServer(){return this->_server;}
+size_t			ConfigParser::getNbServ(){return this->_nbserv;}
 
 std::string trim(const std::string& s)
 {

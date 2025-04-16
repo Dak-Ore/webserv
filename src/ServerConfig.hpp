@@ -15,12 +15,6 @@ public:
     // Default Constructor
     ServerConfig(std::string content, std::vector<std::string> location);
     
-    // Copy Constructor
-    ServerConfig(const ServerConfig& other);
-    
-    // Copy Assignment Operator
-    ServerConfig& operator=(const ServerConfig& other);
-    
     // Destructor
     ~ServerConfig();
 

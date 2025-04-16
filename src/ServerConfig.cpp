@@ -5,11 +5,9 @@ ServerConfig::ServerConfig(std::string content, std::vector<std::string> locatio
 {
 	std::istringstream stream(content);
 	std::string		line;
-	
 
 	while (std::getline(stream, line))
 		findElement(line);
-
 	for (std::vector<std::string>::iterator it = location.begin(); it != location.end(); it++)
 	{
 		LocationConfig loc(*it);
@@ -23,6 +21,7 @@ void	ServerConfig::findElement(std::string line)
 	std::string	elements[] = {"listen", "server_name", "root", "index", "client_max_body_size", "error_page"};
 	int i = 0;
 	size_t pos;
+	std::string elemLine;
 	for (i = 0; i < 6; i++)
 	{
 		pos = line.find(elements[i]);
@@ -34,6 +33,8 @@ void	ServerConfig::findElement(std::string line)
 			}
 		}
 
+	if (i < 6)
+		elemLine = smartSubstr(line, elements[i], ";");
 	switch (i)
 	{
 		case 0:
@@ -41,16 +42,16 @@ void	ServerConfig::findElement(std::string line)
 			this->_ports.push_back(smartSubstr(line, ":", ";"));
 			break;
 		case 1:
-			this->splitPush(smartSubstr(line, "server_name", ";"), 1);
+			this->splitPush(elemLine, 1);
 			break;
 		case 2:
-			this->_root = smartSubstr(line, "root", ";");
+			this->_root = elemLine;
 			break;
 		case 3:
-			this->splitPush(smartSubstr(line, "index", ";"), 0);
+			this->splitPush(elemLine, 0);
 			break;
 		case 4:
-			this->_clientMaxBodySize = atoi(smartSubstr(line, "client_max_body_size", ";").c_str());
+			this->_clientMaxBodySize = atoi(elemLine.c_str());
 			break;
 		case 5:{
 			std::string pLine = smartSubstr(line, "error_pages", "/");
@@ -62,44 +63,14 @@ void	ServerConfig::findElement(std::string line)
 	}
 }
 
-std::vector<std::string>  ServerConfig::getHost()
-{
-	return this->_host;
-}
-
-std::vector<std::string> ServerConfig::getPorts()
-{
-	return this->_ports;
-}
-
-std::vector<std::string> ServerConfig::getServerNames()
-{
-	return this->_serverNames;
-}
-std::string ServerConfig::getRoot()
-{
-	return this->_root;
-}
-std::vector<std::string> ServerConfig::getIndex()
-{
-	return this->_index;
-}
-
-size_t ServerConfig::getClientMaxBodySize()
-{
-	return this->_clientMaxBodySize;
-}
-
-
-std::map<int, std::string> ServerConfig::getErrorPages()
-{
-	return this->_errorPages;
-}
-std::vector<LocationConfig> ServerConfig::getLocations()
-{
-	return this->_locations;
-}
-
+std::vector<std::string>  ServerConfig::getHost(){return this->_host;}
+std::vector<std::string> ServerConfig::getPorts(){return this->_ports;}
+std::vector<std::string> ServerConfig::getServerNames(){return this->_serverNames;}
+std::string ServerConfig::getRoot(){return this->_root;}
+std::vector<std::string> ServerConfig::getIndex(){return this->_index;}
+size_t ServerConfig::getClientMaxBodySize(){return this->_clientMaxBodySize;}
+std::map<int, std::string> ServerConfig::getErrorPages(){return this->_errorPages;}
+std::vector<LocationConfig> ServerConfig::getLocations(){return this->_locations;}
 // Destructor
 ServerConfig::~ServerConfig() {
 }

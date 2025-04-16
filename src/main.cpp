@@ -12,6 +12,9 @@ int main(int argc, char **argv, char **envp)
 	{
 		std::string t = argv[argc - 1];
 		ConfigParser config(t);
+		std::vector<ServerConfig> configlst = config.getServer();
+		for (size_t i = 0; i < config.getNbServ(); i++)
+			configlst[i].print();
 	}
 	catch(const std::exception& e)
 	{
