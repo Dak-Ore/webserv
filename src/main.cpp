@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 #include "File.hpp"
-#include "HTTPParser.hpp"
+#include "HTTPRequest.hpp"
 #include "Server.hpp"
 #include "ConfigParser.hpp"
 
