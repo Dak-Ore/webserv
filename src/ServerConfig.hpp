@@ -8,6 +8,7 @@
 # include <cstdlib>
 # include <vector>
 
+
 class ServerConfig
 {
 public:
@@ -47,7 +48,5 @@ private:
     std::map<int, std::string> _errorPages;
     std::vector<LocationConfig> _locations;
 };
-
-std::string	smartSubstr(std::string line, std::string start, std::string end);
 
 #endif

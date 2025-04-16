@@ -46,3 +46,24 @@ File::~File() {
 }
 
 
+std::string	smartSubstr(std::string line, std::string start, std::string end)
+{
+	size_t	pos_start = line.find(start) + start.size();
+	if (pos_start == std::string::npos)
+		pos_start = 0;
+	else
+	{
+		while (isspace(line[pos_start]))
+			pos_start++;
+	}
+	size_t	pos_end = line.find(end);
+	if (pos_end == std::string::npos)
+		pos_end = 0;
+	else
+	{
+		while (isspace(line[pos_end]))
+			pos_end--;
+	}
+	line = line.substr(pos_start, pos_end - pos_start);
+	return (line);
+}
