@@ -1,4 +1,5 @@
 #include "Server.hpp"
+#include "EPoll.hpp"
 
 #include <stdexcept>
 #include <netdb.h>
@@ -6,8 +7,6 @@
 #include <sys/epoll.h>
 #include <fcntl.h>
 #include <iostream>
-#include <stdio.h>
-#include "HTTPParser.hpp"
 #include <cstring>
 
 int setNonBlocking(int fd) {
@@ -27,68 +26,61 @@ Server::Server(std::string hostname, std::string service)
 
 void Server::init(std::string hostname, std::string service)
 {
-	this->sockets.push_back(new Socket(hostname, service));
-	setNonBlocking(this->sockets[0]->getFd());
+	this->_sockets.push_back(new Socket(hostname, service));
+	this->_epoll.addSocket(this->_sockets[0]->getFd());
 }
 
 Server::~Server()
 {
-		for (size_t i = 0; i < sockets.size(); ++i)
-			delete this->sockets[i];
+	for (size_t i = 0; i < _sockets.size(); ++i)
+		delete this->_sockets[i];
+}
+
+bool Server::isServerSocket(int fd)
+{
+	size_t n = this->_sockets.size();
+	for (size_t i = 0; i < n; i++)
+	{
+		if (fd == this->_sockets[i]->getFd())
+			return (true);
+	}
+	return (false);
+}
+
+void Server::acceptClient(int serverFd)
+{
+	int client_fd = accept(serverFd, NULL, NULL);
+	if (client_fd == -1)
+		return ;
+	this->_epoll.addClient(client_fd);
 }
 
 void Server::listen()
 {
-	int fd = this->sockets[0]->getFd();
-	const int MAX_EVENTS = 10;
-	const int epoll_fd = epoll_create1(0);
-	epoll_event ev;
-	memset(&ev, 0, sizeof(ev));
-	ev.events = EPOLLIN;
-	ev.data.fd = fd;
-	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &ev))
-	{
-		perror("a");
-		throw std::runtime_error("epoll_ctl failed");
-	}
-	epoll_event events[MAX_EVENTS];
 	while (true)
 	{
-		int n = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
-		for (int i = 0; i < n; ++i) {
-			if (events[i].data.fd == fd)
-			{
-				// Nouveau client
-				int client_fd = accept(fd, NULL, NULL);
-				if (client_fd == -1)
-				{
-					std::cerr << "accept failed" << std::endl;
-					continue;
-				}
-				setNonBlocking(client_fd);
-				ev.events = EPOLLIN | EPOLLET;
-				ev.data.fd = client_fd;
-				epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &ev);
-				std::cout << "Nouveau client connecté\n";
-			}
+		EPollEvent* events = this->_epoll.getEvents();
+		for (int i = 0; i < EPOLL_MAX_EVENTS; ++i)
+		{
+			int fd = events[i].getFd();
+			if (fd == 0)
+				continue;
+
+			if (this->isServerSocket(fd))
+				this->acceptClient(fd);
 			else
-            {
-                std::string request = this->readRequest(events[i].data.fd);
-                if (request.empty())
-                {
-                    close(events[i].data.fd);
-                    std::cout << "Client déconnecté" << std::endl;
-                }
-                else
-                {
-                    std::cout << "Reçu : " << request << std::endl;
-					HTTPParser parser(request);
-					parser.print();
-                    std::string response = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, World!";
-                    write(events[i].data.fd, response.c_str(), response.size());
-                    close(events[i].data.fd); // Pas de keep-alive dans cet exemple
-                }
-            }
+			{
+				std::string request = this->readRequest(fd);
+				if (request.empty())
+					this->_epoll.remove(fd);
+				else
+				{
+					std::cout << "Reçu : " << request << std::endl;
+					std::string response = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\nConnection: close\r\n\r\nHello, World!";
+					write(fd, response.c_str(), response.size());
+					this->_epoll.remove(fd); // Pas de keep-alive dans cet exemple
+				}
+			}
 		}
 	}
 }
@@ -97,12 +89,15 @@ std::string Server::readRequest(int fd)
 {
 	std::string request;
 	char buffer[1024];
-	while (true) {
+
+	while (true)
+	{
 		int bytes = recv(fd, buffer, sizeof(buffer), 0);
 		if (bytes <= 0) break;
 		request.append(buffer, bytes);
 
-		if (request.find("\r\n\r\n") != std::string::npos) {
+		if (request.find("\r\n\r\n") != std::string::npos)
+		{
 			// Fin des headers atteinte
 			break;
 		}
