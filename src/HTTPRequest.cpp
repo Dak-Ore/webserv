@@ -1,7 +1,7 @@
-#include "HTTPParser.hpp"
+#include "HTTPRequest.hpp"
 
 // Default Constructor
-HTTPParser::HTTPParser(std::string request)
+HTTPRequest::HTTPRequest(std::string request)
 {
 	if (request.empty())
 		throw std::runtime_error("Error: when trying to read a HTTP request.");
@@ -19,7 +19,7 @@ HTTPParser::HTTPParser(std::string request)
 		validateBodySize();
 }
 
-void HTTPParser::parseRequestLine(std::istringstream& stream)
+void HTTPRequest::parseRequestLine(std::istringstream& stream)
 {
 	std::string line;
 	std::getline(stream, line);
@@ -36,7 +36,7 @@ void HTTPParser::parseRequestLine(std::istringstream& stream)
 		throw std::runtime_error("505 HTTP Version Not Supported");
 }
 
-void HTTPParser::parseHeaders(std::istringstream& stream)
+void HTTPRequest::parseHeaders(std::istringstream& stream)
 {
 	std::string line;
 	while (std::getline(stream, line) && line != "\r") {
@@ -57,14 +57,14 @@ void HTTPParser::parseHeaders(std::istringstream& stream)
 		throw std::runtime_error("400 Bad Request");
 }
 
-void HTTPParser::parseBody(std::istringstream& stream)
+void HTTPRequest::parseBody(std::istringstream& stream)
 {
 	std::string line;
 	while (std::getline(stream, line))
 		this->body += line + "\n";
 }
 
-void HTTPParser::validateBodySize()
+void HTTPRequest::validateBodySize()
 {
 	std::map<std::string, std::string>::iterator len = headers.find("Content-Length");
 	if (len == headers.end() || len->second.empty())
@@ -77,7 +77,7 @@ void HTTPParser::validateBodySize()
 		throw std::runtime_error("400 Bad Request: Body size does not match Content-Length");
 }
 
-void HTTPParser::print()
+void HTTPRequest::print()
 {
 	std::cout << "Request: " << std::endl;
 	std::cout << this->method << " - " << this->path << " - " << this->version << std::endl;
@@ -85,27 +85,13 @@ void HTTPParser::print()
 	for (std::map<std::string, std::string>::iterator i = this->headers.begin(); i != this->headers.end(); i++)
 		std::cout << i->first << " - " << i->second << std::endl;
 }
-std::string	HTTPParser::getMethod()
-{
-	return (this->method);
-}
-std::string	HTTPParser::getPath()
-{
-	return (this->path);
-}
-std::string	HTTPParser::getVersion()
-{
-	return (this->version);
-}
-std::map<std::string, std::string>	HTTPParser::getHeaders()
-{
-	return (this->headers);
-}
-std::string	HTTPParser::getBody()
-{
-	return (this->body);
-}
-
+//getter
+std::string	HTTPRequest::getMethod(){return (this->method);}
+std::string	HTTPRequest::getPath(){return (this->path);}
+std::string	HTTPRequest::getVersion(){return (this->version);}
+std::map<std::string, std::string>	HTTPRequest::getHeaders(){return (this->headers);}
+std::string	HTTPRequest::getBody(){return (this->body);}
+HTTPRequest::~HTTPRequest(){};
 // void HTTPParser::checkHeader()
 // {
 // 	std::string methods[] = {"GET", "POST", "DELETE"};
@@ -153,5 +139,3 @@ std::string	HTTPParser::getBody()
 // 	}
 // }
 
-HTTPParser::~HTTPParser(){
-};
