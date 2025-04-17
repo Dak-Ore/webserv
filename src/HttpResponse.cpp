@@ -13,7 +13,7 @@ std::string intToString(int value)
 	return oss.str();
 }
 
-bool fileExists(const std::string& path)
+bool fileExists(const std::string &path)
 {
 	struct stat fileInfo;
 	return (stat(path.c_str(), &fileInfo) == 0 && S_ISREG(fileInfo.st_mode));
@@ -102,12 +102,12 @@ std::string HttpResponse::getReason() const
 
 int HttpResponse::getCode() const {return (this->_status_code);}
 
-void HttpResponse::setBody(std::string body)
+void HttpResponse::setBody(const std::string &body)
 {
 	this->_body = body;
 }
 #include <iostream>
-void HttpResponse::setBodySource(std::string file_name)
+void HttpResponse::setBodySource(const std::string &file_name)
 {
 	if (!fileExists(file_name))
 	{
@@ -120,7 +120,7 @@ void HttpResponse::setBodySource(std::string file_name)
 		this->_status_code = 403;
 		return ;
 	}
-
+	this->setContentType(file_name);
 	std::stringstream buffer;
 	buffer << file.rdbuf();
 	file.close();
@@ -132,9 +132,29 @@ void HttpResponse::setCode(int code)
 	this->_status_code = code;
 }
 
-void HttpResponse::setHeader(std::string key, std::string value)
+void HttpResponse::setHeader(const std::string &key, const std::string &value)
 {
 	this->_headers[key] = value;
+}
+
+void HttpResponse::setContentType(const std::string& file_name) {
+	static std::map<std::string, std::string> mimeTypes;
+	mimeTypes[".html"] = "text/html";
+	mimeTypes[".css"] = "text/css";
+	mimeTypes[".js"] = "application/javascript";
+	mimeTypes[".json"] = "application/json";
+	mimeTypes[".jpg"] = "image/jpeg";
+	mimeTypes[".jpeg"] = "image/jpeg";
+	mimeTypes[".png"] = "image/png";
+	mimeTypes[".txt"] = "text/plain";
+	mimeTypes[".pdf"] = "application/pdf";
+
+	std::string ext = file_name.substr(file_name.find_last_of('.'));
+	std::map<std::string, std::string>::const_iterator it = mimeTypes.find(ext);
+	if (it != mimeTypes.end())
+		this->setHeader("Content-Type", it->second);
+	else
+		this->setHeader("Content-Type", "application/octet-stream");
 }
 
 void HttpResponse::send(int fd)

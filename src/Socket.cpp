@@ -7,17 +7,7 @@
 #include <stdexcept>
 #include <iostream>
 
-Socket::Socket()
-{
-	this->init("localhost", "80");
-}
-
 Socket::Socket(std::string hostname, std::string service)
-{
-	this->init(hostname, service);
-}
-
-void Socket::init(std::string hostname, std::string service)
 {
 	this->_fd = -1;
 	struct addrinfo hints;
@@ -26,21 +16,21 @@ void Socket::init(std::string hostname, std::string service)
 	hints.ai_protocol = IPPROTO_TCP;
 	hints.ai_flags = AI_PASSIVE;
 	struct addrinfo *res;
-	int status = getaddrinfo(hostname.c_str(), service.c_str(), &hints, &res);
+	int status = ::getaddrinfo(hostname.c_str(), service.c_str(), &hints, &res);
 	if (status != 0)
-		throw std::runtime_error(gai_strerror(status));
-	this->_fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+		throw std::runtime_error(::gai_strerror(status));
+	this->_fd = ::socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 	if (this->_fd == -1)
 	{
-		freeaddrinfo(res);
+		::freeaddrinfo(res);
 		throw std::runtime_error("Failed to create socket");
 	}
-	if (bind(this->_fd, res->ai_addr, res->ai_addrlen) != 0)
+	if (::bind(this->_fd, res->ai_addr, res->ai_addrlen) != 0)
 	{
-		freeaddrinfo(res);
+		::freeaddrinfo(res);
 		throw std::runtime_error("Failed to bind socket");
 	}
-	freeaddrinfo(res);
+	::freeaddrinfo(res);
 	this->listen();
 }
 

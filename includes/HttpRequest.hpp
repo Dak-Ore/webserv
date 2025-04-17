@@ -25,7 +25,7 @@ private:
 	void validateBodySize();
 public:
 	HttpRequest();
-    HttpRequest(std::string request);
+    HttpRequest(const std::string &request);
     ~HttpRequest();
 	std::string	getMethod() const;
 	std::string	getPath() const ;

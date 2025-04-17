@@ -8,7 +8,7 @@
 #include <fstream>
 #include <iomanip>
 
-std::string joinPath(const std::string& base, const std::string& relative) {
+std::string joinPath(const std::string &base, const std::string &relative) {
 	if (base.empty()) return relative;
 	if (relative.empty()) return base;
 

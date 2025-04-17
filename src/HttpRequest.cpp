@@ -2,7 +2,7 @@
 
 HttpRequest::HttpRequest() : HttpMessage() {}
 // Default Constructor
-HttpRequest::HttpRequest(std::string request) : HttpMessage(),
+HttpRequest::HttpRequest(const std::string &request) : HttpMessage(),
 	_is_empty(request.empty())
 {
 	if (this->empty())
