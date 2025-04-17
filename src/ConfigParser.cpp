@@ -6,7 +6,7 @@ ConfigParser::ConfigParser(File config) {
 	std::string	locationContent;
 	int		inServer = 0;
 	int		inLocation = 0;
-	bool	waitBrace = false;
+	int		waitBrace = 0;
 	std::string line;
 	std::vector<std::string> location;
 	this->_nbserv = 0;
@@ -20,18 +20,24 @@ ConfigParser::ConfigParser(File config) {
 			continue;
 		if (line == "server")
 		{
-			waitBrace = true;
+			waitBrace = 1;
 			continue;
 		}
-		if (waitBrace)
+		if (line.find("location") != std::string::npos && line.find("{") == std::string::npos)
 		{
-			if (line == "{")
-			{
-				inServer++;
-				waitBrace = false;
-				continue;
-			}
+			waitBrace = 2;
+			continue;
 		}
+		if (waitBrace && line == "{")
+		{
+			if (waitBrace == 1)
+				inServer++;
+			else
+				inLocation++;
+			waitBrace = false;
+			continue;
+		}
+		else
 		if (line == "server {")
 		{
 			inServer++;
@@ -39,6 +45,8 @@ ConfigParser::ConfigParser(File config) {
 		}
 		if (line.find("location") != std::string::npos && line.find("{") != std::string::npos)
 			inLocation++;
+		if (waitBrace || line == "{")
+			throw std::runtime_error("Invalid config file");
 		if (line == "}")
 		{
 			if (inLocation)
@@ -48,7 +56,7 @@ ConfigParser::ConfigParser(File config) {
 				locationContent = "";
 				continue;
 			}
-			if (inServer)
+			else if (inServer)
 			{
 				inServer --;
 				AddServer(content,location);
@@ -56,6 +64,10 @@ ConfigParser::ConfigParser(File config) {
 				location.clear();
 				content = "";
 				continue;
+			}
+			else
+			{
+				
 			}
 		}
 		if (inLocation == 0)

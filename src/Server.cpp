@@ -15,6 +15,7 @@ Server::Server()
 Server::Server(std::string hostname, std::string service)
 {
 	this->init(hostname, service);
+	std::cout << "Server launched on " << hostname << ":" << service << std::endl;
 }
 
 void Server::init(std::string hostname, std::string service)
