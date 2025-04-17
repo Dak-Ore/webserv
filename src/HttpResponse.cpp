@@ -4,11 +4,19 @@
 #include <fstream>
 #include <stdexcept>
 #include <unistd.h>
+#include <sys/stat.h>
 
-std::string intToString(int value) {
+std::string intToString(int value)
+{
 	std::ostringstream oss;
 	oss << value;
 	return oss.str();
+}
+
+bool fileExists(const std::string& path)
+{
+	struct stat fileInfo;
+	return (stat(path.c_str(), &fileInfo) == 0 && S_ISREG(fileInfo.st_mode));
 }
 
 HttpResponse::HttpResponse(int status_code) : HttpMessage(),
@@ -92,16 +100,26 @@ std::string HttpResponse::getReason() const
 	return HttpResponse::getReason(this->_status_code);
 }
 
+int HttpResponse::getCode() const {return (this->_status_code);}
+
 void HttpResponse::setBody(std::string body)
 {
 	this->_body = body;
 }
-
+#include <iostream>
 void HttpResponse::setBodySource(std::string file_name)
 {
+	if (!fileExists(file_name))
+	{
+		this->_status_code = 404;
+		return ;
+	}	
 	std::ifstream file(file_name.c_str());
-	if (!file.is_open())
-		throw std::runtime_error("Can't open file");
+	if (!file)
+	{
+		this->_status_code = 403;
+		return ;
+	}
 
 	std::stringstream buffer;
 	buffer << file.rdbuf();

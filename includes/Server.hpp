@@ -13,12 +13,10 @@ private:
 	bool _run;
 	std::vector<Socket*> _sockets;
 	EPoll _epoll;
-	void init(std::string hostname, std::string service);
 	bool isServerSocket(int fd);
 	void acceptClient(int serverFd);
 public:
-	Server();
-	Server(std::string hostname, std::string service);
+	Server(std::string hostname = "localhost", std::string service = "80");
 	~Server();
 	void stop();
 	void listen();

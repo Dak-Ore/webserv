@@ -8,17 +8,20 @@
 #include <fstream>
 #include <iomanip>
 
-Server::Server()
-{
-	this->init("localhost", "80");
+std::string joinPath(const std::string& base, const std::string& relative) {
+	if (base.empty()) return relative;
+	if (relative.empty()) return base;
+
+	if (base[base.size() - 1] == '/' && relative[0] == '/')
+		return base + relative.substr(1);
+
+	if (base[base.size() - 1] != '/' && relative[0] != '/')
+		return base + "/" + relative;
+
+	return (base + relative);
 }
 
 Server::Server(std::string hostname, std::string service)
-{
-	this->init(hostname, service);
-}
-
-void Server::init(std::string hostname, std::string service)
 {
 	this->_run = true;
 	this->_sockets.push_back(new Socket(hostname, service));
@@ -102,10 +105,16 @@ bool Server::handleRequest(HttpRequest const &request, int response_fd)
 {
 	if (request.empty())
 		return (false);
-	std::cout << request.getMethod() << " - " << request.getPath() << std::endl;
-	
-	HttpResponse response(200);
-	response.setBodySource("a.html");
+	std::string base("./www/");
+	std::string file_path = joinPath(base, (request.getPath() == "/") ? "/index.html" : request.getPath());
+
+	HttpResponse response;
+	response.setBodySource(file_path);
+	std::cout
+		<< request.getMethod() << " - " << request.getPath()
+		<< " --> "
+		<< response.getCode() << " " << response.getReason()
+		<< " :: " << file_path << std::endl;
 	response.send(response_fd);
 	this->_epoll.remove(response_fd);
 	return (true);

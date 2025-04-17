@@ -19,5 +19,6 @@ public:
 	void setBodySource(std::string file_name);
 	void setCode(int code);
 	void setHeader(std::string key, std::string value);
+	int  getCode() const;
 	void send(int fd);
 };
