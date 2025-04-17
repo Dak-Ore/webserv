@@ -1,6 +1,9 @@
 #include "HttpResponse.hpp"
 
 #include <sstream>
+#include <fstream>
+#include <stdexcept>
+#include <unistd.h>
 
 std::string intToString(int value) {
 	std::ostringstream oss;
@@ -8,25 +11,20 @@ std::string intToString(int value) {
 	return oss.str();
 }
 
-HttpResponse::HttpResponse() : HttpMessage()
+HttpResponse::HttpResponse(int status_code) : HttpMessage(),
+	_status_code(status_code)
 {
 	this->_version = "HTTP/1.1";
-	this->_status_code = 200;
-}
-
-HttpResponse::HttpResponse(int status_code) : HttpMessage()
-{
-	this->_version = "HTTP/1.1";
-	this->_status_code = status_code;
 }
 
 HttpResponse::~HttpResponse()
 {
 }
 
-
 std::string HttpResponse::toString()
 {
+	this->setHeader("Content-Length", intToString(this->_body.size()));
+	this->setHeader("Connection", "close");
 	std::string request;
 
 	request += this->_version + " " + intToString(this->_status_code) + " " + this->getReason() + "\r\n";
@@ -47,7 +45,43 @@ std::string HttpResponse::getReason(int code)
 	switch (code)
 	{
 	case 200: reason = "OK"; break;
-	
+	case 201: reason = "Created"; break;
+	case 202: reason = "Accepted";	 break;
+	case 203: reason = "Non-Authoritative Information"; break;
+	case 204: reason = "No Content"; break;
+	case 205: reason = "Reset Content"; break;
+	case 206: reason = "Partial Content"; break;
+	case 301: reason = "Moved Permanently"; break;
+	case 302: reason = "Found"; break;
+	case 303: reason = "See Other"; break;
+	case 304: reason = "Not Modified"; break;
+	case 305: reason = "Use Proxy"; break;
+	case 307: reason = "Temporary Redirect"; break;
+	case 400: reason = "Bad Request"; break;
+	case 401: reason = "Unauthorized"; break;
+	case 402: reason = "Bad Request"; break;
+	case 403: reason = "Forbidden"; break;
+	case 404: reason = "Not Found"; break;
+	case 405: reason = "Method Not Allowed"; break;
+	case 406: reason = "Not Acceptable"; break;
+	case 407: reason = "Proxy Authentication Required"; break;
+	case 408: reason = "Request Timeout"; break;
+	case 409: reason = "Conflict"; break;
+	case 410: reason = "Gone"; break;
+	case 411: reason = "Length Required"; break;
+	case 412: reason = "Precondition Failed"; break;
+	case 413: reason = "Payload Too Large"; break;
+	case 414: reason = "URI Too Long"; break;
+	case 415: reason = "Unsupported Media Type"; break;
+	case 416: reason = "Range Not Satisfiable"; break;
+	case 417: reason = "Expectation Failed"; break;
+	case 426: reason = "Upgrade Required"; break;
+	case 500: reason = "Internal Server Error"; break;
+	case 501: reason = "Not Implemented"; break;
+	case 502: reason = "Bad Gateway"; break;
+	case 503: reason = "Service Unavailable"; break;
+	case 504: reason = "Gateway Timeout"; break;
+	case 505: reason = "HTTP Version Not Supported"; break;
 	default: reason = "REASON"; break;
 	}
 	return (reason);
@@ -58,6 +92,35 @@ std::string HttpResponse::getReason()
 	return HttpResponse::getReason(this->_status_code);
 }
 
-void HttpResponse::setBody(std::string body){
+void HttpResponse::setBody(std::string body)
+{
 	this->_body = body;
+}
+
+void HttpResponse::setBodySource(std::string file_name)
+{
+	std::ifstream file(file_name.c_str());
+	if (!file.is_open())
+		throw std::runtime_error("Can't open file");
+
+	std::stringstream buffer;
+	buffer << file.rdbuf();
+	file.close();
+	this->_body = buffer.str();
+}
+
+void HttpResponse::setCode(int code)
+{
+	this->_status_code = code;
+}
+
+void HttpResponse::setHeader(std::string key, std::string value)
+{
+	this->_headers[key] = value;
+}
+
+void HttpResponse::send(int fd)
+{
+	std::string str = this->toString();
+	::write(fd, str.c_str(), str.size());
 }

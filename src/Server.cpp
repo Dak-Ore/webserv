@@ -4,8 +4,8 @@
 #include "HttpResponse.hpp"
 
 #include <stdexcept>
-#include <unistd.h>
 #include <iostream>
+#include <fstream>
 
 Server::Server()
 {
@@ -70,10 +70,9 @@ void Server::listen()
 				{
 					HttpRequest request(request_string);
 					HttpResponse response(200);
-					response.setBody("Hello, World!");
-					std::string r = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\nConnection: close\r\n\r\nHello, World!";
-					write(fd, r.c_str(), r.size());
-					this->_epoll.remove(fd); // Pas de keep-alive dans cet exemple
+					response.setBodySource("a.html");
+					response.send(fd);
+					this->_epoll.remove(fd);
 				}
 			}
 		}
