@@ -103,18 +103,19 @@ HttpRequest Server::readRequest(int fd)
 
 bool Server::handleRequest(HttpRequest const &request, int response_fd)
 {
+	HttpResponse response;
 	if (request.empty())
 		return (false);
-	std::string base("./www/");
-	std::string file_path = joinPath(base, (request.getPath() == "/") ? "/index.html" : request.getPath());
-
-	HttpResponse response;
-	response.setBodySource(file_path);
-	std::cout
-		<< request.getMethod() << " - " << request.getPath()
-		<< " --> "
-		<< response.getCode() << " " << response.getReason()
-		<< " :: " << file_path << std::endl;
+	int code;
+	if (!request.isValid(&code))
+		response = HttpResponse(code);
+	else
+	{
+		std::string base("./www/");
+		std::string file_path = joinPath(base, (request.getPath() == "/") ? "/index.html" : request.getPath());	
+		response.setBodySource(file_path);
+	}
+	std::cout << request.getMethod() << " - " << request.getPath() << std::endl;
 	response.send(response_fd);
 	this->_epoll.remove(response_fd);
 	return (true);

@@ -93,6 +93,16 @@ std::string HttpRequest::toString()
 	request += this->_body;
 	return (request);
 }
+
+bool HttpRequest::isValid(int *code) const
+{
+	int error_code = 0;
+
+	if (error_code && code)
+		*code = error_code;
+	return (!error_code);
+}
+
 //getter
 std::string	HttpRequest::getMethod() const {return (this->_method);}
 std::string	HttpRequest::getPath() const {return (this->_path);}
@@ -100,10 +110,6 @@ bool HttpRequest::empty() const {return (this->_is_empty);}
 
 HttpRequest::~HttpRequest(){};
 
-const char *HttpRequest::EmptyRequestException::what() const throw()
-{
-	return ("Request is empty");
-}
 // void HTTPParser::checkHeader()
 // {
 // 	std::string methods[] = {"GET", "POST", "DELETE"};

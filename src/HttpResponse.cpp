@@ -106,7 +106,7 @@ void HttpResponse::setBody(const std::string &body)
 {
 	this->_body = body;
 }
-#include <iostream>
+
 void HttpResponse::setBodySource(const std::string &file_name)
 {
 	if (!fileExists(file_name))

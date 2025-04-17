@@ -31,11 +31,7 @@ public:
 	std::string	getPath() const ;
 	std::string toString();
 	bool		empty() const;
-	class EmptyRequestException : public std::exception
-	{
-		public:
-			virtual const char *what() const throw();
-	};
+	bool		isValid(int *code = 0) const;
 };
 
 #endif
