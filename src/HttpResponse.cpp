@@ -87,7 +87,7 @@ std::string HttpResponse::getReason(int code)
 	return (reason);
 }
 
-std::string HttpResponse::getReason()
+std::string HttpResponse::getReason() const
 {
 	return HttpResponse::getReason(this->_status_code);
 }

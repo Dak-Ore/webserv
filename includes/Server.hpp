@@ -2,6 +2,7 @@
 
 #include "Socket.hpp"
 #include "EPoll.hpp"
+#include "HttpRequest.hpp"
 
 #include <vector>
 #include <string>
@@ -9,6 +10,7 @@
 class Server
 {
 private:
+	bool _run;
 	std::vector<Socket*> _sockets;
 	EPoll _epoll;
 	void init(std::string hostname, std::string service);
@@ -18,6 +20,8 @@ public:
 	Server();
 	Server(std::string hostname, std::string service);
 	~Server();
+	void stop();
 	void listen();
-	std::string readRequest(int fd);
+	HttpRequest readRequest(int fd);
+	bool handleRequest(HttpRequest const &request, int response_fd);
 };

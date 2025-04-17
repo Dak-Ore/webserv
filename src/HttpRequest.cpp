@@ -2,10 +2,11 @@
 
 HttpRequest::HttpRequest() : HttpMessage() {}
 // Default Constructor
-HttpRequest::HttpRequest(std::string request) : HttpMessage()
+HttpRequest::HttpRequest(std::string request) : HttpMessage(),
+	_is_empty(request.empty())
 {
-	if (request.empty())
-		throw std::runtime_error("Error: when trying to read a HTTP request.");
+	if (this->empty())
+		return ;
 
 	std::istringstream stream(request);
 
@@ -93,10 +94,16 @@ std::string HttpRequest::toString()
 	return (request);
 }
 //getter
-std::string	HttpRequest::getMethod(){return (this->_method);}
-std::string	HttpRequest::getPath(){return (this->_path);}
+std::string	HttpRequest::getMethod() const {return (this->_method);}
+std::string	HttpRequest::getPath() const {return (this->_path);}
+bool HttpRequest::empty() const {return (this->_is_empty);}
 
 HttpRequest::~HttpRequest(){};
+
+const char *HttpRequest::EmptyRequestException::what() const throw()
+{
+	return ("Request is empty");
+}
 // void HTTPParser::checkHeader()
 // {
 // 	std::string methods[] = {"GET", "POST", "DELETE"};

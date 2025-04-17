@@ -13,7 +13,7 @@ public:
 	HttpResponse(int status_code = 200);
 	~HttpResponse();
 	static std::string getReason(int code);
-	std::string getReason();
+	std::string getReason() const;
 	std::string toString();
 	void setBody(std::string body);
 	void setBodySource(std::string file_name);

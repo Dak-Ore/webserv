@@ -8,6 +8,6 @@ HttpMessage::~HttpMessage()
 {
 }
 
-std::map<std::string, std::string>	HttpMessage::getHeaders(){return (this->_headers);}
-std::string	HttpMessage::getBody(){return (this->_body);}
-std::string	HttpMessage::getVersion(){return (this->_version);}
+std::map<std::string, std::string>	HttpMessage::getHeaders() const {return (this->_headers);}
+std::string	HttpMessage::getBody() const {return (this->_body);}
+std::string	HttpMessage::getVersion() const {return (this->_version);}

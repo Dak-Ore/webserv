@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <fstream>
+#include <iomanip>
 
 Server::Server()
 {
@@ -19,6 +20,7 @@ Server::Server(std::string hostname, std::string service)
 
 void Server::init(std::string hostname, std::string service)
 {
+	this->_run = true;
 	this->_sockets.push_back(new Socket(hostname, service));
 	this->_epoll.addSocket(this->_sockets[0]->getFd());
 }
@@ -48,9 +50,14 @@ void Server::acceptClient(int serverFd)
 	this->_epoll.addClient(client_fd);
 }
 
+void Server::stop()
+{
+	this->_run = false;
+}
+
 void Server::listen()
 {
-	while (true)
+	while (this->_run)
 	{
 		EPollEvent* events = this->_epoll.getEvents();
 		for (int i = 0; i < EPOLL_MAX_EVENTS; ++i)
@@ -63,38 +70,43 @@ void Server::listen()
 				this->acceptClient(fd);
 			else
 			{
-				std::string request_string = this->readRequest(fd);
-				if (request_string.empty())
+				HttpRequest const request = this->readRequest(fd);
+				if (!this->handleRequest(request, fd))
 					this->_epoll.remove(fd);
-				else
-				{
-					HttpRequest request(request_string);
-					HttpResponse response(200);
-					response.setBodySource("a.html");
-					response.send(fd);
-					this->_epoll.remove(fd);
-				}
 			}
 		}
 	}
 }
 
-std::string Server::readRequest(int fd)
+HttpRequest Server::readRequest(int fd)
 {
-	std::string request;
+	std::string request_string;
 	char buffer[1024];
 
 	while (true)
 	{
 		int bytes = recv(fd, buffer, sizeof(buffer), 0);
 		if (bytes <= 0) break;
-		request.append(buffer, bytes);
+		request_string.append(buffer, bytes);
 
-		if (request.find("\r\n\r\n") != std::string::npos)
+		if (request_string.find("\r\n\r\n") != std::string::npos)
 		{
 			// Fin des headers atteinte
 			break;
 		}
 	}
-	return (request);
+	return (HttpRequest(request_string));
+}
+
+bool Server::handleRequest(HttpRequest const &request, int response_fd)
+{
+	if (request.empty())
+		return (false);
+	std::cout << request.getMethod() << " - " << request.getPath() << std::endl;
+	
+	HttpResponse response(200);
+	response.setBodySource("a.html");
+	response.send(response_fd);
+	this->_epoll.remove(response_fd);
+	return (true);
 }
