@@ -1,18 +1,11 @@
 #include "Server.hpp"
 #include "EPoll.hpp"
+#include "HttpRequest.hpp"
+#include "HttpResponse.hpp"
 
 #include <stdexcept>
-#include <netdb.h>
 #include <unistd.h>
-#include <sys/epoll.h>
-#include <fcntl.h>
 #include <iostream>
-#include <cstring>
-
-int setNonBlocking(int fd) {
-	int flags = fcntl(fd, F_GETFL, 0);
-	return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
-}
 
 Server::Server()
 {
@@ -70,14 +63,16 @@ void Server::listen()
 				this->acceptClient(fd);
 			else
 			{
-				std::string request = this->readRequest(fd);
-				if (request.empty())
+				std::string request_string = this->readRequest(fd);
+				if (request_string.empty())
 					this->_epoll.remove(fd);
 				else
 				{
-					std::cout << "Reçu : " << request << std::endl;
-					std::string response = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\nConnection: close\r\n\r\nHello, World!";
-					write(fd, response.c_str(), response.size());
+					HttpRequest request(request_string);
+					HttpResponse response(200);
+					response.setBody("Hello, World!");
+					std::string r = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\nConnection: close\r\n\r\nHello, World!";
+					write(fd, r.c_str(), r.size());
 					this->_epoll.remove(fd); // Pas de keep-alive dans cet exemple
 				}
 			}

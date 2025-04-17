@@ -1,7 +1,8 @@
-#include "HTTPRequest.hpp"
+#include "HttpRequest.hpp"
 
+HttpRequest::HttpRequest() : HttpMessage() {}
 // Default Constructor
-HTTPRequest::HTTPRequest(std::string request)
+HttpRequest::HttpRequest(std::string request) : HttpMessage()
 {
 	if (request.empty())
 		throw std::runtime_error("Error: when trying to read a HTTP request.");
@@ -11,15 +12,15 @@ HTTPRequest::HTTPRequest(std::string request)
 	parseRequestLine(stream);
 	parseHeaders(stream);
 
-	if (this->headers.size() > MAX_HEADERS)
+	if (this->_headers.size() > MAX_HEADERS)
 		throw std::runtime_error("431 Request Header Fields Too Large");
 
 	parseBody(stream);
-	if (method == "POST")
+	if (_method == "POST")
 		validateBodySize();
 }
 
-void HTTPRequest::parseRequestLine(std::istringstream& stream)
+void HttpRequest::parseRequestLine(std::istringstream& stream)
 {
 	std::string line;
 	std::getline(stream, line);
@@ -29,14 +30,14 @@ void HTTPRequest::parseRequestLine(std::istringstream& stream)
 		// throw std::runtime_error("400 Bad Request: Invalid request line");
 
 	std::istringstream request_line(line);
-	if (!(request_line >> this->method >> this->path >> this->version))
+	if (!(request_line >> this->_method >> this->_path >> this->_version))
 		throw std::runtime_error("400 Bad Request: Malformed request line");
 
-	if (this->version != "HTTP/1.1")
+	if (this->_version != "HTTP/1.1")
 		throw std::runtime_error("505 HTTP Version Not Supported");
 }
 
-void HTTPRequest::parseHeaders(std::istringstream& stream)
+void HttpRequest::parseHeaders(std::istringstream& stream)
 {
 	std::string line;
 	while (std::getline(stream, line) && line != "\r") {
@@ -47,51 +48,55 @@ void HTTPRequest::parseHeaders(std::istringstream& stream)
 		pos = line.find(": ");
 		if (pos != std::string::npos) {
 			std::string key = line.substr(0, pos);
-			if (headers.find(key) != headers.end())
+			if (this->_headers.find(key) != this->_headers.end())
 				throw std::runtime_error("400 Bad Request: Duplicate header");
-			headers[key] = line.substr(pos + 2);
+			this->_headers[key] = line.substr(pos + 2);
 		}
 	}
 
-	if (headers.find("Host") == headers.end() || headers["Host"].empty() )
+	if (this->_headers.find("Host") == this->_headers.end() || this->_headers["Host"].empty() )
 		throw std::runtime_error("400 Bad Request");
 }
 
-void HTTPRequest::parseBody(std::istringstream& stream)
+void HttpRequest::parseBody(std::istringstream& stream)
 {
 	std::string line;
 	while (std::getline(stream, line))
-		this->body += line + "\n";
+		this->_body += line + "\n";
 }
 
-void HTTPRequest::validateBodySize()
+void HttpRequest::validateBodySize()
 {
-	std::map<std::string, std::string>::iterator len = headers.find("Content-Length");
-	if (len == headers.end() || len->second.empty())
+	std::map<std::string, std::string>::iterator len = this->_headers.find("Content-Length");
+	if (len == this->_headers.end() || len->second.empty())
 		throw std::runtime_error("411 Length Required");
 
 	size_t expectedLength = std::strtoul(len->second.c_str(), NULL, 10);
-	size_t actualLength = body.size();
+	size_t actualLength = this->_body.size();
 
 	if (actualLength != expectedLength)
 		throw std::runtime_error("400 Bad Request: Body size does not match Content-Length");
 }
 
-void HTTPRequest::print()
+std::string HttpRequest::toString()
 {
-	std::cout << "Request: " << std::endl;
-	std::cout << this->method << " - " << this->path << " - " << this->version << std::endl;
-	std::cout << "Headers :" << std::endl;
-	for (std::map<std::string, std::string>::iterator i = this->headers.begin(); i != this->headers.end(); i++)
-		std::cout << i->first << " - " << i->second << std::endl;
+	std::string request;
+
+	request += this->_method + " " + this->_path + " " + this->_version + "\r\n";
+	std::map<std::string, std::string>::const_iterator it = this->_headers.begin();
+	while (it != this->_headers.end()) {
+		request += it->first + ": " + it->second + "\r\n";
+		++it;
+	}
+	request += "\r\n";
+	request += this->_body;
+	return (request);
 }
 //getter
-std::string	HTTPRequest::getMethod(){return (this->method);}
-std::string	HTTPRequest::getPath(){return (this->path);}
-std::string	HTTPRequest::getVersion(){return (this->version);}
-std::map<std::string, std::string>	HTTPRequest::getHeaders(){return (this->headers);}
-std::string	HTTPRequest::getBody(){return (this->body);}
-HTTPRequest::~HTTPRequest(){};
+std::string	HttpRequest::getMethod(){return (this->_method);}
+std::string	HttpRequest::getPath(){return (this->_path);}
+
+HttpRequest::~HttpRequest(){};
 // void HTTPParser::checkHeader()
 // {
 // 	std::string methods[] = {"GET", "POST", "DELETE"};
