@@ -1,4 +1,5 @@
 #include "ServerConfig.hpp"
+#include "utils.hpp"
 
 // Default Constructor
 ServerConfig::ServerConfig(std::string content, std::vector<std::string> location)
@@ -34,12 +35,12 @@ void	ServerConfig::findElement(std::string line)
 		}
 
 	if (i < 6)
-		elemLine = smartSubstr(line, elements[i], ";");
+		elemLine = utils::smartSubstr(line, elements[i], ";");
 	switch (i)
 	{
 		case 0:
-			this->_host.push_back(smartSubstr(line, "location", ":"));
-			this->_ports.push_back(smartSubstr(line, ":", ";"));
+			this->_host.push_back(utils::smartSubstr(line, "location", ":"));
+			this->_ports.push_back(utils::smartSubstr(line, ":", ";"));
 			break;
 		case 1:
 			this->splitPush(elemLine, 1);
@@ -54,8 +55,8 @@ void	ServerConfig::findElement(std::string line)
 			this->_clientMaxBodySize = atoi(elemLine.c_str());
 			break;
 		case 5:{
-			std::string pLine = smartSubstr(line, "error_pages", "/");
-			this->_errorPages.insert(std::pair<int,std::string>(atoi(pLine.c_str()), smartSubstr(line, pLine, ";")));
+			std::string pLine = utils::smartSubstr(line, "error_pages", "/");
+			this->_errorPages.insert(std::pair<int,std::string>(atoi(pLine.c_str()), utils::smartSubstr(line, pLine, ";")));
 			break;
 		}
 		default:

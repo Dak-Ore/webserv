@@ -1,6 +1,6 @@
 #include "LocationConfig.hpp"
+#include "utils.hpp"
 
-// Default Constructor
 LocationConfig::LocationConfig(std::string content) {
   	std::istringstream stream(content);
 	std::string		line;
@@ -31,7 +31,7 @@ void	LocationConfig::findElement(std::string line)
 			}
 		}
 	if (i < 8)
-		elemLine = smartSubstr(line, elements[i], ";");
+		elemLine = utils::smartSubstr(line, elements[i], ";");
 	switch (i)
 	{
 		case 0:
