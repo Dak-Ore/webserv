@@ -24,6 +24,4 @@ private:
 	std::vector<std::string> _content; 
 };
 
-std::string	smartSubstr(std::string line, std::string start, std::string end);
-
 #endif

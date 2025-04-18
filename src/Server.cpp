@@ -2,24 +2,12 @@
 #include "EPoll.hpp"
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
+#include "utils.hpp"
 
 #include <stdexcept>
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-
-std::string joinPath(const std::string &base, const std::string &relative) {
-	if (base.empty()) return relative;
-	if (relative.empty()) return base;
-
-	if (base[base.size() - 1] == '/' && relative[0] == '/')
-		return base + relative.substr(1);
-
-	if (base[base.size() - 1] != '/' && relative[0] != '/')
-		return base + "/" + relative;
-
-	return (base + relative);
-}
 
 Server::Server(std::string hostname, std::string service)
 {
@@ -112,7 +100,7 @@ bool Server::handleRequest(HttpRequest const &request, int response_fd)
 	else
 	{
 		std::string base("./www/");
-		std::string file_path = joinPath(base, (request.getPath() == "/") ? "/index.html" : request.getPath());	
+		std::string file_path = utils::joinPath(base, (request.getPath() == "/") ? "/index.html" : request.getPath());	
 		response.setBodySource(file_path);
 	}
 	std::cout << request.getMethod() << " - " << request.getPath() << std::endl;

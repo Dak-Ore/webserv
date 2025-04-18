@@ -1,6 +1,6 @@
 #include "ConfigParser.hpp"
+#include "utils.hpp"
 
-// Default Constructor
 ConfigParser::ConfigParser(File config) {
 	std::string content;
 	std::string	locationContent;
@@ -15,7 +15,7 @@ ConfigParser::ConfigParser(File config) {
 	{
 		if (inServer > 1 || inLocation > 1)
 			throw std::runtime_error("Server in server or location in location");
-		line = trim(config.getLine(i));
+		line = utils::trim(config.getLine(i));
 		if (line.empty() || line[0] == '#')
 			continue;
 		if (line == "server")
@@ -89,16 +89,3 @@ void	ConfigParser::AddServer(std::string content, std::vector<std::string> locat
 
 std::vector<ServerConfig>	ConfigParser::getServer(){return this->_server;}
 size_t			ConfigParser::getNbServ(){return this->_nbserv;}
-
-std::string trim(const std::string& s)
-{
-	size_t start = 0;
-	while (start < s.length() && std::isspace(s[start]))
-		start++;
-
-	size_t end = s.length();
-	while (end > start && std::isspace(s[end - 1]))
-		end--;
-
-	return s.substr(start, end - start);
-}

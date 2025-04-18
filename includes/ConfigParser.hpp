@@ -22,6 +22,4 @@ private:
 	size_t			_nbserv;
 };
 
-std::string trim(const std::string& s);
-
 #endif
