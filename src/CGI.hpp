@@ -10,9 +10,6 @@
 class CGI
 {
 
-public:
-	// TODO remove? static bool isValidMetavars(std::map<std::string, std::string> metavars);
-
 private:
 	// default constructor, results in an undefined object.
 	CGI();
@@ -34,39 +31,52 @@ public:
 	 * Execute a request.
 	 * - 'metavars': the meta-variables to send to the script.
 	 *   - AUTH_TYPE: optional, probably unnecessary.
-	 *   - CONTENT_LENGTH: number of octets of body, or "" or unset if body is
-	 *     empty. To set inside.
-	 *   - CONTENT_TYPE: if body non-empty, internet media type of body.
+	 *   ! CONTENT_LENGTH: number of octets of body, or "" or unset if body is
+	 *     empty. To set inside (???).
+	 *   ! CONTENT_TYPE: if body non-empty, internet media type of body.
 	 *     if unset, the script could try to determine it itself or it could not
 	 *     and we'll have to suffer from its wrath.
 	 *     MUST be defined if the user sends an HTTP Content-Type field.
 	 *   - GATEWAY_INTERFACE: "CGI/" +digit "." +digit. NO leading zero.
 	 *     The version used is 1.1.
-	 *   - PATH_INFO: probably unnecessary
+	 *   ! PATH_INFO: probably unnecessary / the path for the CGI script??
 	 *   - PATH_TRANSLATED: same
-	 *   - QUERY_STRING: after the "?" in an url. MUST be set, even if it's "".
-	 *   - REMOTE_ADDR: client address (ipv4 or ipv6)
-	 *   - REMOTE_HOST: just use REMOTE_ADDR
+	 *   ! QUERY_STRING: after the "?" in an url. MUST be set, even if it's "".
+	 *   ! REMOTE_ADDR: client address (ipv4 or ipv6)
+	 *   ! REMOTE_HOST: just use REMOTE_ADDR
 	 *   - REMOTE_IDENT: who cares
 	 *   - REMOTE_USER: for auth, probably unnecessary
-	 *   - REQUEST_METHOD: "GET" | "POST" ...
+	 *   ! REQUEST_METHOD: "GET" | "POST" ...
 	 *   - SCRIPT_NAME: path of the script, or "". MUST be set. I don't know if obligatory.
-	 *   - SERVER_NAME: hostname or ipv4/6 (if ipv6: "[" ipv6 "]"). If several possible
+	 *   ? SCRIPT_FILENAME: the full path to the CGI script.
+	 *   ! SERVER_NAME: hostname or ipv4/6 (if ipv6: "[" ipv6 "]"). If several possible
 	 *     value, see the request's Host header field.
 	 *   - SERVER_PORT: obvious (MUST be set, even if 80).
 	 *   - SERVER_PROTOCOL: "HTTP/" +digit "." +digit ("HTTP/1.1"?) or "INCLUDED"
-	 *   - SERVER_SOFTWARE: use eponymous constant
-	 *   - HTTP_*: from request header (uppercased, "-" -> "_")
+	 *   ! SERVER_SOFTWARE: use eponymous constant
+	 *   ! HTTP_*: from request header (uppercased, "-" -> "_")
 	 *     If several request headers, put them in one having the same meaning.
 	 *     Same if several lines.
 	 *     Remove all authentification information, and informations already
 	 *     available in others metavars.
 	 * 
 	 * Note: if REQUEST_METHOD == "HEAD", discard any body content given by the script.
-	 * 
+	 *
 	 * TODO add timeout
 	 */
-	void execute(int inout[2], std::map<std::string, std::string> metavars, std::string body);
+	void execute(int inout[2],
+		std::string const& remote_addr, // IPv4 / IPv6 address of the client
+		std::string const& request_method, // "GET", "POST"...
+		std::string const& script_name, // URI of the script (relative to http root)
+		std::string const& script_filename, // absolute path of the script
+		std::string const& server_name, // hostname of the server, or IPv4, or IPv6
+		                                // but within '[' ']'.
+		std::string const& server_port, // duh
+		std::string const& server_protocol, // "HTTP/1.1" or the used version of HTTP
+		bool has_content, // true if content will be sent throught inout[1]
+		std::string const& query_string = "", // what's after '?' in the request
+		size_t content_length = 0, // if has_content, length of it
+		std::string const& content_type = ""); // if has_content. TODO see Content-Type from http request.
 
 private:
 	std::string pathname;
@@ -74,6 +84,8 @@ private:
 };
 
 /*
+
+NOTES
 
 CGI-Response = document-response | local-redir-response | client-redir-response
 	| client-redirdoc-response
