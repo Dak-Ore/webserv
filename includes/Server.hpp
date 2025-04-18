@@ -3,20 +3,21 @@
 #include "Socket.hpp"
 #include "EPoll.hpp"
 #include "HttpRequest.hpp"
-
+#include "ServerConfig.hpp"
 #include <vector>
 #include <string>
 
 class Server
 {
 private:
-	bool _run;
-	std::vector<Socket*> _sockets;
-	EPoll _epoll;
+	bool					_run;
+	std::vector<Socket*>	_sockets;
+	EPoll					_epoll;
+	ServerConfig			_config;
 	bool isServerSocket(int fd);
 	void acceptClient(int serverFd);
 public:
-	Server(std::string hostname = "localhost", std::string service = "80");
+	Server(ServerConfig config);
 	~Server();
 	void stop();
 	void listen();

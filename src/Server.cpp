@@ -9,11 +9,16 @@
 #include <fstream>
 #include <iomanip>
 
-Server::Server(std::string hostname, std::string service)
+Server::Server(ServerConfig config): _config(config)
 {
+	size_t i = 0;
 	this->_run = true;
-	this->_sockets.push_back(new Socket(hostname, service));
-	this->_epoll.addSocket(this->_sockets[0]->getFd());
+	// for (i; i < this->_config.getHost().size(); i++)
+	// {
+		this->_sockets.push_back(new Socket(this->_config.getHost()[i], this->_config.getPorts()[i]));
+		this->_epoll.addSocket(this->_sockets[0]->getFd());
+		std::cout << "Server launched on " << this->_config.getHost()[i] << ":" << this->_config.getPorts()[i] << std::endl;
+	// }
 }
 
 Server::~Server()
@@ -99,8 +104,12 @@ bool Server::handleRequest(HttpRequest const &request, int response_fd)
 		response = HttpResponse(code);
 	else
 	{
-		std::string base("./www/");
-		std::string file_path = utils::joinPath(base, (request.getPath() == "/") ? "/index.html" : request.getPath());	
+		std::string base("." + this->_config.getRoot() + "/");
+		size_t	i = 0;
+		std::vector<std::string> index = this->_config.getIndex();
+		while (i < index.size() && !utils::fileExists(index[i]))
+			i++;
+		std::string file_path = utils::joinPath(base, (request.getPath() == "/") ? index[i] : request.getPath());	
 		response.setBodySource(file_path);
 	}
 	std::cout << request.getMethod() << " - " << request.getPath() << std::endl;
