@@ -19,6 +19,7 @@ private:
 	bool			_is_empty;
 	std::string		_method;
 	std::string		_path;
+	int				_error;
 	void parseRequestLine(std::istringstream& stream);
 	void parseHeaders(std::istringstream& stream);
 	void parseBody(std::istringstream& stream);

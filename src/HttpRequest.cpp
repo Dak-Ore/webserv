@@ -3,7 +3,7 @@
 HttpRequest::HttpRequest() : HttpMessage() {}
 // Default Constructor
 HttpRequest::HttpRequest(const std::string &request) : HttpMessage(),
-	_is_empty(request.empty())
+	_is_empty(request.empty()), _error(0)
 {
 	if (this->empty())
 		return ;
@@ -14,8 +14,10 @@ HttpRequest::HttpRequest(const std::string &request) : HttpMessage(),
 	parseHeaders(stream);
 
 	if (this->_headers.size() > MAX_HEADERS)
-		throw std::runtime_error("431 Request Header Fields Too Large");
-
+	{
+		this->_error = 431;
+		return ;
+	}
 	parseBody(stream);
 	if (_method == "POST")
 		validateBodySize();
@@ -32,7 +34,10 @@ void HttpRequest::parseRequestLine(std::istringstream& stream)
 
 	std::istringstream request_line(line);
 	if (!(request_line >> this->_method >> this->_path >> this->_version))
-		throw std::runtime_error("400 Bad Request: Malformed request line");
+	{
+		this->_error = 400;
+		return ;
+	}
 
 	if (this->_version != "HTTP/1.1")
 		throw std::runtime_error("505 HTTP Version Not Supported");
@@ -45,18 +50,23 @@ void HttpRequest::parseHeaders(std::istringstream& stream)
 		size_t pos = line.find("\r");
 		if (pos != std::string::npos)
 			line = line.substr(0, pos);
-			// throw std::runtime_error("400 Bad Request: Invalid header line");
 		pos = line.find(": ");
 		if (pos != std::string::npos) {
 			std::string key = line.substr(0, pos);
 			if (this->_headers.find(key) != this->_headers.end())
-				throw std::runtime_error("400 Bad Request: Duplicate header");
+			{
+				this->_error = 400;
+				return ;
+			}
 			this->_headers[key] = line.substr(pos + 2);
 		}
 	}
 
 	if (this->_headers.find("Host") == this->_headers.end() || this->_headers["Host"].empty() )
-		throw std::runtime_error("400 Bad Request");
+	{
+		this->_error = 400;
+		return;
+	}
 }
 
 void HttpRequest::parseBody(std::istringstream& stream)
@@ -70,13 +80,19 @@ void HttpRequest::validateBodySize()
 {
 	std::map<std::string, std::string>::iterator len = this->_headers.find("Content-Length");
 	if (len == this->_headers.end() || len->second.empty())
-		throw std::runtime_error("411 Length Required");
+	{
+		this->_error = 400;
+		return ;
+	}
 
 	size_t expectedLength = std::strtoul(len->second.c_str(), NULL, 10);
 	size_t actualLength = this->_body.size();
 
 	if (actualLength != expectedLength)
-		throw std::runtime_error("400 Bad Request: Body size does not match Content-Length");
+	{
+		this->_error = 400;
+		return ;
+	}
 }
 
 std::string HttpRequest::toString()
@@ -96,11 +112,9 @@ std::string HttpRequest::toString()
 
 bool HttpRequest::isValid(int *code) const
 {
-	int error_code = 0;
-
-	if (error_code && code)
-		*code = error_code;
-	return (!error_code);
+	if (this->_error && code)
+		*code = this->_error;
+	return (!this->_error);
 }
 
 //getter

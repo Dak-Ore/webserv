@@ -30,7 +30,7 @@ int main(int argc, char **argv, char **envp)
 		ConfigParser parser(config_file_name);
 		ServerConfig config = parser.getServer()[0];
 		Server server(config.getHost()[0], config.getPorts()[0]);
-		std::cout << "server launched on " << config.getHost()[0] << ":" << config.getPorts()[0] << std::endl;
+		std::cout << "Server launched on " << config.getHost()[0] << ":" << config.getPorts()[0] << std::endl;
 		g_server = &server;
 		signal(SIGINT, signalHandler);
 		server.listen();
