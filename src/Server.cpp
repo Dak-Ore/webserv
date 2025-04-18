@@ -106,9 +106,12 @@ bool Server::handleRequest(HttpRequest const &request, int response_fd)
 	{
 		std::string base("." + this->_config.getRoot() + "/");
 		size_t	i = 0;
+		std::cout << "here" << std::endl;
 		std::vector<std::string> index = this->_config.getIndex();
-		while (i < index.size() && !utils::fileExists(index[i]))
+		while (i < index.size() && !utils::fileExists(base + index[i]))
 			i++;
+		if (i == index.size())
+			return (false); // a gerer plus tard
 		std::string file_path = utils::joinPath(base, (request.getPath() == "/") ? index[i] : request.getPath());	
 		response.setBodySource(file_path);
 	}
