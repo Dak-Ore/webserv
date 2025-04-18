@@ -2,6 +2,7 @@
 #include <string>
 #include <csignal>
 #include "Server.hpp"
+#include "ConfigParser.hpp"
 
 Server* g_server = NULL;
 
@@ -10,18 +11,26 @@ void signalHandler(int signum)
 	if (signum == SIGINT && g_server != NULL)
 	{
 		g_server->stop();
-		std::cout << "Stopping server ..." << std::endl;
+		std::cout << std::endl << "Stopping server ..." << std::endl;
 	}
 }
 
 int main(int argc, char **argv, char **envp)
 {
 	(void)envp;
-	std::string config_file_name = (argc == 2) ? argv[1] : "";
+	if (argc != 2)
+	{
+		std::cout << "Usage " << argv[0] << " <file.conf>" << std::endl;
+		return 1;
+	}
 
+	std::string config_file_name = (argc == 2) ? argv[1] : "";
 	try
 	{
-		Server server("localhost", "8080");
+		ConfigParser parser(config_file_name);
+		ServerConfig config = parser.getServer()[0];
+		Server server(config.getHost()[0], config.getPorts()[0]);
+		std::cout << "server launched on " << config.getHost()[0] << ":" << config.getPorts()[0] << std::endl;
 		g_server = &server;
 		signal(SIGINT, signalHandler);
 		server.listen();
