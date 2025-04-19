@@ -27,6 +27,7 @@ Socket::Socket(std::string hostname, std::string service)
 	}
 	if (::bind(this->_fd, res->ai_addr, res->ai_addrlen) != 0)
 	{
+		::close(this->_fd);
 		::freeaddrinfo(res);
 		throw std::runtime_error("Failed to bind socket");
 	}
@@ -37,7 +38,7 @@ Socket::Socket(std::string hostname, std::string service)
 Socket::~Socket()
 {
 	if (this->_fd >= 0)
-		close(this->_fd);
+		::close(this->_fd);
 }
 
 int Socket::getFd()
