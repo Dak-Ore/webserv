@@ -36,7 +36,6 @@ Socket::Socket(std::string hostname, std::string service)
 
 Socket::~Socket()
 {
-	std::cout << "DESTRUCT" << std::endl;
 	if (this->_fd >= 0)
 		close(this->_fd);
 }
@@ -46,11 +45,11 @@ int Socket::getFd()
 	return (this->_fd);
 }
 
-void Socket::listen(int backlog)
+void Socket::listen()
 {
 	if (this->_fd < 0)
 		throw std::runtime_error("Invalid socket file descriptor");
 
-	if (::listen(this->_fd, backlog) != 0)
+	if (::listen(this->_fd, SOMAXCONN) != 0)
 		throw std::runtime_error("Failed to listen on socket");
 }

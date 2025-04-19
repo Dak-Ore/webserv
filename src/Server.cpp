@@ -8,6 +8,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <sys/socket.h>
 
 Server::Server(std::string hostname, std::string service)
 {
@@ -35,7 +36,7 @@ bool Server::isServerSocket(int fd)
 
 void Server::acceptClient(int serverFd)
 {
-	int client_fd = accept(serverFd, NULL, NULL);
+	int client_fd = ::accept(serverFd, NULL, NULL);
 	if (client_fd == -1)
 		return ;
 	this->_epoll.addClient(client_fd);
@@ -76,13 +77,15 @@ HttpRequest Server::readRequest(int fd)
 
 	while (true)
 	{
-		int bytes = recv(fd, buffer, sizeof(buffer), 0);
+		int bytes = ::recv(fd, buffer, sizeof(buffer), 0);
 		if (bytes <= 0) break;
 		request_string.append(buffer, bytes);
 
 		if (request_string.find("\r\n\r\n") != std::string::npos)
 		{
-			// Fin des headers atteinte
+			// Body
+			// while (::recv(fd, buffer, sizeof(buffer), MSG_DONTWAIT) > 0)
+			// 	continue ;
 			break;
 		}
 	}

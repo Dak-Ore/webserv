@@ -5,6 +5,7 @@
 #include <fstream>
 #include <stdexcept>
 #include <unistd.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
 
 HttpResponse::HttpResponse(int status_code) : HttpMessage(),
@@ -148,5 +149,5 @@ void HttpResponse::setContentType(const std::string& file_name) {
 void HttpResponse::send(int fd)
 {
 	std::string str = this->toString();
-	::write(fd, str.c_str(), str.size());
+	::send(fd, str.c_str(), str.size(), MSG_NOSIGNAL);
 }

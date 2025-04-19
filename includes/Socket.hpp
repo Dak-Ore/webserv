@@ -12,5 +12,5 @@ public:
 	~Socket();
 
 	int getFd();
-	void listen(int backlog = SOMAXCONN);
+	void listen();
 };
