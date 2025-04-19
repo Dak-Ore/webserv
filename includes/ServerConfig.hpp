@@ -22,8 +22,7 @@ public:
     std::vector<std::string>  getHost();
     std::vector<std::string> getPorts();
 	std::vector<std::string> getServerNames();
-    size_t getClientMaxBodySize();
-    std::map<int, std::string> getErrorPages();
+
     std::vector<LocationConfig> getLocations();
 	void	splitPush(std::string line, int kind);
 
