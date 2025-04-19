@@ -15,7 +15,6 @@ public:
     // Destructor
     ~ConfigParser();
 	std::vector<ServerConfig>	getServer();
-	size_t	getNbServ();
 	void	AddServer(std::string content, std::vector<std::string> location);
 private:
 	std::vector<ServerConfig>	_server;

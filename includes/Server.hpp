@@ -12,6 +12,7 @@ class Server
 private:
 	EPoll &_epoll;
 	std::vector<Socket*> _sockets;
+	ServerConfig	_config;
 public:
 	Server(EPoll &epoll_ref, ServerConfig &config);
 	~Server();

@@ -3,7 +3,7 @@
 Webserv::Webserv(ConfigParser &parser) :
     _run(true)
 {
-    size_t count = parser.getNbServ();
+    size_t count = parser.getServer().size();
     for (size_t i = 0; i < count; i++)
     {
         ServerConfig config = parser.getServer()[i];

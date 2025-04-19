@@ -12,12 +12,13 @@
 #include <sys/socket.h>
 
 Server::Server(EPoll &epoll_ref, ServerConfig &config) :
-	_epoll(epoll_ref)
+	_epoll(epoll_ref), _config(config)
 {
 	Socket *socket;
 	for (size_t i = 0; i < config.getHost().size(); i++)
 	{
 		socket = new Socket(config.getHost()[i], config.getPorts()[i]);
+		std::cout << "Server launched on " << config.getHost()[i] << ":" << config.getPorts()[i] << std::endl;
 		this->_sockets.push_back(socket);
 		this->_epoll.addSocket(socket->getFd());
 	}
@@ -83,7 +84,6 @@ bool Server::handleRequest(HttpRequest const &request, int response_fd)
 	{
 		std::string base("." + this->_config.getRoot() + "/");
 		size_t	i = 0;
-		std::cout << "here" << std::endl;
 		std::vector<std::string> index = this->_config.getIndex();
 		while (i < index.size() && !utils::fileExists(base + index[i]))
 			i++;
