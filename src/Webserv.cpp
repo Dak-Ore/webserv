@@ -8,7 +8,7 @@ Webserv::Webserv(ConfigParser &parser) :
     {
         ServerConfig config = parser.getServer()[i];
         this->_servers.push_back(new Server(this->_epoll, config));
-		break;
+
     }
 }
 

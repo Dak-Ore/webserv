@@ -14,9 +14,13 @@
 Server::Server(EPoll &epoll_ref, ServerConfig &config) :
 	_epoll(epoll_ref)
 {
-	Socket *socket = new Socket(config.getHost()[0], config.getPorts()[0]);
-	this->_sockets.push_back(socket);
-	this->_epoll.addSocket(this->_sockets[0]->getFd());
+	Socket *socket;
+	for (size_t i = 0; i < config.getHost().size(); i++)
+	{
+		socket = new Socket(config.getHost()[i], config.getPorts()[i]);
+		this->_sockets.push_back(socket);
+		this->_epoll.addSocket(socket->getFd());
+	}
 }
 
 Server::~Server()
