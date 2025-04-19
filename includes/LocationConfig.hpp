@@ -5,9 +5,10 @@
 # include <vector>
 # include <sstream>
 # include "File.hpp"
+# include "Config.hpp"
 # include <cstdlib>
 
-class LocationConfig
+class LocationConfig : public Config
 {
 public:
     // Default Constructor
@@ -21,8 +22,6 @@ public:
 	void		print();
 	std::string getPath();
     std::vector<std::string> getAllowedMethods();
-    std::string getRoot();
-    std::vector<std::string> getIndex();
     bool getAutoIndex();
     bool getHasRedirection();
     std::pair<int, std::string> getRedirection();
@@ -32,8 +31,6 @@ public:
 private:
 	std::string _path;
     std::vector<std::string> _allowedMethods;
-    std::string _root;
-    std::vector<std::string> _index;
     bool _autoIndex;
     bool _hasRedirection;
     std::pair<int, std::string> _redirection;

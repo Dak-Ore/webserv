@@ -64,3 +64,18 @@ std::string utils::trim(const std::string& s)
 
 	return s.substr(start, end - start);
 }
+
+std::string	utils::extractKey(std::string line)
+{
+	std::istringstream iss(utils::trim(line));
+	std::string word;
+	iss >> word;
+	return word;
+}
+void utils::ft_split(std::string line, std::vector<std::string> *list)
+{
+	std::istringstream	stream(line);
+	std::string			word;
+	while (stream >> word)
+		list->push_back(word);
+}

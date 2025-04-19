@@ -14,67 +14,30 @@ ServerConfig::ServerConfig(std::string content, std::vector<std::string> locatio
 		LocationConfig loc(*it);
 		this->_locations.push_back(loc);
 	}
-
 }
 
 void	ServerConfig::findElement(std::string line)
 {
-	std::string	elements[] = {"listen", "server_name", "root", "index", "client_max_body_size", "error_page"};
-	int i = 0;
-	size_t pos;
-	std::string elemLine;
-	for (i = 0; i < 6; i++)
-	{
-		pos = line.find(elements[i]);
-		if (pos != std::string::npos)
-			{
-				if (pos != 0)
-					throw std::runtime_error("invalid line in config file");
-				break;
-			}
-		}
+	std::string key = utils::extractKey(line);
+	std::string value = utils::smartSubstr(line, key, ";");
 
-	if (i < 6)
-		elemLine = utils::smartSubstr(line, elements[i], ";");
-	switch (i)
+	if (parseVar(key, value, line))
+		return ;
+	else if (key == "listen")
 	{
-		case 0:
-			this->_host.push_back(utils::smartSubstr(line, "location", ":"));
-			this->_ports.push_back(utils::smartSubstr(line, ":", ";"));
-			break;
-		case 1:
-			this->splitPush(elemLine, 1);
-			break;
-		case 2:
-			this->_root = elemLine;
-			break;
-		case 3:
-			this->splitPush(elemLine, 0);
-			break;
-		case 4:
-			this->_clientMaxBodySize = atoi(elemLine.c_str());
-			break;
-		case 5:{
-			std::string pLine = utils::smartSubstr(line, "error_pages", "/");
-			this->_errorPages.insert(std::pair<int,std::string>(atoi(pLine.c_str()), utils::smartSubstr(line, pLine, ";")));
-			break;
-		}
-		default:
-			throw std::runtime_error("invalid line in config file");
+		this->_host.push_back(utils::smartSubstr(line, key, ":"));
+		this->_ports.push_back(utils::smartSubstr(value, ":", ";"));
 	}
+	else if (key == "server_name")
+		utils::ft_split(value, &this->_serverNames);
 }
 
 std::vector<std::string>  ServerConfig::getHost(){return this->_host;}
 std::vector<std::string> ServerConfig::getPorts(){return this->_ports;}
 std::vector<std::string> ServerConfig::getServerNames(){return this->_serverNames;}
-std::string ServerConfig::getRoot(){return this->_root;}
-std::vector<std::string> ServerConfig::getIndex(){return this->_index;}
-size_t ServerConfig::getClientMaxBodySize(){return this->_clientMaxBodySize;}
-std::map<int, std::string> ServerConfig::getErrorPages(){return this->_errorPages;}
 std::vector<LocationConfig> ServerConfig::getLocations(){return this->_locations;}
 // Destructor
-ServerConfig::~ServerConfig() {
-}
+ServerConfig::~ServerConfig() {}
 
 void	ServerConfig::print()
 {
@@ -96,20 +59,4 @@ void	ServerConfig::print()
 		this->_locations[i].print();
 	std::cout << std::endl;
 	
-}
-
-void	ServerConfig::splitPush(std::string line, int kind)
-{
-	std::istringstream	stream(line);
-	std::string			word;
-
-	while (stream >> word)
-	{
-		if (kind == 0)
-			this->_index.push_back(word);
-		else
-			this->_serverNames.push_back(word);
-	}
-
-
 }

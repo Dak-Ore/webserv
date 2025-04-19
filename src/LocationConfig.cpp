@@ -1,11 +1,13 @@
 #include "LocationConfig.hpp"
 #include "utils.hpp"
 
-LocationConfig::LocationConfig(std::string content) {
+LocationConfig::LocationConfig(std::string content)
+{
   	std::istringstream stream(content);
 	std::string		line;
 	
 	this->_hasRedirection = false;
+	this->_uploadEnabled = false;
 	if (!(stream >> this->_path))
 		throw std::runtime_error("invalid location");
 	stream >> this->_path;
@@ -16,78 +18,21 @@ LocationConfig::LocationConfig(std::string content) {
 
 void	LocationConfig::findElement(std::string line)
 {
-	std::string	elements[] = {"allowed_methods", "autoindex", "root", "return", "upload_path", "upload_enabled", "cgi_extension", "index"};
-	int i = 0;
-	size_t pos;
-	std::string elemLine;
-	for (i = 0; i < 8; i++)
+	std::string key = utils::extractKey(line);
+	std::string value = utils::smartSubstr(line, key, ";");
+
+	if (parseVar(key, value, line))
+		return ;
+	else if (key == "allowed_methods")
+		utils::ft_split(value, &this->_allowedMethods);
+	else if (key == "return")
 	{
-		pos = line.find(elements[i]);
-		if (pos != std::string::npos)
-			{
-				if (pos != 0)
-					throw std::runtime_error("invalid line in config file");
-				break;
-			}
-		}
-	if (i < 8)
-		elemLine = utils::smartSubstr(line, elements[i], ";");
-	switch (i)
-	{
-		case 0:
-			this->splitPush(elemLine, 0);
-			break;
-		case 1:
-			if (elemLine == "on")
-				this->_autoIndex = true;
-			else
-				this->_autoIndex =false;
-			break;
-		case 2:
-			this->_root = elemLine;
-			break;
-		case 3:
-		{
-			std::istringstream	pStream(elemLine);
-			std::string			word;
-			this->_hasRedirection = true;
-			pStream >> word;
-			this->_redirection.first = atoi(word.c_str());
-			pStream >> this->_redirection.second;
-			break;
-		}
-		case 4:
-			this->_uploadPath.push_back(elemLine);
-			break;
-		case 5:{
-			this->_uploadEnabled = true;
-			break;
-		}
-		case 6:
-			this->_cgiExtension.push_back(elemLine);
-			break;
-		case 7:
-			this->splitPush(elemLine, 1);
-			break;
-		default:
-			throw std::runtime_error("invalid line in config file");
+		this->_hasRedirection = true;
+		std::string word = utils::extractKey(value);
+		this->_redirection.first = atoi(word.c_str());
+		this->_redirection.second = utils::smartSubstr(value, word, ";");
 	}
 }
-
-void	LocationConfig::splitPush(std::string line, int kind)
-{
-	std::istringstream	stream(line);
-	std::string			word;
-
-	while (stream >> word)
-	{
-		if (kind == 0)
-			this->_allowedMethods.push_back(word);
-		else
-			this->_index.push_back(word);
-	}
-}
-
 
 void		LocationConfig::print()
 {
@@ -117,11 +62,5 @@ LocationConfig::~LocationConfig() {
 //getters
 std::string LocationConfig::getPath(){return this->_path;}
 std::vector<std::string> LocationConfig::getAllowedMethods(){return this->_allowedMethods;}
-std::string LocationConfig::getRoot(){return this->_root;}
-std::vector<std::string> LocationConfig::getIndex(){return this->_index;}
-bool LocationConfig::getAutoIndex(){return this->_autoIndex;}
 bool LocationConfig::getHasRedirection(){return this->_hasRedirection;}
 std::pair<int, std::string> LocationConfig::getRedirection(){return this->_redirection;}
-std::vector<std::string> LocationConfig::getCgiExtension(){return this->_cgiExtension;}
-bool LocationConfig::getUploadEnabled(){return this->_uploadEnabled;}
-std::vector<std::string> LocationConfig::getUploadPath(){return this->_uploadPath;}

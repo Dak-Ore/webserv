@@ -9,7 +9,7 @@
 # include <vector>
 
 
-class ServerConfig
+class ServerConfig : public Config
 {
 public:
     // Default Constructor
@@ -22,8 +22,6 @@ public:
     std::vector<std::string>  getHost();
     std::vector<std::string> getPorts();
 	std::vector<std::string> getServerNames();
-    std::string getRoot();
-    std::vector<std::string> getIndex();
     size_t getClientMaxBodySize();
     std::map<int, std::string> getErrorPages();
     std::vector<LocationConfig> getLocations();
@@ -36,10 +34,6 @@ private:
     std::vector<std::string> _ports;
 	//
 	std::vector<std::string> _serverNames;
-    std::string _root;
-    std::vector<std::string> _index;
-    size_t _clientMaxBodySize;
-    std::map<int, std::string> _errorPages;
     std::vector<LocationConfig> _locations;
 };
 
