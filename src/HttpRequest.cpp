@@ -118,8 +118,8 @@ bool HttpRequest::isValid(int *code) const
 }
 
 //getter
-std::string	HttpRequest::getMethod() const {return (this->_method);}
-std::string	HttpRequest::getPath() const {return (this->_path);}
+const std::string &HttpRequest::getMethod() const {return (this->_method);}
+const std::string &HttpRequest::getPath() const {return (this->_path);}
 bool HttpRequest::empty() const {return (this->_is_empty);}
 
 HttpRequest::~HttpRequest(){};

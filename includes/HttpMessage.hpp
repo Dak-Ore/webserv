@@ -12,9 +12,10 @@ protected:
 public:
 	HttpMessage();
 	~HttpMessage();
-	std::map<std::string, std::string>	getHeaders() const;
-	std::string							getBody() const;
-	std::string							getVersion() const;
+	const std::map<std::string, std::string>	&getHeaders() const;
+	const std::string &getHeader(std::string key) const;
+	const std::string							&getBody() const;
+	const std::string							&getVersion() const;
 	virtual std::string					toString() = 0;
 };
 

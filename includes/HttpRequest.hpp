@@ -28,8 +28,8 @@ public:
 	HttpRequest();
     HttpRequest(const std::string &request);
     ~HttpRequest();
-	std::string	getMethod() const;
-	std::string	getPath() const ;
+	const std::string &getMethod() const;
+	const std::string &getPath() const ;
 	std::string toString();
 	bool		empty() const;
 	bool		isValid(int *code = 0) const;
