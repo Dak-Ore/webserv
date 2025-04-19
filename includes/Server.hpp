@@ -10,17 +10,14 @@
 class Server
 {
 private:
-	bool					_run;
-	std::vector<Socket*>	_sockets;
-	EPoll					_epoll;
-	ServerConfig			_config;
-	bool isServerSocket(int fd);
-	void acceptClient(int serverFd);
+	EPoll &_epoll;
+	std::vector<Socket*> _sockets;
 public:
-	Server(ServerConfig config);
+	Server(EPoll &epoll_ref, ServerConfig &config);
 	~Server();
-	void stop();
-	void listen();
+	bool isServerSocket(int fd);
+	std::vector<int> getSockets();
+	int acceptClient(int serverFd);
 	HttpRequest readRequest(int fd);
 	bool handleRequest(HttpRequest const &request, int response_fd);
 };

@@ -1,5 +1,6 @@
 #include "Server.hpp"
 #include "EPoll.hpp"
+#include "ServerConfig.hpp"
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
 #include "utils.hpp"
@@ -8,22 +9,23 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <sys/socket.h>
 
-Server::Server(ServerConfig config): _config(config)
+Server::Server(EPoll &epoll_ref, ServerConfig &config) :
+	_epoll(epoll_ref)
 {
-	size_t i = 0;
-	this->_run = true;
-	// for (i; i < this->_config.getHost().size(); i++)
-	// {
-		this->_sockets.push_back(new Socket(this->_config.getHost()[i], this->_config.getPorts()[i]));
-		this->_epoll.addSocket(this->_sockets[0]->getFd());
-		std::cout << "Server launched on " << this->_config.getHost()[i] << ":" << this->_config.getPorts()[i] << std::endl;
-	// }
+	Socket *socket;
+	for (size_t i = 0; i < config.getHost().size(); i++)
+	{
+		socket = new Socket(config.getHost()[i], config.getPorts()[i]);
+		this->_sockets.push_back(socket);
+		this->_epoll.addSocket(socket->getFd());
+	}
 }
 
 Server::~Server()
 {
-	for (size_t i = 0; i < _sockets.size(); ++i)
+	for (size_t i = 0; i < this->_sockets.size(); ++i)
 		delete this->_sockets[i];
 }
 
@@ -38,40 +40,12 @@ bool Server::isServerSocket(int fd)
 	return (false);
 }
 
-void Server::acceptClient(int serverFd)
+int Server::acceptClient(int serverFd)
 {
-	int client_fd = accept(serverFd, NULL, NULL);
-	if (client_fd == -1)
-		return ;
-	this->_epoll.addClient(client_fd);
-}
-
-void Server::stop()
-{
-	this->_run = false;
-}
-
-void Server::listen()
-{
-	while (this->_run)
-	{
-		EPollEvent* events = this->_epoll.getEvents();
-		for (int i = 0; i < EPOLL_MAX_EVENTS; ++i)
-		{
-			int fd = events[i].getFd();
-			if (fd == 0)
-				continue;
-
-			if (this->isServerSocket(fd))
-				this->acceptClient(fd);
-			else
-			{
-				HttpRequest const request = this->readRequest(fd);
-				if (!this->handleRequest(request, fd))
-					this->_epoll.remove(fd);
-			}
-		}
-	}
+	int client_fd = ::accept(serverFd, NULL, NULL);
+	if (client_fd != -1)
+		this->_epoll.addClient(client_fd);
+	return (client_fd);
 }
 
 HttpRequest Server::readRequest(int fd)
@@ -81,13 +55,16 @@ HttpRequest Server::readRequest(int fd)
 
 	while (true)
 	{
-		int bytes = recv(fd, buffer, sizeof(buffer), 0);
+		int bytes = ::recv(fd, buffer, sizeof(buffer), 0);
 		if (bytes <= 0) break;
 		request_string.append(buffer, bytes);
 
-		if (request_string.find("\r\n\r\n") != std::string::npos)
-		{
-			// Fin des headers atteinte
+		size_t pos = request_string.find("\r\n\r\n");
+		if (pos != std::string::npos) {
+			request_string = request_string.substr(0, pos + 4);
+			// Body
+			while (::recv(fd, buffer, sizeof(buffer), MSG_DONTWAIT) > 0)
+				continue ;
 			break;
 		}
 	}

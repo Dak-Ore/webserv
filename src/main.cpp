@@ -1,10 +1,10 @@
 #include <iostream>
 #include <string>
 #include <csignal>
-#include "Server.hpp"
+#include "Webserv.hpp"
 #include "ConfigParser.hpp"
 
-Server* g_server = NULL;
+Webserv* g_server = NULL;
 
 void signalHandler(int signum)
 {
@@ -28,8 +28,8 @@ int main(int argc, char **argv, char **envp)
 	try
 	{
 		ConfigParser parser(config_file_name);
-		ServerConfig config = parser.getServer()[0];
-		Server server(config);
+		Webserv server(parser);
+		// std::cout << "Server launched on " << config.getHost()[0] << ":" << config.getPorts()[0] << std::endl;
 		g_server = &server;
 		signal(SIGINT, signalHandler);
 		server.listen();
