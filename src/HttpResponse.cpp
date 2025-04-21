@@ -1,37 +1,41 @@
 #include "HttpResponse.hpp"
 #include "utils.hpp"
 
-#include <sstream>
-#include <fstream>
 #include <stdexcept>
 #include <unistd.h>
+#include <fcntl.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 
 HttpResponse::HttpResponse(int status_code) : HttpMessage(),
-	_status_code(status_code)
+	_status_code(status_code),
+	_bodyFd(-1)
 {
 	this->_version = "HTTP/1.1";
 }
 
 HttpResponse::~HttpResponse()
 {
+	if (this->_bodyFd != -1)
+		close(this->_bodyFd);
 }
 
 std::string HttpResponse::toString()
 {
-	this->setHeader("Content-Length", utils::intToString(this->_body.size()));
+	if (this->_bodyFd == -1)
+		this->setHeader("Content-Length", utils::numToString(this->_body.size()));
 	this->setHeader("Connection", "close");
 	std::string request;
 
-	request += this->_version + " " + utils::intToString(this->_status_code) + " " + this->getReason() + "\r\n";
+	request += this->_version + " " + utils::numToString(this->_status_code) + " " + this->getReason() + "\r\n";
 	std::map<std::string, std::string>::const_iterator it = this->_headers.begin();
 	while (it != this->_headers.end()) {
 		request += it->first + ": " + it->second + "\r\n";
 		++it;
 	}
 	request += "\r\n";
-	request += this->_body;
+	if (this->_bodyFd == -1)
+		request += this->_body;
 	return (request);
 }
 
@@ -91,8 +95,18 @@ std::string HttpResponse::getReason() const
 
 int HttpResponse::getCode() const {return (this->_status_code);}
 
+void HttpResponse::closeBody()
+{
+	if (this->_bodyFd == -1)
+	{
+		close(this->_bodyFd);
+		this->_bodyFd = -1;
+	}
+}
+
 void HttpResponse::setBody(const std::string &body)
 {
+	this->closeBody();
 	this->_body = body;
 }
 
@@ -102,18 +116,16 @@ void HttpResponse::setBodySource(const std::string &file_name)
 	{
 		this->_status_code = 404;
 		return ;
-	}	
-	std::ifstream file(file_name.c_str());
-	if (!file)
+	}
+	this->closeBody();
+	this->_bodyFd = open(file_name.c_str(), O_RDONLY);
+	if (this->_bodyFd == -1)
 	{
 		this->_status_code = 403;
 		return ;
 	}
 	this->setContentType(file_name);
-	std::stringstream buffer;
-	buffer << file.rdbuf();
-	file.close();
-	this->_body = buffer.str();
+	this->setHeader("Content-Length", utils::numToString((size_t)utils::getFileSize(file_name)));
 }
 
 void HttpResponse::setCode(int code)
@@ -149,5 +161,25 @@ void HttpResponse::setContentType(const std::string& file_name) {
 void HttpResponse::send(int fd)
 {
 	std::string str = this->toString();
-	::send(fd, str.c_str(), str.size(), MSG_NOSIGNAL);
+	bool readBody = (this->_bodyFd != -1);
+	
+	int flags = (readBody) ? MSG_MORE : 0;
+	if (::send(fd, str.c_str(), str.size(), MSG_NOSIGNAL | flags) < 0)
+		return ;
+	if (readBody)
+	{
+		char buffer[1024];
+		ssize_t bytes;
+		while (true)
+		{
+			bytes = read(this->_bodyFd, buffer, sizeof(buffer));
+			if (bytes == 0)
+				break ;
+			else if (bytes == -1)
+				break ;
+			if (::send(fd, buffer, bytes, MSG_NOSIGNAL) < 0)
+				break ;
+		}
+		this->closeBody();
+	}
 }

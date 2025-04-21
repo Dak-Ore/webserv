@@ -3,7 +3,7 @@
 #include <sstream>
 #include <sys/stat.h>
 
-std::string utils::intToString(int value)
+std::string utils::numToString(size_t value)
 {
 	std::ostringstream oss;
 	oss << value;
@@ -14,6 +14,13 @@ bool utils::fileExists(const std::string &path)
 {
 	struct stat fileInfo;
 	return (stat(path.c_str(), &fileInfo) == 0 && S_ISREG(fileInfo.st_mode));
+}
+
+off_t utils::getFileSize(const std::string& path) {
+    struct stat st;
+    if (stat(path.c_str(), &st) == -1)
+        return -1;
+    return (st.st_size);
 }
 
 std::string utils::joinPath(const std::string &base, const std::string &relative)

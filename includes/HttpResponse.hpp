@@ -8,7 +8,9 @@ class HttpResponse : HttpMessage
 {
 private:
 	int _status_code;
+	int _bodyFd;
 	// bool _keep_alive;
+	void closeBody();
 public:
 	HttpResponse(int status_code = 200);
 	~HttpResponse();
