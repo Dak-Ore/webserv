@@ -17,8 +17,8 @@ public:
 	Server(EPoll &epoll_ref, ServerConfig &config);
 	~Server();
 	bool isServerSocket(int fd);
-	std::vector<int> getSockets();
 	int acceptClient(int serverFd);
 	HttpRequest readRequest(int fd);
 	bool handleRequest(HttpRequest const &request, int response_fd);
+	std::string getIndex(std::string root, std::string path);
 };

@@ -77,23 +77,35 @@ bool Server::handleRequest(HttpRequest const &request, int response_fd)
 	HttpResponse response;
 	if (request.empty())
 		return (false);
-	int code;
+	int code;	
 	if (!request.isValid(&code))
 		response = HttpResponse(code);
 	else
 	{
-		std::string base("." + this->_config.getRoot() + "/");
-		size_t	i = 0;
-		std::vector<std::string> index = this->_config.getIndex();
-		while (i < index.size() && !utils::fileExists(base + index[i]))
-			i++;
-		if (i == index.size())
-			return (false); // a gerer plus tard
-		std::string file_path = utils::joinPath(base, (request.getPath() == "/") ? index[i] : request.getPath());	
+		std::string root = this->_config.getRoot();
+		std::string path = request.getPath();
+		
+		std::string file_path = (path == "/") ? 
+			this->getIndex(root, path)
+			: utils::joinPath(root, path);
 		response.setBodySource(file_path);
 	}
 	std::cout << request.getMethod() << " - " << request.getPath() << std::endl;
 	response.send(response_fd);
 	this->_epoll.remove(response_fd);
 	return (true);
+}
+
+std::string Server::getIndex(std::string root, std::string path)
+{
+	std::vector<std::string> index = this->_config.getIndex();
+	std::string file_path;
+	root = utils::joinPath(root, path);
+	for (size_t i = 0; i < index.size(); i++)
+	{
+		file_path = root + index[i];
+		if (utils::fileExists(file_path))
+			return (file_path);
+	}
+	return (std::string());
 }
