@@ -25,6 +25,13 @@ Socket::Socket(std::string hostname, std::string service)
 		::freeaddrinfo(res);
 		throw std::runtime_error("Failed to create socket");
 	}
+	int i = 1;
+	if (::setsockopt(this->_fd, SOL_SOCKET, SO_REUSEADDR, &i, sizeof(i)) < 0)
+	{
+		::close(this->_fd);
+		::freeaddrinfo(res);
+		throw std::runtime_error("setsockopt SO_REUSEADDR failed");
+	}
 	if (::bind(this->_fd, res->ai_addr, res->ai_addrlen) != 0)
 	{
 		::close(this->_fd);
