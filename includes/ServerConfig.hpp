@@ -16,7 +16,7 @@ public:
     ServerConfig(std::string content, std::vector<std::string> location);
     
     // Destructor
-    ~ServerConfig();
+    virtual ~ServerConfig();
 
 	void	findElement(std::string line);
     std::vector<std::string>  getHost();

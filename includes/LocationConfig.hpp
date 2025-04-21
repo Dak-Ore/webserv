@@ -17,7 +17,7 @@ public:
 	void	findElement(std::string line);
     void	splitPush(std::string line, int kind);
 	// Destructor
-    ~LocationConfig();
+    virtual ~LocationConfig();
 
 	void		print();
 	std::string getPath();
