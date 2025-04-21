@@ -5,7 +5,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/socket.h>
-#include <sys/stat.h>
 
 HttpResponse::HttpResponse(int status_code) : HttpMessage(),
 	_status_code(status_code),
@@ -162,7 +161,7 @@ void HttpResponse::send(int fd)
 {
 	std::string str = this->toString();
 	bool readBody = (this->_bodyFd != -1);
-	
+
 	int flags = (readBody) ? MSG_MORE : 0;
 	if (::send(fd, str.c_str(), str.size(), MSG_NOSIGNAL | flags) < 0)
 		return ;

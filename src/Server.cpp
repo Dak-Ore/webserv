@@ -77,20 +77,19 @@ bool Server::handleRequest(HttpRequest const &request, int response_fd)
 	HttpResponse response;
 	if (request.empty())
 		return (false);
-	int code;	
+	const std::string &root = this->_config.getRoot();
+	const std::string &path = request.getPath();
+	int code;
 	if (!request.isValid(&code))
 		response = HttpResponse(code);
 	else
 	{
-		std::string root = this->_config.getRoot();
-		std::string path = request.getPath();
-		
 		std::string file_path = (path == "/") ? 
 			this->getIndex(root, path)
 			: utils::joinPath(root, path);
 		response.setBodySource(file_path);
 	}
-	std::cout << request.getMethod() << " - " << request.getPath() << std::endl;
+	std::cout << request.getMethod() << " - " << path << std::endl;
 	response.send(response_fd);
 	this->_epoll.remove(response_fd);
 	return (true);
