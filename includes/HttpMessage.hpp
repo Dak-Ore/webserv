@@ -3,6 +3,11 @@
 #include <string>
 #include <map>
 
+#define CONTENT_LENGHT "Content-Length"
+#define CONTENT_TYPE "Content-Type"
+#define COOKIE "Cookie"
+#define SET_COOKIE "Set-Cookie"
+
 class HttpMessage
 {
 protected:

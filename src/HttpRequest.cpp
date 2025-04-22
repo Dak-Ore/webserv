@@ -78,7 +78,7 @@ void HttpRequest::parseBody(std::istringstream& stream)
 
 void HttpRequest::validateBodySize()
 {
-	std::map<std::string, std::string>::iterator len = this->_headers.find("Content-Length");
+	std::map<std::string, std::string>::iterator len = this->_headers.find(CONTENT_LENGHT);
 	if (len == this->_headers.end() || len->second.empty())
 	{
 		this->_error = 400;

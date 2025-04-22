@@ -22,7 +22,7 @@ HttpResponse::~HttpResponse()
 std::string HttpResponse::toString()
 {
 	if (this->_bodyFd == -1)
-		this->setHeader("Content-Length", utils::numToString(this->_body.size()));
+		this->setHeader(CONTENT_LENGHT, utils::numToString(this->_body.size()));
 	this->setHeader("Connection", "close");
 	std::string request;
 
@@ -124,7 +124,7 @@ void HttpResponse::setBodySource(const std::string &file_name)
 		return ;
 	}
 	this->setContentType(file_name);
-	this->setHeader("Content-Length", utils::numToString((size_t)utils::getFileSize(file_name)));
+	this->setHeader(CONTENT_LENGHT, utils::numToString((size_t)utils::getFileSize(file_name)));
 }
 
 void HttpResponse::setCode(int code)
@@ -152,9 +152,9 @@ void HttpResponse::setContentType(const std::string& file_name) {
 	std::string ext = file_name.substr(file_name.find_last_of('.'));
 	std::map<std::string, std::string>::const_iterator it = mimeTypes.find(ext);
 	if (it != mimeTypes.end())
-		this->setHeader("Content-Type", it->second);
+		this->setHeader(CONTENT_TYPE, it->second);
 	else
-		this->setHeader("Content-Type", "application/octet-stream");
+		this->setHeader(CONTENT_TYPE, "application/octet-stream");
 }
 
 void HttpResponse::send(int fd)
