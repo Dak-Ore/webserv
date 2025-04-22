@@ -21,6 +21,40 @@ HttpRequest::HttpRequest(const std::string &request) : HttpMessage(),
 	parseBody(stream);
 	if (_method == "POST")
 		validateBodySize();
+	if (!this->_headers["Cookie"].empty())
+		parseCookie();
+}
+
+void HttpRequest::parseCookie()
+{
+	std::string	content = this->_headers["Cookie"];
+	std::string	key;
+	std::string	value;
+	bool		pos = 0;
+	for (size_t	i = 0; i < content.size(); i++)
+	{
+		if (content[i] == ' ')
+			continue;
+		if (content[i] == '=')
+		{
+			pos = 1;
+			continue;
+		}
+		if (content[i] == ';')
+		{
+			this->_cookies.insert(std::pair<std::string, std::string>(key,value));
+			key.clear();
+			value.clear();
+			pos = 0;
+			continue;
+		}
+		if (pos == 0)
+			key += content[i];
+		else
+			value += content[i];
+	}
+	this->_cookies.insert(std::pair<std::string, std::string>(key,value));
+	this->_headers.erase("Cookie");
 }
 
 void HttpRequest::parseRequestLine(std::istringstream& stream)

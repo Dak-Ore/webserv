@@ -24,6 +24,7 @@ private:
 	void parseHeaders(std::istringstream& stream);
 	void parseBody(std::istringstream& stream);
 	void validateBodySize();
+	void parseCookie();
 public:
 	HttpRequest();
     HttpRequest(const std::string &request);
