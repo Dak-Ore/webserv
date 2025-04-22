@@ -19,18 +19,14 @@ public:
     virtual ~ServerConfig();
 
 	void	findElement(std::string line);
-    std::vector<std::string>  getHost();
-    std::vector<std::string> getPorts();
+    std::vector<std::pair<std::string, std::string> > getAdress();
 	std::vector<std::string> getServerNames();
 
     std::vector<LocationConfig> getLocations();
 
 	void print();
 private:
-	// listen
-    std::vector<std::string> _host;
-    std::vector<std::string> _ports;
-	//
+    std::vector<std::pair<std::string, std::string> > _adress;
 	std::vector<std::string> _serverNames;
     std::vector<LocationConfig> _locations;
 };
