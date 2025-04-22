@@ -109,7 +109,7 @@ int HttpResponse::getCode() const {return (this->_status_code);}
 
 void HttpResponse::closeBody()
 {
-	if (this->_bodyFd == -1)
+	if (this->_bodyFd != -1)
 	{
 		close(this->_bodyFd);
 		this->_bodyFd = -1;
