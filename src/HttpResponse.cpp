@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/socket.h>
+#include <set>
+#include <map>
 
 HttpResponse::HttpResponse(int status_code) : HttpMessage(),
 	_status_code(status_code),
@@ -22,22 +24,33 @@ HttpResponse::~HttpResponse()
 std::string HttpResponse::toString()
 {
 	if (this->_bodyFd == -1)
-		this->setHeader(CONTENT_LENGHT, utils::numToString(this->_body.size()));
-	this->setHeader("Connection", "close");
+		this->_setHeader(CONTENT_LENGHT, utils::numToString(this->_body.size()));
+	this->_setHeader("Connection", "close");
+
 	std::string request;
 
 	request += this->_version + " " + utils::numToString(this->_status_code) + " " + this->getReason() + "\r\n";
 	std::map<std::string, std::string>::const_iterator it = this->_headers.begin();
-	while (it != this->_headers.end()) {
+	while (it != this->_headers.end())
+	{
 		request += it->first + ": " + it->second + "\r\n";
 		++it;
 	}
+	request += this->_getCookieHeader();
 	request += "\r\n";
 	if (this->_bodyFd == -1)
 		request += this->_body;
 	return (request);
 }
 
+std::string HttpResponse::_getCookieHeader()
+{
+	std::string header;
+	std::map<std::string, std::string>::iterator it;
+    for (it = this->_cookies.begin(); it != this->_cookies.end(); ++it)
+		header += SET_COOKIE + std::string(": ") + it->first + "=" + it->second + "\r\n";
+	return (header);
+}
 
 std::string HttpResponse::getReason(int code)
 {
@@ -123,8 +136,8 @@ void HttpResponse::setBodySource(const std::string &file_name)
 		this->_status_code = 403;
 		return ;
 	}
-	this->setContentType(file_name);
-	this->setHeader(CONTENT_LENGHT, utils::numToString((size_t)utils::getFileSize(file_name)));
+	this->_setContentType(file_name);
+	this->_setHeader(CONTENT_LENGHT, utils::numToString((size_t)utils::getFileSize(file_name)));
 }
 
 void HttpResponse::setCode(int code)
@@ -134,10 +147,34 @@ void HttpResponse::setCode(int code)
 
 void HttpResponse::setHeader(const std::string &key, const std::string &value)
 {
+	static const std::string specials[] = { CONTENT_LENGHT, CONTENT_TYPE, SET_COOKIE };
+	static const std::set<std::string> specialKeys(
+		specials, specials + sizeof(specials)/sizeof(specials[0])
+	);
+
+	if (specialKeys.count(key))
+		throw std::runtime_error("Invalid set Header");
+	return (this->_setHeader(key, value));
+}
+
+void HttpResponse::_setHeader(const std::string &key, const std::string &value)
+{
 	this->_headers[key] = value;
 }
 
-void HttpResponse::setContentType(const std::string& file_name) {
+void HttpResponse::setCookie(const std::string &key, const std::string &value, std::map<cookie_options, std::string> options)
+{
+	std::string &cookie = this->_cookies[key];
+	cookie = value;
+	for (size_t i = 0; i < options.size(); i++)
+	{
+		break ;
+		cookie += "; ";
+	}
+}
+
+void HttpResponse::_setContentType(const std::string& file_name)
+{
 	static std::map<std::string, std::string> mimeTypes;
 	mimeTypes[".html"] = "text/html";
 	mimeTypes[".css"] = "text/css";
@@ -151,10 +188,7 @@ void HttpResponse::setContentType(const std::string& file_name) {
 
 	std::string ext = file_name.substr(file_name.find_last_of('.'));
 	std::map<std::string, std::string>::const_iterator it = mimeTypes.find(ext);
-	if (it != mimeTypes.end())
-		this->setHeader(CONTENT_TYPE, it->second);
-	else
-		this->setHeader(CONTENT_TYPE, "application/octet-stream");
+	this->_setHeader(CONTENT_TYPE, (it != mimeTypes.end()) ? it->second : DEFAULT_CONTENT_TYPE);
 }
 
 void HttpResponse::send(int fd)

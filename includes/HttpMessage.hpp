@@ -5,6 +5,7 @@
 
 #define CONTENT_LENGHT "Content-Length"
 #define CONTENT_TYPE "Content-Type"
+#define DEFAULT_CONTENT_TYPE "application/octet-stream"
 #define COOKIE "Cookie"
 #define SET_COOKIE "Set-Cookie"
 

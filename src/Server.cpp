@@ -71,6 +71,7 @@ bool Server::handleRequest(HttpRequest const &request, int response_fd)
 		return (false);
 	const std::string &root = this->_config.getRoot();
 	const std::string &path = request.getPath();
+	std::cout << request.getMethod() << " - " << path << std::endl;
 	int code;
 	if (!request.isValid(&code))
 		response = HttpResponse(code);
@@ -81,7 +82,6 @@ bool Server::handleRequest(HttpRequest const &request, int response_fd)
 			: utils::joinPath(root, path);
 		response.setBodySource(file_path);
 	}
-	std::cout << request.getMethod() << " - " << path << std::endl;
 	response.send(response_fd);
 	this->_epoll.remove(response_fd);
 	return (true);
