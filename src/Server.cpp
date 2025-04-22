@@ -15,10 +15,10 @@ Server::Server(EPoll &epoll_ref, ServerConfig &config) :
 	_epoll(epoll_ref), _config(config)
 {
 	Socket *socket;
-	for (size_t i = 0; i < config.getHost().size(); i++)
+	for (size_t i = 0; i < config.getAdress().size(); i++)
 	{
-		socket = new Socket(config.getHost()[i], config.getPorts()[i]);
-		std::cout << "Server launched on " << config.getHost()[i] << ":" << config.getPorts()[i] << std::endl;
+		socket = new Socket(config.getAdress()[i].first, config.getAdress()[i].second);
+		std::cout << "Server launched on " << config.getAdress()[i].first << ":" << config.getAdress()[i].second << std::endl;
 		this->_sockets.push_back(socket);
 		this->_epoll.addSocket(socket->getFd());
 	}

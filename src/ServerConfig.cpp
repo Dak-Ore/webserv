@@ -25,15 +25,17 @@ void	ServerConfig::findElement(std::string line)
 		return ;
 	else if (key == "listen")
 	{
-		this->_host.push_back(utils::smartSubstr(line, key, ":"));
-		this->_ports.push_back(utils::smartSubstr(value, ":", ";"));
+		if (line.find(":") == std::string::npos)
+			this->_adress.push_back(std::pair<std::string, std::string>("0.0.0.0", utils::smartSubstr(value, ":", ";")));
+		else
+			this->_adress.push_back(std::pair<std::string, std::string>(utils::smartSubstr(line, key, ":"), utils::smartSubstr(value, ":", ";")));
 	}
 	else if (key == "server_name")
 		utils::ft_split(value, &this->_serverNames);
 }
 
-std::vector<std::string>  ServerConfig::getHost(){return this->_host;}
-std::vector<std::string> ServerConfig::getPorts(){return this->_ports;}
+
+std::vector<std::pair<std::string, std::string> > ServerConfig::getAdress(){return this->_adress;}
 std::vector<std::string> ServerConfig::getServerNames(){return this->_serverNames;}
 std::vector<LocationConfig> ServerConfig::getLocations(){return this->_locations;}
 // Destructor
@@ -42,11 +44,8 @@ ServerConfig::~ServerConfig() {}
 void	ServerConfig::print()
 {
 	std::cout << "Server" << std::endl << "My host:" << std::endl;
-	for (std::vector<std::string>::iterator it = this->_host.begin(); it != this->_host.end(); it++)
-		std::cout << *it << std::endl;
-	std::cout << "My port:" << std::endl;
-	for (std::vector<std::string>::iterator it = this->_ports.begin(); it != this->_ports.end(); it++)
-		std::cout << *it << std::endl;
+	for (std::vector<std::pair<std::string, std::string> >::iterator it = this->_adress.begin(); it != this->_adress.end(); it++)
+		std::cout << it->first << ":" << it->second << std::endl;
 	std::cout << "Root: " << this->_root << std::endl;
 	std::cout << "Index" << std::endl;
 	for (std::vector<std::string>::iterator it = this->_index.begin(); it != this->_index.end(); it++)
