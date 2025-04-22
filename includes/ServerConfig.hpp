@@ -24,7 +24,6 @@ public:
 	std::vector<std::string> getServerNames();
 
     std::vector<LocationConfig> getLocations();
-	void	splitPush(std::string line, int kind);
 
 	void print();
 private:

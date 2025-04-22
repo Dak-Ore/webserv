@@ -27,7 +27,6 @@ public:
 private:
 	std::string _path;
     std::vector<std::string> _allowedMethods;
-    bool _autoIndex;
     bool _hasRedirection;
     std::pair<int, std::string> _redirection;
 };
