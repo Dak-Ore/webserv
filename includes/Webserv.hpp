@@ -17,5 +17,6 @@ public:
     ~Webserv();
     Server *findServer(int fd);
     void listen();
+	int acceptClient(int serverFd);
     void stop();
 };

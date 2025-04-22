@@ -13,11 +13,11 @@ private:
 	EPoll &_epoll;
 	std::vector<Socket*> _sockets;
 	ServerConfig	_config;
+    std::string _root;
 public:
 	Server(EPoll &epoll_ref, ServerConfig &config);
 	~Server();
 	bool isServerSocket(int fd);
-	int acceptClient(int serverFd);
 	HttpRequest readRequest(int fd);
 	bool handleRequest(HttpRequest const &request, int response_fd);
 	std::string getIndex(std::string root, std::string path);

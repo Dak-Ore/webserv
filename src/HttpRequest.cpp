@@ -95,7 +95,7 @@ void HttpRequest::validateBodySize()
 	}
 }
 
-std::string HttpRequest::toString()
+std::string HttpRequest::toString() const
 {
 	std::string request;
 

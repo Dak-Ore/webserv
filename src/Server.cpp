@@ -41,14 +41,6 @@ bool Server::isServerSocket(int fd)
 	return (false);
 }
 
-int Server::acceptClient(int serverFd)
-{
-	int client_fd = ::accept(serverFd, NULL, NULL);
-	if (client_fd != -1)
-		this->_epoll.addClient(client_fd);
-	return (client_fd);
-}
-
 HttpRequest Server::readRequest(int fd)
 {
 	std::string request_string;

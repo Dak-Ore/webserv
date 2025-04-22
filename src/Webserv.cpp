@@ -42,7 +42,7 @@ void Webserv::listen()
 			Server *s = this->findServer(fd);
 			if (s)
 			{
-				int clientFd = s->acceptClient(fd);
+				int clientFd = this->acceptClient(fd);
 				if (clientFd != -1)
 					this->_client_map[clientFd] = s;
 			}
@@ -55,6 +55,14 @@ void Webserv::listen()
 			}
 		}
 	}
+}
+
+int Webserv::acceptClient(int serverFd)
+{
+	int client_fd = ::accept(serverFd, NULL, NULL);
+	if (client_fd != -1)
+		this->_epoll.addClient(client_fd);
+	return (client_fd);
 }
 
 void Webserv::stop()

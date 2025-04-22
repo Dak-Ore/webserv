@@ -30,7 +30,7 @@ public:
     ~HttpRequest();
 	const std::string &getMethod() const;
 	const std::string &getPath() const ;
-	std::string toString();
+	std::string toString() const;
 	bool		empty() const;
 	bool		isValid(int *code = 0) const;
 };
