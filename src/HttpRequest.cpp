@@ -57,6 +57,39 @@ void HttpRequest::parseCookie()
 	this->_headers.erase("Cookie");
 }
 
+void HttpRequest::parseOpt()
+{
+	size_t	pos_start = this->_path.find("?");
+	std::string content = this->_path.substr(pos_start, this->_path.size() - pos_start);
+	this->_path = this->_path.substr(0, pos_start);
+	std::string	key;
+	std::string	value;
+	bool		pos = 0;
+	for (size_t	i = 0; i < content.size(); i++)
+	{
+		if (content[i] == '=')
+		{
+			pos = 1;
+			continue;
+		}
+		if (content[i] == '&')
+		{
+			this->_opt.insert(std::pair<std::string, std::string>(key,value));
+			key.clear();
+			value.clear();
+			pos = 0;
+			continue;
+		}
+		if (pos == 0)
+			key += content[i];
+		else
+			value += content[i];
+	}
+	this->_opt.insert(std::pair<std::string, std::string>(key,value));
+	for (std::map<std::string, std::string>::iterator it = _opt.begin(); it != _opt.end() ; it++)
+		std::cout << it->first << " : " << it->second << std::endl;
+}
+
 void HttpRequest::parseRequestLine(std::istringstream& stream)
 {
 	std::string line;
@@ -73,9 +106,13 @@ void HttpRequest::parseRequestLine(std::istringstream& stream)
 		return ;
 	}
 
+	if (this->_path.find("?") != std::string::npos)
+		parseOpt();
+
 	if (this->_version != "HTTP/1.1")
 		throw std::runtime_error("505 HTTP Version Not Supported");
 }
+
 
 void HttpRequest::parseHeaders(std::istringstream& stream)
 {

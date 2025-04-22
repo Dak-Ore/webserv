@@ -13,6 +13,7 @@ class HttpMessage
 protected:
 	std::map<std::string, std::string>	_headers;
 	std::map<std::string, std::string>	_cookies;
+	std::map<std::string, std::string>  _opt;
 	std::string							_body;
 	std::string							_version;
 public:
