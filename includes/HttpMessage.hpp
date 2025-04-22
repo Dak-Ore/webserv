@@ -14,6 +14,5 @@ public:
 	const std::string &getHeader(std::string key) const;
 	const std::string							&getBody() const;
 	const std::string							&getVersion() const;
-	virtual std::string					toString() = 0;
 };
 
