@@ -5,7 +5,7 @@ RED = \033[31m
 YELLOW = \033[0;33m
 RESET = \033[0m
 
-FLAGS = -Wall -Wextra -Werror -g
+FLAGS = -Wall -Wextra -Werror -g -std=c++98
 INC = -I./includes
 SRCDIR = src
 OBJDIR = obj

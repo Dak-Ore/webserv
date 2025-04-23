@@ -56,7 +56,7 @@ void CGI::execute(int inout[2],
 	envp["SERVER_SOFTWARE"] = SERVER_SOFTWARE;
 	if (content_type != "") {
 		envp["CONTENT_LENGTH"] = (content_length
-			? std::to_string(content_length).c_str()
+			? int_to_string(content_length).c_str()
 			: ""
 		);
 		envp["CONTENT_TYPE"] = content_type.c_str();

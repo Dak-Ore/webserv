@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 #include <cstring>
+#include <sstream>
 
 static const char** vector_to_c_array(std::vector<std::string> const& a)
 {
@@ -75,4 +76,11 @@ void forkexec(int inout[2], std::vector<std::string> const argv, std::map<std::s
 	inout[1] = pipein[1];
 	close(pipein[0]);
 	close(pipeout[1]);
+}
+
+std::string int_to_string(int i)
+{
+	std::stringstream ss;
+	ss << i;
+	return ss.str();
 }
