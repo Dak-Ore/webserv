@@ -49,6 +49,7 @@ void CGI::execute(int inout[2],
 	envp["REMOTE_ADDR"] = remote_addr.c_str();
 	envp["REQUEST_METHOD"] = request_method.c_str();
 	envp["PATH_INFO"] = path_info.c_str();
+	// TODO(maybe) PATH_TRANSLATED
 	envp["SCRIPT_NAME"] = script_name.c_str();
 	envp["SERVER_NAME"] = server_name.c_str();
 	envp["SERVER_PORT"] = server_port.c_str();
@@ -61,9 +62,14 @@ void CGI::execute(int inout[2],
 		);
 		envp["CONTENT_TYPE"] = content_type.c_str();
 	}
+	// TODO(maybe) HTTP_*
+
+	// for some reason, this isn't specified in the specification
+	// at https://datatracker.ietf.org/doc/html/rfc3875#section-5
+	// but is necessary, at least for php-cgi
+	envp["SCRIPT_FILENAME"] = script_path;
 
 	std::vector<std::string> argv(this->argv);
-	argv.push_back(script_path);
 
 	forkexec(inout, argv, envp);
 }

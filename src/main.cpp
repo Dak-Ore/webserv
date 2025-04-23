@@ -22,8 +22,7 @@ int main()
 {
 	std::cout << "create cgi" << std::endl;
 	std::vector<std::string> argv;
-	argv.push_back("./testers/ubuntu_cgi_tester");
-	argv.push_back("-f");
+	argv.push_back("/bin/php-cgi");
 	CGI cgi(argv);
 
 	std::cout << "execute cgi" << std::endl;
@@ -32,7 +31,7 @@ int main()
 			"/home/zy/local/tmp/elawesome/index.php",
 			"192.168.1.247",
 			"GET",
-			"/",
+			"",
 			"/elawesome/index.php",
 			"yeyaaaa.example.com",
 			"1234",
