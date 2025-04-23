@@ -14,31 +14,10 @@
 Server::Server(EPoll &epoll_ref, ServerConfig &config) :
 	_epoll(epoll_ref), _config(config)
 {
-	Socket *socket;
-	for (size_t i = 0; i < config.getAdress().size(); i++)
-	{
-		socket = new Socket(config.getAdress()[i].first, config.getAdress()[i].second);
-		std::cout << "Server launched on " << config.getAdress()[i].first << ":" << config.getAdress()[i].second << std::endl;
-		this->_sockets.push_back(socket);
-		this->_epoll.addSocket(socket->getFd());
-	}
 }
 
 Server::~Server()
 {
-	for (size_t i = 0; i < this->_sockets.size(); ++i)
-		delete this->_sockets[i];
-}
-
-bool Server::isServerSocket(int fd)
-{
-	size_t n = this->_sockets.size();
-	for (size_t i = 0; i < n; i++)
-	{
-		if (fd == this->_sockets[i]->getFd())
-			return (true);
-	}
-	return (false);
 }
 
 HttpRequest Server::readRequest(int fd)

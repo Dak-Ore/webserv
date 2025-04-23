@@ -3,12 +3,20 @@
 Webserv::Webserv(ConfigParser &parser) :
     _run(true)
 {
+	Socket *socket;
     size_t count = parser.getServer().size();
     for (size_t i = 0; i < count; i++)
     {
         ServerConfig config = parser.getServer()[i];
         this->_servers.push_back(new Server(this->_epoll, config));
 
+		for (size_t i = 0; i < config.getAdress().size(); i++)
+		{
+			socket = new Socket(config.getAdress()[i].first, config.getAdress()[i].second);
+			std::cout << "Server launched on " << config.getAdress()[i].first << ":" << config.getAdress()[i].second << std::endl;
+			this->_sockets.push_back(socket);
+			this->_epoll.addSocket(socket->getFd());
+		}
     }
 }
 
@@ -16,16 +24,25 @@ Webserv::~Webserv()
 {
 	for (size_t i = 0; i < this->_servers.size(); ++i)
 		delete this->_servers[i];
+	for (size_t i = 0; i < this->_sockets.size(); ++i)
+		delete this->_sockets[i];
+}
+
+bool Webserv::isServerSocket(int fd)
+{
+	size_t n = this->_sockets.size();
+	for (size_t i = 0; i < n; i++)
+	{
+		if (fd == this->_sockets[i]->getFd())
+			return (true);
+	}
+	return (false);
 }
 
 Server *Webserv::findServer(int fd)
 {
-	for (size_t i = 0; i < this->_servers.size(); i++)
-	{
-		Server *s = this->_servers[i];
-		if (s->isServerSocket(fd))	
-			return (s);
-	}	
+	if (this->isServerSocket(fd))	
+		return (this->_servers[0]);
 	return (NULL);
 }
 
