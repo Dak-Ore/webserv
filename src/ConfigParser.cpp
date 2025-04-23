@@ -19,13 +19,19 @@ ConfigParser::ConfigParser(File config)
 		if (processServerStart(line, waitBrace, inServer))
 			continue;
 		if (processLocationStart(line, waitBrace, inLocation))
+		{
+			locationContent += utils::smartSubstr(line, "location", "{") + "\n";
 			continue;
+		}
 		if (processOpeningBrace(line, waitBrace, inServer, inLocation))
 			continue;
 		if (processFullLineServer(line, inServer))
 			continue;
 		if (processFullLineLocation(line, inLocation))
+		{
+			locationContent += utils::smartSubstr(line, "location", "{") + "\n";
 			continue;
+		}
 
 		if (waitBrace || line == "{")
 			throw std::runtime_error("Invalid config file (brace issue)");

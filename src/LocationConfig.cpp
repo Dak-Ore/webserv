@@ -8,19 +8,28 @@ LocationConfig::LocationConfig(std::string content)
 	
 	this->_hasRedirection = false;
 	this->_uploadEnabled = false;
-	if (!(stream >> this->_path))
-		throw std::runtime_error("invalid location");
 	stream >> this->_path;
 	std::getline(stream, line);
 	while (std::getline(stream, line) && this->_hasRedirection == false)
 		this->findElement(line);
 	this->checkConfig();
+	std::cout << this->_path << std::endl;
 }
 
 void	LocationConfig::checkConfig()
 {
-	if (!utils::isValidRegex(this->_path, "^\/[A-Za-z0-9\/_.-]*$") || !utils::isDirectory(this->_path))
-		throw std::runtime_error("Invalid path in location config");
+	if (!utils::isValidRegex(this->_path, "^\\/[A-Za-z0-9\\/_.-]*$"))
+		throw std::runtime_error("Invalid path " + this->_path + " in location config");
+	if (this->_hasRedirection)
+	{
+		if (this->_redirection.first < 100 || this->_redirection.first > 599)
+			throw std::runtime_error("invalid redirection code return code in location block");
+		if (!utils::isValidRegex(this->_redirection.second, "^(https?://[^\\s]+|/[^\\s]*)$"))
+			throw std::runtime_error("invalid return redirection in location block");
+	}	
+	for (std::vector<std::string>::iterator it = this->_allowedMethods.begin(); it != this->_allowedMethods.end(); it++)
+		if (!utils::isValidRegex(*it, "^(GET|POST|DELETE)$"))
+			throw std::runtime_error("invalid argument at allowed_method in location block");
 }
 
 void	LocationConfig::findElement(std::string line)
