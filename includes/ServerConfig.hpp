@@ -14,17 +14,14 @@ class ServerConfig : public Config
 public:
     // Default Constructor
     ServerConfig(std::string content, std::vector<std::string> location);
-    
     // Destructor
     virtual ~ServerConfig();
-
 	void	findElement(std::string line);
     std::vector<std::pair<std::string, std::string> > getAdress();
 	std::vector<std::string> getServerNames();
-
     std::vector<LocationConfig> getLocations();
-
 	void print();
+	void checkConfig();
 private:
     std::vector<std::pair<std::string, std::string> > _adress;
 	std::vector<std::string> _serverNames;

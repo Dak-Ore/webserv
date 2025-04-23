@@ -1,6 +1,6 @@
 #include <string>
 #include <vector>
-
+#include <regex.h>
 #include <sys/types.h> 
 
 namespace utils
@@ -13,6 +13,5 @@ namespace utils
 	std::string trim(const std::string& s);
 	std::string	extractKey(std::string line);
 	void ft_split(std::string line, std::vector<std::string> *list);
-
-
+	bool isValidRegex(std::string str, std::string pattern); 
 }

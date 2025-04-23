@@ -86,3 +86,15 @@ void utils::ft_split(std::string line, std::vector<std::string> *list)
 	while (stream >> word)
 		list->push_back(word);
 }
+
+
+bool utils::isValidRegex(std::string str, std::string pattern) 
+{
+    regex_t regex;
+
+    if (regcomp(&regex, pattern.c_str(), REG_EXTENDED | REG_NOSUB) != 0)
+        return false;
+    int result = regexec(&regex, str.c_str(), 0, NULL, 0);
+    regfree(&regex);
+    return (result == 0);
+}
