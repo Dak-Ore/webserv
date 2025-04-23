@@ -14,7 +14,7 @@ ServerConfig::ServerConfig(std::string content, std::vector<std::string> locatio
 		LocationConfig loc(*it);
 		this->_locations.push_back(loc);
 	}
-	checkConfig();
+	this->checkConfig();
 }
 
 void	ServerConfig::findElement(std::string line)
@@ -40,7 +40,7 @@ void ServerConfig::checkConfig()
 	// ADRESS PART
 	for (std::vector<std::pair<std::string, std::string> >::iterator it = this->_adress.begin(); it != this->_adress.end(); it++)
 	{
-		if (!utils::isValidRegex(it->second, "^[0-9]+$") || !utils::isValidRegex(it->first, "^[0-9]{1,3}(\\.[0-9]{1,3}){3}$"))
+		if (!utils::isValidRegex(it->second, "^[0-9]+$") || !utils::isValidRegex(it->first, "^[0-9]{1,3}(\.[0-9]{1,3}){3}$"))
 			throw std::runtime_error("Invalid adress in config file");
 		int	port = atoi(it->second.c_str());
 		if (port < 1 || port > 65535)

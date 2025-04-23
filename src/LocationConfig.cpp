@@ -14,6 +14,13 @@ LocationConfig::LocationConfig(std::string content)
 	std::getline(stream, line);
 	while (std::getline(stream, line) && this->_hasRedirection == false)
 		this->findElement(line);
+	this->checkConfig();
+}
+
+void	LocationConfig::checkConfig()
+{
+	if (!utils::isValidRegex(this->_path, "^\/[A-Za-z0-9\/_.-]*$") || !utils::isDirectory(this->_path))
+		throw std::runtime_error("Invalid path in location config");
 }
 
 void	LocationConfig::findElement(std::string line)

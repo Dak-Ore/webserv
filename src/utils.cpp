@@ -16,6 +16,13 @@ bool utils::fileExists(const std::string &path)
 	return (stat(path.c_str(), &fileInfo) == 0 && S_ISREG(fileInfo.st_mode));
 }
 
+bool utils::isDirectory(const std::string &path)
+{
+	struct stat fileInfo;
+	return (stat(path.c_str(), &fileInfo) == 0 && S_ISDIR(fileInfo.st_mode));
+}
+
+
 off_t utils::getFileSize(const std::string& path) {
     struct stat st;
     if (stat(path.c_str(), &st) == -1)

@@ -14,4 +14,5 @@ namespace utils
 	std::string	extractKey(std::string line);
 	void ft_split(std::string line, std::vector<std::string> *list);
 	bool isValidRegex(std::string str, std::string pattern); 
+	bool isDirectory(const std::string &path);
 }

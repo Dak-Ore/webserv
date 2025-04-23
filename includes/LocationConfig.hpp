@@ -18,7 +18,7 @@ public:
     void	splitPush(std::string line, int kind);
 	// Destructor
     virtual ~LocationConfig();
-
+	void		checkConfig();
 	void		print();
 	std::string getPath();
     std::vector<std::string> getAllowedMethods();
