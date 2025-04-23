@@ -1,37 +1,34 @@
 #include "HttpClient.hpp"
 #include "Socket.hpp"
+#include "Adress.hpp"
 
-HttpClient::HttpClient()
+HttpClient::HttpClient() : Socket()
 {
+	this->_closeOnDestruct = false;
 }
 
-HttpClient::HttpClient(int serverFd)
+HttpClient::HttpClient(int serverFd) : Socket()
 {
+	this->_closeOnDestruct = false;
 	this->_fd = ::accept(serverFd, NULL, NULL);
 	if (this->_fd == -1)
 		return ;
-	std::pair<int, int> info = Socket::getSocketInfo(this->_fd);
-	this->_host = info.first;
-	this->_port = info.second;
+	this->_adress = Adress(this->_fd);
 }
 
-HttpClient::HttpClient(HttpClient const &ref)
+HttpClient::HttpClient(HttpClient const &ref) : Socket()
 {
+	this->_closeOnDestruct = false;
 	*this = ref;
 }
 HttpClient &HttpClient::operator=(HttpClient const &ref)
 {
+	this->_closeOnDestruct = false;
 	this->_fd = ref._fd;
-	this->_host = ref._host;
-	this->_port = ref._port;
+	this->_adress = ref._adress;
 	return (*this);
 }
 
 HttpClient::~HttpClient()
 {
 }
-
-
-int HttpClient::getFd() const {return this->_fd;}
-int HttpClient::getHost() const {return this->_host;}
-int HttpClient::getPort() const {return this->_port;}

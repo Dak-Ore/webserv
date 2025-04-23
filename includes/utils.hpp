@@ -7,7 +7,6 @@
 namespace utils
 {
 	std::string numToString(size_t value);
-	std::string ip_to_str(int ip);
 	bool 		fileExists(const std::string &path);
 	off_t 		getFileSize(const std::string& path);
 	std::string joinPath(const std::string &base, const std::string &relative);
@@ -15,6 +14,4 @@ namespace utils
 	std::string trim(const std::string& s);
 	std::string	extractKey(std::string line);
 	void ft_split(std::string line, std::vector<std::string> *list);
-
-
 }

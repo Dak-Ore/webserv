@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Adress.hpp"
+
 #include <sys/socket.h>
 #include <string>
 #include <unistd.h>
@@ -7,16 +9,17 @@
 class Socket
 {
 private:
+	void listen();
+protected:
+	bool _closeOnDestruct;
 	int _fd;
-	int _host;
-	int _port;
-	void setSocketInfo();
+	Adress _adress;
 
 public:
-	static std::pair<int, int>getSocketInfo(int fd);
-	Socket(std::string hostname = "localhost", std::string service = "80");
+	Socket();
+	Socket(std::string hostname, std::string service);
 	~Socket();
 
-	int getFd();
-	void listen();
+	int getFd() const;
+	const Adress &getAdress() const;
 };

@@ -7,21 +7,14 @@
 #include <stdexcept>
 #include <iostream>
 
-std::pair<int, int> Socket::getSocketInfo(int fd)
+Socket::Socket() :
+	_closeOnDestruct(true)
 {
-	std::pair<int, int> adress;;
-
-	struct sockaddr_in server_addr;
-	socklen_t addrlen = sizeof(server_addr);
-	if (getsockname(fd, (struct sockaddr*)&server_addr, &addrlen) != -1)
-	{
-		adress.first = server_addr.sin_addr.s_addr;
-		adress.second = ntohs(server_addr.sin_port);
-	}
-	return (adress);
+	this->_fd = -1;
 }
 
-Socket::Socket(std::string hostname, std::string service)
+Socket::Socket(std::string hostname, std::string service) :
+	_closeOnDestruct(true)
 {
 	this->_fd = -1;
 	struct addrinfo hints;
@@ -53,26 +46,14 @@ Socket::Socket(std::string hostname, std::string service)
 		throw std::runtime_error("Failed to bind socket");
 	}
 	::freeaddrinfo(res);
-	this->setSocketInfo();
+	this->_adress = Adress(this->_fd);
 	this->listen();
 }
 
 Socket::~Socket()
 {
-	if (this->_fd >= 0)
+	if (this->_fd >= 0 && this->_closeOnDestruct)
 		::close(this->_fd);
-}
-
-void Socket::setSocketInfo()
-{
-	std::pair<int, int> info = Socket::getSocketInfo(this->_fd);
-	this->_host = info.first;
-	this->_port = info.second;
-}
-
-int Socket::getFd()
-{
-	return (this->_fd);
 }
 
 void Socket::listen()
@@ -83,3 +64,6 @@ void Socket::listen()
 	if (::listen(this->_fd, SOMAXCONN) != 0)
 		throw std::runtime_error("Failed to listen on socket");
 }
+
+int Socket::getFd() const {return this->_fd;}
+const Adress &Socket::getAdress() const {return this->_adress;}
