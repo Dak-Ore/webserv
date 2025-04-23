@@ -26,17 +26,26 @@ int main()
 	CGI cgi(argv);
 
 	std::cout << "execute cgi" << std::endl;
+	std::string data = "favoritemeal=spaghetti";
 	int inout[2];
-	cgi.execute(inout,
-			"/home/zy/local/tmp/elawesome/index.php",
-			"192.168.1.247",
-			"GET",
-			"",
-			"/elawesome/index.php",
-			"yeyaaaa.example.com",
-			"1234",
-			"HTTP/1.1",
-			"name=zy");
+	{
+		CGI::execute_arguments args = {
+			script_pathname: "/home/zy/local/tmp/elawesome/index.php",
+			remote_addr: "192.168.1.247",
+			request_method: "POST",
+			script_name: "/elawesome/index.php",
+			server_name: "example.com",
+			server_port: "1234",
+			server_protocol: "HTTP/1.1",
+			query_string: "name=zy",
+			path_info: "",
+			content_exists: true,
+			content_length: data.size(),
+			content_type: "application/x-www-form-urlencoded",
+		};
+		cgi.execute(inout, args);
+	}
+	write(inout[1], data.c_str(), data.size());
 	close(inout[1]);
 
 	char buf[1000];

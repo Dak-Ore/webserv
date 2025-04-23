@@ -3,124 +3,146 @@
 #include <string>
 #include <vector>
 
-// TODO docs
-
+/**
+ * Allows to execute a CGI script with a given file and other informations.
+ */
 class CGI
 {
 
 private:
-	// default constructor, results in an undefined object.
+	/**
+	 * default constructor, results in an undefined object.
+	 */
 	CGI();
-	// copy constructor
+
+	/**
+	 * copy constructor
+	 */
 	CGI(CGI const&);
-	// copy operator
+
+	/**
+	 * copy operator
+	 */
 	CGI& operator=(CGI const&);
 
 public:
 	/**
-	 * Create a CGI (TODO)
+	 * - 'argv': arguments to give to the executable.
+	 *           argv[0] must be a path to the executable file.
 	 */
 	CGI(std::vector<std::string> const& argv);
 
 	virtual ~CGI();
 
 	/**
-	 * TODO make sure its non blocking
+	 * arguments to give to CGI::execute().
+	 * optional arguments can be "".
+	 * most of them are meta-arguments defined at
+	 * https://datatracker.ietf.org/doc/html/rfc3875#section-4.1
 	 */
-	void execute(int inout[2],
-		std::string const& script_path, // path of the script to give to the cgi
-		std::string const& remote_addr, // ipv4 of the agent sending the request to the server
-		std::string const& request_method, // "GET", "POST"...
-		std::string const& path_info, // path of the client request
-		std::string const& script_name, // URI path of the script to call
-		std::string const& server_name,	// domain name or ipv4 of the server, this can be taken from the uri of the client's request.
-		std::string const& server_port, // TODO(better)(make int) port on which the request was received.
-		std::string const& server_protocol, // "HTTP/ " *.* (version of HTTP used to answer the request)
-		std::string const& query_string, // TODO(better)(default value) after the '?'
-		size_t content_length = 0, // IF has_content: number of bytes of it
-		std::string const& content_type = "" // IF has_content: mime type of it
-	);
+	struct execute_arguments
+	{
+		/**
+		 * path of the file to give to the CGI.
+		 */
+		std::string const& script_pathname; 
+
+		/**
+		 * defines the meta-variable REMOTE_ADDR:
+		 * IPv4 address of the agent sending the request to the server
+		 * (probably the client).
+		 */
+		std::string const& remote_addr;
+
+		/**
+		 * defines the meta-argument REQUEST_METHOD:
+		 * the http request method (ex: "GET", "POST"...)
+		 */
+		std::string const& request_method;
+
+		/**
+		 * defines the meta-argument SCRIPT_NAME:
+		 * URI path of the script to call.
+		 * 
+		 * this is not the same as 'script_path',
+		 * http://example.com/foo/bar.php would give "/foo/bar.php",
+		 * while script_path could give "/var/www/foo/bar.php"
+		 */
+		std::string const& script_name;
+
+		/**
+		 * defines the meta-argument SERVER_NAME:
+		 * domain name or IPv4 of the server,
+		 * this can be taken from the URI of the client's request.
+		 */
+		std::string const& server_name;
+
+		/**
+		 * defines the meta-argument SERVER_PORT:
+		 * it's the port of the server in decimal lol
+		 */
+		std::string const& server_port;
+
+		/**
+		 * defines the meta-argument SERVER_PROTOCOL:
+		 * version of HTTP used to answer the request,
+		 * probably "HTTP/1.1".
+		 */
+		std::string const& server_protocol;
+
+		/**
+		 * (optional) defines the meta-argument QUERY_STRING:
+		 * in the url https://example.com/foo/bar.php?favorite=spaghetti,
+		 * it's "favorite=spaghetti" (without '?').
+		 */
+		std::string const& query_string;
+
+		/**
+		 * (optional) defines the meta-argument PATH_INFO:
+		 * see https://datatracker.ietf.org/doc/html/rfc3875#section-4.1.5
+		 * 
+		 * probably not useful, i guess keep it "".
+		 */
+		std::string const& path_info;
+
+		/**
+		 * either the client sent request data (probably with REQUEST_METHOD=POST).
+		 * 
+		 * if this is defined, content must be defined too,
+		 * and data must be wrote on inout[1].
+		 */
+		bool content_exists;
+
+		/**
+		 * (optional) defines the meta-argument CONTENT_LENGTH:
+		 * size of the request data, in bytes.
+		 * 
+		 * to use if .content_exists is true.
+		 */
+		size_t content_length;
+
+		/**
+		 * (optional) defines the meta-argument CONTENT_LENGTH:
+		 * MIME type of the request data.
+		 * 
+		 * to use if .content_exists is true.
+		 */
+		std::string const& content_type;
+	};
+
+	/**
+	 * call the CGI with a given file and other informations.
+	 * 
+	 * inout[0] and inout[1] will be set to respectively
+	 * a reading file descriptor linked to the stdout of the program
+	 * and a writing file descriptor linked to the stdin of the program.
+	 * 
+	 * inout[0] reads the response of the CGI script.
+	 * 
+	 * inout[1] allows to write the request data if necessary.
+	 */
+	void execute(int inout[2], CGI::execute_arguments const& args);
 
 private:
 	std::vector<std::string> argv;
 };
-
-/*
-
-TODO(notes)
-*
-* Execute a request.
-* - 'metavars': the meta-variables to send to the script.
-*   - AUTH_TYPE: optional, probably unnecessary.
-*   ! CONTENT_LENGTH: number of octets of body, or "" or unset if body is
-*     empty. To set inside (???).
-*   ! CONTENT_TYPE: if body non-empty, internet media type of body.
-*     if unset, the script could try to determine it itself or it could not
-*     and we'll have to suffer from its wrath.
-*     MUST be defined if the user sends an HTTP Content-Type field.
-*   - GATEWAY_INTERFACE: "CGI/" +digit "." +digit. NO leading zero.
-*     The version used is 1.1.
-*   ! PATH_INFO: probably unnecessary / the path for the CGI script??
-*   - PATH_TRANSLATED: same
-*   ! QUERY_STRING: after the "?" in an url. MUST be set, even if it's "".
-*   ! REMOTE_ADDR: client address (ipv4 or ipv6)
-*   ! REMOTE_HOST: just use REMOTE_ADDR
-*   - REMOTE_IDENT: who cares
-*   - REMOTE_USER: for auth, probably unnecessary
-*   ! REQUEST_METHOD: "GET" | "POST" ...
-*   - SCRIPT_NAME: path of the script, or "". MUST be set. I don't know if obligatory.
-*   ? SCRIPT_FILENAME: the full path to the CGI script.
-*   ! SERVER_NAME: hostname or ipv4/6 (if ipv6: "[" ipv6 "]"). If several possible
-*     value, see the request's Host header field.
-*   - SERVER_PORT: obvious (MUST be set, even if 80).
-*   - SERVER_PROTOCOL: "HTTP/" +digit "." +digit ("HTTP/1.1"?) or "INCLUDED"
-*   ! SERVER_SOFTWARE: use eponymous constant
-*   ! HTTP_*: from request header (uppercased, "-" -> "_")
-*     If several request headers, put them in one having the same meaning.
-*     Same if several lines.
-*     Remove all authentification information, and informations already
-*     available in others metavars.
-* 
-* Note: if REQUEST_METHOD == "HEAD", discard any body content given by the script.
-*
-
-CGI-Response = document-response | local-redir-response | client-redir-response
-	| client-redirdoc-response
-document-response = Content-Type [ Status ] *other-field NL response-body
-	(If status is ommitted, 200 OK is assumed).
-local-redir-response = local-Location NL
-client-redir-response = client-Location *extension-field NL
-	(302 Found)
-client-redirdoc-response = client-Location Status Content-Type *other-field NL response-body
-	(Status MUST be 302 Found)
-
-header-field = CGI-field | other-field
-CGI-field = Content-Type | Location | Status
-other-field = protocol-field | extension-field
-protocol-field = generic-field
-extension-field = generic-field
-generic-field = field-name ":" *WHITESPACE [ field-value ] NL
-field-name = token
-field-value = *( *WHITESPACE ( field-content | LWSP ) *WHITESPACE
-field-content = *( token | separator | quoted-string )
-
-Content-Type = ... media-type NL
-  (mandatory)
-  (send as is to the client)
-
-Location = local-Location | client-Location
-client-Location = "Location:" fragment-URI NL
-local-Location = "Location:" local-pathquery NL
-fragment-URI = absoluteURI [ "#" fragment ]
-fragment = *uric
-local
-ugh
-
-absoluteURI uric media-type LWSP Location client-Location local-Location Status NL response-body client-redirdoc-response
-
-
-TODO The server MUST make any appropriate modifications to the script's
-   output to ensure that the response to the client complies with the
-   response protocol version. ????
-   https://datatracker.ietf.org/doc/html/rfc3875#section-6.2.1
-*/

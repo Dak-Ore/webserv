@@ -29,45 +29,30 @@ CGI::CGI(std::vector<std::string> const& argv)
 CGI::~CGI()
 {}
 
-void CGI::execute(int inout[2],
-		std::string const& script_path, // path of the script to give to the cgi
-		std::string const& remote_addr, // ipv4 of the agent sending the request to the server
-		std::string const& request_method, // "GET", "POST"...
-		std::string const& path_info, // path of the client request
-		std::string const& script_name, // URI path of the script to call
-		std::string const& server_name,	// domain name or ipv4 of the server, this can be taken from the uri of the client's request.
-		std::string const& server_port, // port on which the request was received.
-		std::string const& server_protocol, // "HTTP/ " *.* (version of HTTP used to answer the request)
-		std::string const& query_string,
-		size_t content_length, // IF has_content: number of bytes of it
-		std::string const& content_type // IF has_content: mime type of it
-	)
+void CGI::execute(int inout[2], CGI::execute_arguments const& args)
 {
 	std::map<std::string, std::string> envp;
 	envp["GATEWAY_INTERFACE"] = "CGI/1.1";
-	envp["QUERY_STRING"] = query_string.c_str();
-	envp["REMOTE_ADDR"] = remote_addr.c_str();
-	envp["REQUEST_METHOD"] = request_method.c_str();
-	envp["PATH_INFO"] = path_info.c_str();
+	envp["QUERY_STRING"] = args.query_string.c_str();
+	envp["REMOTE_ADDR"] = args.remote_addr.c_str();
+	envp["REQUEST_METHOD"] = args.request_method.c_str();
+	envp["PATH_INFO"] = args.path_info.c_str();
 	// TODO(maybe) PATH_TRANSLATED
-	envp["SCRIPT_NAME"] = script_name.c_str();
-	envp["SERVER_NAME"] = server_name.c_str();
-	envp["SERVER_PORT"] = server_port.c_str();
-	envp["SERVER_PROTOCOL"] = server_protocol.c_str();
+	envp["SCRIPT_NAME"] = args.script_name.c_str();
+	envp["SERVER_NAME"] = args.server_name.c_str();
+	envp["SERVER_PORT"] = args.server_port.c_str();
+	envp["SERVER_PROTOCOL"] = args.server_protocol.c_str();
 	envp["SERVER_SOFTWARE"] = SERVER_SOFTWARE;
-	if (content_type != "") {
-		envp["CONTENT_LENGTH"] = (content_length
-			? int_to_string(content_length).c_str()
-			: ""
-		);
-		envp["CONTENT_TYPE"] = content_type.c_str();
+	if (args.content_exists) {
+		envp["CONTENT_LENGTH"] = int_to_string(args.content_length).c_str();
+		envp["CONTENT_TYPE"] = args.content_type.c_str();
 	}
 	// TODO(maybe) HTTP_*
 
 	// for some reason, this isn't specified in the specification
 	// at https://datatracker.ietf.org/doc/html/rfc3875#section-5
 	// but is necessary, at least for php-cgi
-	envp["SCRIPT_FILENAME"] = script_path;
+	envp["SCRIPT_FILENAME"] = args.script_pathname;
 
 	std::vector<std::string> argv(this->argv);
 
