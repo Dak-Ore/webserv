@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 // TODO docs
 
@@ -19,47 +20,12 @@ public:
 	/**
 	 * Create a CGI (TODO)
 	 */
-	CGI(char const* const argv[] = {});
+	CGI(std::vector<std::string> const& argv);
 
 	virtual ~CGI();
 
 	/**
-	 * TODO
-	 * Execute a request.
-	 * - 'metavars': the meta-variables to send to the script.
-	 *   - AUTH_TYPE: optional, probably unnecessary.
-	 *   ! CONTENT_LENGTH: number of octets of body, or "" or unset if body is
-	 *     empty. To set inside (???).
-	 *   ! CONTENT_TYPE: if body non-empty, internet media type of body.
-	 *     if unset, the script could try to determine it itself or it could not
-	 *     and we'll have to suffer from its wrath.
-	 *     MUST be defined if the user sends an HTTP Content-Type field.
-	 *   - GATEWAY_INTERFACE: "CGI/" +digit "." +digit. NO leading zero.
-	 *     The version used is 1.1.
-	 *   ! PATH_INFO: probably unnecessary / the path for the CGI script??
-	 *   - PATH_TRANSLATED: same
-	 *   ! QUERY_STRING: after the "?" in an url. MUST be set, even if it's "".
-	 *   ! REMOTE_ADDR: client address (ipv4 or ipv6)
-	 *   ! REMOTE_HOST: just use REMOTE_ADDR
-	 *   - REMOTE_IDENT: who cares
-	 *   - REMOTE_USER: for auth, probably unnecessary
-	 *   ! REQUEST_METHOD: "GET" | "POST" ...
-	 *   - SCRIPT_NAME: path of the script, or "". MUST be set. I don't know if obligatory.
-	 *   ? SCRIPT_FILENAME: the full path to the CGI script.
-	 *   ! SERVER_NAME: hostname or ipv4/6 (if ipv6: "[" ipv6 "]"). If several possible
-	 *     value, see the request's Host header field.
-	 *   - SERVER_PORT: obvious (MUST be set, even if 80).
-	 *   - SERVER_PROTOCOL: "HTTP/" +digit "." +digit ("HTTP/1.1"?) or "INCLUDED"
-	 *   ! SERVER_SOFTWARE: use eponymous constant
-	 *   ! HTTP_*: from request header (uppercased, "-" -> "_")
-	 *     If several request headers, put them in one having the same meaning.
-	 *     Same if several lines.
-	 *     Remove all authentification information, and informations already
-	 *     available in others metavars.
-	 * 
-	 * Note: if REQUEST_METHOD == "HEAD", discard any body content given by the script.
-	 *
-	 * TODO add timeout
+	 * TODO make sure its non blocking
 	 */
 	void execute(int inout[2],
 		std::string const& script_path, // path of the script to give to the cgi
@@ -76,12 +42,47 @@ public:
 	);
 
 private:
-	const char* const* argv;
+	std::vector<std::string> argv;
 };
 
 /*
 
-NOTES
+TODO(notes)
+*
+* Execute a request.
+* - 'metavars': the meta-variables to send to the script.
+*   - AUTH_TYPE: optional, probably unnecessary.
+*   ! CONTENT_LENGTH: number of octets of body, or "" or unset if body is
+*     empty. To set inside (???).
+*   ! CONTENT_TYPE: if body non-empty, internet media type of body.
+*     if unset, the script could try to determine it itself or it could not
+*     and we'll have to suffer from its wrath.
+*     MUST be defined if the user sends an HTTP Content-Type field.
+*   - GATEWAY_INTERFACE: "CGI/" +digit "." +digit. NO leading zero.
+*     The version used is 1.1.
+*   ! PATH_INFO: probably unnecessary / the path for the CGI script??
+*   - PATH_TRANSLATED: same
+*   ! QUERY_STRING: after the "?" in an url. MUST be set, even if it's "".
+*   ! REMOTE_ADDR: client address (ipv4 or ipv6)
+*   ! REMOTE_HOST: just use REMOTE_ADDR
+*   - REMOTE_IDENT: who cares
+*   - REMOTE_USER: for auth, probably unnecessary
+*   ! REQUEST_METHOD: "GET" | "POST" ...
+*   - SCRIPT_NAME: path of the script, or "". MUST be set. I don't know if obligatory.
+*   ? SCRIPT_FILENAME: the full path to the CGI script.
+*   ! SERVER_NAME: hostname or ipv4/6 (if ipv6: "[" ipv6 "]"). If several possible
+*     value, see the request's Host header field.
+*   - SERVER_PORT: obvious (MUST be set, even if 80).
+*   - SERVER_PROTOCOL: "HTTP/" +digit "." +digit ("HTTP/1.1"?) or "INCLUDED"
+*   ! SERVER_SOFTWARE: use eponymous constant
+*   ! HTTP_*: from request header (uppercased, "-" -> "_")
+*     If several request headers, put them in one having the same meaning.
+*     Same if several lines.
+*     Remove all authentification information, and informations already
+*     available in others metavars.
+* 
+* Note: if REQUEST_METHOD == "HEAD", discard any body content given by the script.
+*
 
 CGI-Response = document-response | local-redir-response | client-redir-response
 	| client-redirdoc-response

@@ -21,7 +21,9 @@ int main(int argc, char **argv, char **envp)
 int main()
 {
 	std::cout << "create cgi" << std::endl;
-	char const* argv[] = {"./testers/ubuntu_cgi_tester", "-f", NULL};
+	std::vector<std::string> argv;
+	argv.push_back("./testers/ubuntu_cgi_tester");
+	argv.push_back("-f");
 	CGI cgi(argv);
 
 	std::cout << "execute cgi" << std::endl;

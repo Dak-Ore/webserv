@@ -22,16 +22,12 @@ CGI& CGI::operator=(CGI const& other)
 	return *this;
 }
 
-CGI::CGI(char const* const argv[])
-: argv(arraydupl(argv))
+CGI::CGI(std::vector<std::string> const& argv)
+: argv(argv)
 {}
 
 CGI::~CGI()
-{
-	for (size_t i = 0; this->argv[i]; i++)
-		delete[] this->argv[i];
-	delete[] this->argv;
-}
+{}
 
 void CGI::execute(int inout[2],
 		std::string const& script_path, // path of the script to give to the cgi
@@ -47,36 +43,27 @@ void CGI::execute(int inout[2],
 		std::string const& content_type // IF has_content: mime type of it
 	)
 {
-	std::map<char const*, char const*> envp_map;
-
-	envp_map["GATEWAY_INTERFACE"] = "CGI/1.1";
-	envp_map["QUERY_STRING"] = query_string.c_str();
-	envp_map["REMOTE_ADDR"] = remote_addr.c_str();
-	envp_map["REQUEST_METHOD"] = request_method.c_str();
-	envp_map["PATH_INFO"] = path_info.c_str();
-	envp_map["SCRIPT_NAME"] = script_name.c_str();
-	envp_map["SERVER_NAME"] = server_name.c_str();
-	envp_map["SERVER_PORT"] = server_port.c_str();
-	envp_map["SERVER_PROTOCOL"] = server_protocol.c_str();
-	envp_map["SERVER_SOFTWARE"] = SERVER_SOFTWARE;
+	std::map<std::string, std::string> envp;
+	envp["GATEWAY_INTERFACE"] = "CGI/1.1";
+	envp["QUERY_STRING"] = query_string.c_str();
+	envp["REMOTE_ADDR"] = remote_addr.c_str();
+	envp["REQUEST_METHOD"] = request_method.c_str();
+	envp["PATH_INFO"] = path_info.c_str();
+	envp["SCRIPT_NAME"] = script_name.c_str();
+	envp["SERVER_NAME"] = server_name.c_str();
+	envp["SERVER_PORT"] = server_port.c_str();
+	envp["SERVER_PROTOCOL"] = server_protocol.c_str();
+	envp["SERVER_SOFTWARE"] = SERVER_SOFTWARE;
 	if (content_type != "") {
-		envp_map["CONTENT_LENGTH"] = (content_length
+		envp["CONTENT_LENGTH"] = (content_length
 			? std::to_string(content_length).c_str()
 			: ""
 		);
-		envp_map["CONTENT_TYPE"] = content_type.c_str();
+		envp["CONTENT_TYPE"] = content_type.c_str();
 	}
-	char** envp = new char*[envp_map.size() + 1];
-	size_t i = 0;
-	for (
-		std::map<char const*, char const*>::iterator it = envp_map.begin();
-		it != envp_map.end();
-		it++
-	) {
-		envp[i] = concat(concat(it->first, "="), it->second);
-		i++;
-	}
-	envp[i] = NULL;
-	char const* const argvend[] = {script_path.c_str(), NULL};
-	forkexec(inout, concat(this->argv, argvend), envp);
+
+	std::vector<std::string> argv(this->argv);
+	argv.push_back(script_path);
+
+	forkexec(inout, argv, envp);
 }

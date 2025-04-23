@@ -1,8 +1,43 @@
 #include "utils.hpp"
 
 #include <stdexcept>
+#include <map>
+#include <vector>
+#include <cstring>
 
-void forkexec(int inout[2], const char* const argv[], const char* const envp[])
+static const char** vector_to_c_array(std::vector<std::string> const& a)
+{
+	const char** r = new const char*[a.size() + 1];
+	{
+		size_t i = 0;
+		std::vector<std::string>::const_iterator it = a.begin();
+		while (it != a.end()) {
+			r[i] = it->c_str();
+			i++;
+			it++;
+		}
+		r[i] = NULL;
+	}
+	return r;
+}
+
+static const char** map_to_c_array(std::map<std::string, std::string> const& a)
+{
+	const char** r = new const char*[a.size() + 1];
+	{
+		size_t i = 0;
+		std::map<std::string, std::string>::const_iterator it = a.begin();
+		while (it != a.end()) {
+			r[i] = strdup((it->first + std::string("=") + it->second).c_str());
+			i++;
+			it++;
+		}
+		r[i] = NULL;
+	}
+	return r;
+}
+
+void forkexec(int inout[2], std::vector<std::string> const argv, std::map<std::string, std::string> const envp)
 {
 	// create pipes
 	int pipein[2];
@@ -23,10 +58,15 @@ void forkexec(int inout[2], const char* const argv[], const char* const envp[])
 		dup2(pipeout[1], 1);
 		close(pipein[1]);
 		close(pipeout[0]);
-		execve(argv[0],
-				const_cast<char* const*>(argv),
-				const_cast<char* const*>(envp)
+		// arguments to c strings
+		char const* const* argv_c = vector_to_c_array(argv);
+		char const* const* envp_c = map_to_c_array(envp);
+		execve(argv[0].c_str(),
+				const_cast<char**>(argv_c),
+				const_cast<char**>(envp_c)
 			);
+		delete[] argv_c;
+		delete[] envp_c;
 		throw std::runtime_error("execve() failed.");
 	}
 
