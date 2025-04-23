@@ -1,14 +1,14 @@
 #include "Webserv.hpp"
+#include "HttpClient.hpp"
 
-Webserv::Webserv(ConfigParser &parser) :
-    _run(true)
+Webserv::Webserv(ConfigParser &parser) : _run(true)
 {
 	Socket *socket;
-    size_t count = parser.getServer().size();
-    for (size_t i = 0; i < count; i++)
-    {
-        ServerConfig config = parser.getServer()[i];
-        this->_servers.push_back(new Server(this->_epoll, config));
+	size_t count = parser.getServer().size();
+	for (size_t i = 0; i < count; i++)
+	{
+		ServerConfig config = parser.getServer()[i];
+		this->_servers.push_back(new Server(this->_epoll, config));
 
 		for (size_t i = 0; i < config.getAdress().size(); i++)
 		{
@@ -17,7 +17,7 @@ Webserv::Webserv(ConfigParser &parser) :
 			this->_sockets.push_back(socket);
 			this->_epoll.addSocket(socket->getFd());
 		}
-    }
+	}
 }
 
 Webserv::~Webserv()
@@ -41,31 +41,34 @@ bool Webserv::isServerSocket(int fd)
 
 Server *Webserv::findServer(int fd)
 {
-	if (this->isServerSocket(fd))	
-		return (this->_servers[0]);
-	return (NULL);
+	std::vector<Server *> v;
+	HttpClient client = this->_client_map[fd];
+	for (size_t i = 0; i < this->_servers.size(); i++)
+	{
+		break ;
+		Server *s = this->_servers[i];
+		// if (s == client)
+			v.push_back(s);
+	}
+
+	return (this->_servers[0]);
 }
 
 void Webserv::listen()
 {
 	while (this->_run)
 	{
-		EPollEvent* events = this->_epoll.getEvents();
+		EPollEvent *events = this->_epoll.getEvents();
 		for (int i = 0; i < EPOLL_MAX_EVENTS; ++i)
 		{
 			int fd = events[i].getFd();
 			if (fd == 0)
 				continue;
-			Server *s = this->findServer(fd);
-			if (s)
-			{
-				int clientFd = this->acceptClient(fd);
-				if (clientFd != -1)
-					this->_client_map[clientFd] = s;
-			}
+			if (this->isServerSocket(fd))
+				this->acceptClient(fd);
 			else
 			{
-				s = _client_map[fd];
+				Server *s = this->findServer(fd);
 				HttpRequest const request = s->readRequest(fd);
 				if (!s->handleRequest(request, fd))
 					this->_epoll.remove(fd);
@@ -74,12 +77,14 @@ void Webserv::listen()
 	}
 }
 
-int Webserv::acceptClient(int serverFd)
+void Webserv::acceptClient(int serverFd)
 {
-	int client_fd = ::accept(serverFd, NULL, NULL);
-	if (client_fd != -1)
-		this->_epoll.addClient(client_fd);
-	return (client_fd);
+	HttpClient client(serverFd);
+	if (client.getFd() != -1)
+	{
+		this->_epoll.addClient(client.getFd());
+		this->_client_map[client.getFd()] = client;
+	}
 }
 
 void Webserv::stop()

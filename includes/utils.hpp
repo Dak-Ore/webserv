@@ -2,10 +2,12 @@
 #include <vector>
 
 #include <sys/types.h> 
+#include <stdint.h>
 
 namespace utils
 {
 	std::string numToString(size_t value);
+	std::string ip_to_str(int ip);
 	bool 		fileExists(const std::string &path);
 	off_t 		getFileSize(const std::string& path);
 	std::string joinPath(const std::string &base, const std::string &relative);
