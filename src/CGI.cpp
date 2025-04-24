@@ -8,6 +8,8 @@
 #include "utils.hpp"
 #include "const.hpp"
 
+#define BUFFER_SIZE 1000
+
 CGI::CGI()
 {}
 
@@ -29,7 +31,7 @@ CGI::CGI(std::vector<std::string> const& argv)
 CGI::~CGI()
 {}
 
-void CGI::execute(int inout[2], CGI::execute_arguments const& args)
+void CGI::execute(CGI::execute_arguments const& args)
 {
 	std::map<std::string, std::string> envp;
 	envp["GATEWAY_INTERFACE"] = "CGI/1.1";
@@ -56,5 +58,41 @@ void CGI::execute(int inout[2], CGI::execute_arguments const& args)
 
 	std::vector<std::string> argv(this->argv);
 
+	int inout[2];
+	if (pipe(inout) < 0)
+		throw std::runtime_error("pipe() failed.");
 	forkexec(inout, argv, envp);
+	return CGI::Running(inout);
+}
+
+CGI::Running::Running(int inout[2])
+: _inout(inout)
+, _responseHeader_complete(false),
+, _responseBody_complete(false),
+{}
+
+CGI::Running::~Running()
+{
+	close(inout[0]);
+	close(inout[1]);
+}
+
+CGI::Running::getResponseHeader()
+{
+	return this->_responseHeader ? this->_responseHeader_complete : NULL;
+}
+
+CGI::Running::getResponseBody()
+{
+	return this->_responseBody ? this->_responseBody_complete : NULL;
+}
+
+CGI::Running::isComplete()
+{
+	return this->_responseBody_complete;
+}
+
+CGI::Running::read()
+{
+	// TODO ...
 }

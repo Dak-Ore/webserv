@@ -5,24 +5,71 @@
 
 /**
  * Allows to execute a CGI script with a given file and other informations.
+ * 
+ * TODO must work with poll
  */
 class CGI
 {
 
 private:
 	/**
-	 * default constructor, results in an undefined object.
+	 * Represents the response header of the CGI script.
 	 */
+	struct ResponseHeader
+	{};
+
+	/**
+	 * Manages a running CGI script. This allows to send and receive data
+	 * from the CGI script until its end.
+	 * 
+	 * Return type of CGI.execute().
+	 */
+	class Running
+	{
+
+	public:
+		/**
+		 * inout[0] and inout[1] are respectively
+		 * a reading file descriptor linked to the stdout of the CGI script
+		 * and a writing file descriptor linked to its stdin.
+		 */
+		Running(int inout[2]);
+
+		virtual ~Running();
+
+		/**
+		 * To call each time there is something to read on the CGI script's stdout.
+		 */
+		void read();
+
+		/**
+		 * Get the reponse header of the CGI script.
+		 * If it wasn't given by the CGI script yet, return NULL.
+		 */
+		CGI::ResponseHeader const* getResponseHeader();
+
+		/**
+		 * Get the reponse body of the CGI script.
+		 * If it wasn't given by the CGI script yet, return NULL.
+		 */
+		CGI::ResponseHeader const* getResponseBody();
+
+		/**
+		 * Either the CGI script is finished.
+		 */
+		bool isComplete();
+
+	private:
+		int _inout[2];
+		CGI::ResponseHeader _responseHeader;
+		bool _responseHeader_complete;
+		std::string _responseBody;
+		bool _responseBody_complete;
+
+	};
+
 	CGI();
-
-	/**
-	 * copy constructor
-	 */
 	CGI(CGI const&);
-
-	/**
-	 * copy operator
-	 */
 	CGI& operator=(CGI const&);
 
 public:
@@ -133,15 +180,11 @@ public:
 	/**
 	 * call the CGI with a given file and other informations.
 	 * 
-	 * inout[0] and inout[1] will be set to respectively
-	 * a reading file descriptor linked to the stdout of the program
-	 * and a writing file descriptor linked to the stdin of the program.
-	 * 
-	 * inout[0] reads the response of the CGI script.
-	 * 
-	 * inout[1] allows to write the request data if necessary.
+	 * The return value is the link to the running CGI script
+	 * that must be used to get its response, and to send it
+	 * potential data.
 	 */
-	void execute(int inout[2], CGI::execute_arguments const& args);
+	CGI::Running execute(CGI::execute_arguments const& args);
 
 private:
 	std::vector<std::string> argv;
