@@ -27,6 +27,8 @@ int main(int argc, char **argv, char **envp)
 	std::string config_file_name = (argc == 2) ? argv[1] : "";
 	try
 	{
+		if (config_file_name.find(".conf") == std::string::npos)
+			throw std::runtime_error("Invalid config file");
 		ConfigParser parser(config_file_name);
 		Webserv server(parser);
 		// std::cout << "Server launched on " << config.getHost()[0] << ":" << config.getPorts()[0] << std::endl;

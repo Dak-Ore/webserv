@@ -1,0 +1,40 @@
+server {
+    listen 127.0.0.1:8080;
+	listen 127.0.0.1:8081;
+    server_name localhost www.localhost;
+    root www;
+    index index.htm index.html;
+    client_max_body_size 100k;
+
+    error_page 404 /errors/404.html;
+    error_page 500 /errors/500.html;
+    location / {
+        root /var/www/html;
+        index index.html;
+        autoindex off;
+        allowed_methods GET POST;
+    }
+
+    location /images/{
+        root /var/www/images;
+        autoindex on;
+        allowed_methods GET;
+    }
+
+    location /redirect-me {
+        return 301 http://example.com;
+    }
+
+    location /upload {
+        root /var/www/uploads;
+        upload_path /var/uploads;
+        upload_enabled on;
+        allowed_methods POST;
+    }
+
+    location /cgi-bin/ {
+        root /var/www/cgi-bin;
+        cgi_extension .php;
+        allowed_methods GET POST;
+    }
+}
