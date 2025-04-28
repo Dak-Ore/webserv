@@ -2,58 +2,31 @@
 #include "utils.hpp"
 
 #include <sys/socket.h>
+#include <unistd.h>
 #include <netdb.h>
 #include <string>
 #include <stdexcept>
 #include <iostream>
 
-Socket::Socket() :
-	_closeOnDestruct(true)
+Socket::Socket()
 {
 	this->_fd = -1;
 }
 
-Socket::Socket(std::string hostname, std::string service) :
-	_closeOnDestruct(true)
+Socket::Socket(std::string hostname, std::string service)
 {
-	this->_fd = -1;
-	struct addrinfo hints;
-	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_protocol = IPPROTO_TCP;
-	hints.ai_flags = AI_PASSIVE;
-	struct addrinfo *res;
-	int status = ::getaddrinfo(hostname.c_str(), service.c_str(), &hints, &res);
-	if (status != 0)
-		throw std::runtime_error(::gai_strerror(status));
-	this->_fd = ::socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-	if (this->_fd == -1)
-	{
-		::freeaddrinfo(res);
-		throw std::runtime_error("Failed to create socket");
-	}
-	int i = 1;
-	if (::setsockopt(this->_fd, SOL_SOCKET, SO_REUSEADDR, &i, sizeof(i)) < 0)
+	Adress adress(hostname, service);
+	this->_fd = adress.createSocket();
+	if (!adress.bind(this->_fd))
 	{
 		::close(this->_fd);
-		::freeaddrinfo(res);
-		throw std::runtime_error("setsockopt SO_REUSEADDR failed");
-	}
-	if (::bind(this->_fd, res->ai_addr, res->ai_addrlen) != 0)
-	{
-		::close(this->_fd);
-		::freeaddrinfo(res);
 		throw std::runtime_error("Failed to bind socket");
 	}
-	::freeaddrinfo(res);
-	this->_adress = Adress(this->_fd);
 	this->listen();
 }
 
 Socket::~Socket()
 {
-	if (this->_fd >= 0 && this->_closeOnDestruct)
-		::close(this->_fd);
 }
 
 void Socket::listen()
@@ -67,3 +40,10 @@ void Socket::listen()
 
 int Socket::getFd() const {return this->_fd;}
 const Adress &Socket::getAdress() const {return this->_adress;}
+
+void Socket::close()
+{
+	if (this->_fd != -1)
+		::close(this->_fd);
+	this->_fd = -1;
+}

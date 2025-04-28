@@ -25,7 +25,10 @@ Webserv::~Webserv()
 	for (size_t i = 0; i < this->_servers.size(); ++i)
 		delete this->_servers[i];
 	for (size_t i = 0; i < this->_sockets.size(); ++i)
+	{
+		this->_sockets[i]->close();
 		delete this->_sockets[i];
+	}
 }
 
 bool Webserv::isServerSocket(int fd)

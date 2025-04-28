@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <unistd.h>
 
 std::string Adress::hostToString(int host)
 {
@@ -16,6 +17,20 @@ std::string Adress::hostToString(int host)
 	std::ostringstream oss;
 	oss << (int)bytes[0] << '.' << (int)bytes[1] << '.' << (int)bytes[2] << '.' << (int)bytes[3];
 	return oss.str();
+}
+
+int Adress::createSocket(const Adress &adress)
+{
+	int fd = ::socket(adress._addrinfo->ai_family, adress._addrinfo->ai_socktype, adress._addrinfo->ai_protocol);
+	if (fd == -1)
+		throw std::runtime_error("Failed to create socket");
+	int i = 1;
+	if (::setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &i, sizeof(i)) < 0)
+	{
+		::close(fd);
+		throw std::runtime_error("setsockopt SO_REUSEADDR failed");
+	}
+	return (fd);
 }
 
 Adress::Adress() :
@@ -96,7 +111,14 @@ std::string Adress::str() const
 	return (s.str());
 }
 
+int Adress::createSocket()
+{
+	return (Adress::createSocket(*this));
+}
+
 bool Adress::bind(int fd)
 {
-	return (::bind(fd, this->_addrinfo->ai_addr, this->_addrinfo->ai_addrlen));
+	if (this->_addrinfo == NULL)
+		throw new std::runtime_error("Can't bind empty adress");
+	return (::bind(fd, this->_addrinfo->ai_addr, this->_addrinfo->ai_addrlen) == 0);
 }

@@ -10,6 +10,8 @@ private:
 	struct addrinfo *_addrinfo;
 public:
 	static std::string hostToString(int host);
+	static int createSocket(const Adress &adress);
+
 	Adress();
 	Adress(int fd);
 	Adress(int host, int port);
@@ -24,5 +26,6 @@ public:
 	std::string port_str() const;
 	std::string str() const;
 
+	int createSocket();
 	bool bind(int fd);
 };
