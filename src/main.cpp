@@ -31,7 +31,6 @@ int main(int argc, char **argv, char **envp)
 			throw std::runtime_error("Invalid config file");
 		ConfigParser parser(config_file_name);
 		Webserv server(parser);
-		// std::cout << "Server launched on " << config.getHost()[0] << ":" << config.getPorts()[0] << std::endl;
 		g_server = &server;
 		signal(SIGINT, signalHandler);
 		server.listen();

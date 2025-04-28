@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <sys/stat.h>
+#include <stdint.h>
 
 std::string utils::numToString(size_t value)
 {

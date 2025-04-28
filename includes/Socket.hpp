@@ -1,16 +1,24 @@
 #pragma once
 
+#include "Adress.hpp"
+
 #include <sys/socket.h>
 #include <string>
 
 class Socket
 {
 private:
-	int _fd;
-public:
-	Socket(std::string hostname = "localhost", std::string service = "80");
-	~Socket();
-
-	int getFd();
 	void listen();
+protected:
+	int _fd;
+	Adress _adress;
+
+public:
+	Socket();
+	Socket(std::string hostname, std::string service);
+	~Socket();
+	int getFd() const;
+	const Adress &getAdress() const;
+
+	void close();
 };

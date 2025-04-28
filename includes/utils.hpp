@@ -2,6 +2,7 @@
 #include <vector>
 #include <regex.h>
 #include <sys/types.h> 
+#include <stdint.h>
 
 namespace utils
 {

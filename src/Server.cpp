@@ -14,31 +14,10 @@
 Server::Server(EPoll &epoll_ref, ServerConfig &config) :
 	_epoll(epoll_ref), _config(config)
 {
-	Socket *socket;
-	for (size_t i = 0; i < config.getAdress().size(); i++)
-	{
-		socket = new Socket(config.getAdress()[i].first, config.getAdress()[i].second);
-		std::cout << "Server launched on " << config.getAdress()[i].first << ":" << config.getAdress()[i].second << std::endl;
-		this->_sockets.push_back(socket);
-		this->_epoll.addSocket(socket->getFd());
-	}
 }
 
 Server::~Server()
 {
-	for (size_t i = 0; i < this->_sockets.size(); ++i)
-		delete this->_sockets[i];
-}
-
-bool Server::isServerSocket(int fd)
-{
-	size_t n = this->_sockets.size();
-	for (size_t i = 0; i < n; i++)
-	{
-		if (fd == this->_sockets[i]->getFd())
-			return (true);
-	}
-	return (false);
 }
 
 HttpRequest Server::readRequest(int fd)
@@ -71,6 +50,7 @@ bool Server::handleRequest(HttpRequest const &request, int response_fd)
 		return (false);
 	const std::string &root = this->_config.getRoot();
 	const std::string &path = request.getPath();
+	std::cout << request.getMethod() << " - " << path << std::endl;
 	int code;
 	if (!request.isValid(&code))
 		response = HttpResponse(code);
@@ -81,7 +61,6 @@ bool Server::handleRequest(HttpRequest const &request, int response_fd)
 			: utils::joinPath(root, path);
 		response.setBodySource(file_path);
 	}
-	std::cout << request.getMethod() << " - " << path << std::endl;
 	response.send(response_fd);
 	this->_epoll.remove(response_fd);
 	return (true);
@@ -92,12 +71,9 @@ std::string Server::getIndex(std::string root, std::string path)
 	std::vector<std::string> index = this->_config.getIndex();
 	std::string file_path;
 	root = utils::joinPath(root, path);
-	std::cout << path << "    " << root << std::endl;
 	for (size_t i = 0; i < index.size(); i++)
 	{
-		std::cout << index[i] << std::endl;
 		file_path = root + index[i];
-		std::cout << file_path << std::endl;
 		if (utils::fileExists(file_path))
 			return (file_path);
 	}
