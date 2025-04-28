@@ -19,9 +19,9 @@ ConfigParser::ConfigParser(File config)
 			throw std::runtime_error("incorrect location block");
 		if (line.empty() || line[0] == '#')
 			continue;
-		if (processServerStart(line, waitBrace, inServer))
+		if (processServerStart(line, waitBrace))
 			continue;
-		if (processLocationStart(line, waitBrace, inLocation))
+		if (processLocationStart(line, waitBrace))
 		{
 			locationContent += utils::smartSubstr(line, "location", "{") + "\n";
 			continue;
@@ -70,7 +70,7 @@ void ConfigParser::AddServer(std::string content, std::vector<std::string> locat
 	_server.push_back(newServ);
 }
 
-bool ConfigParser::processServerStart(const std::string& line, int& waitBrace, int inServer)
+bool ConfigParser::processServerStart(const std::string& line, int& waitBrace)
 {
 	if (line == "server") {
 		waitBrace = 1;
@@ -79,7 +79,7 @@ bool ConfigParser::processServerStart(const std::string& line, int& waitBrace, i
 	return false;
 }
 
-bool ConfigParser::processLocationStart(const std::string& line, int& waitBrace, int inLocation)
+bool ConfigParser::processLocationStart(const std::string& line, int& waitBrace)
 {
 	if (line.find("location") != std::string::npos && line.find("{") == std::string::npos) {
 		waitBrace = 2;
