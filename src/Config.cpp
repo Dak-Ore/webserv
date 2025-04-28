@@ -9,6 +9,10 @@ Config::Config()
 	this->_index.push_back("index.html");
 }
 
+Config::~Config()
+{
+}
+
 int	Config::parseVar(std::string key, std::string value, std::string line)
 {
 	if (key == "autoindex")
