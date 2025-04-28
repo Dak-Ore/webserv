@@ -6,6 +6,7 @@
 # include <vector>
 # include <map>
 # include <sstream>
+# include <cmath>
 # include <cstdlib>
 
 class Config
@@ -20,6 +21,8 @@ protected:
     std::vector<std::string> _uploadPath;
     bool _autoIndex;
 public:
+	Config();
+	~Config();
 	std::string getRoot() const;
     std::vector<std::string> getIndex() const;
 	size_t getClientMaxBodySize();
@@ -28,7 +31,7 @@ public:
     std::vector<std::string> getCgiExtension();
     bool getUploadEnabled();
     std::vector<std::string> getUploadPath();
-
+	void checkVar();
 	int	parseVar(std::string key, std::string value, std::string line);
 	virtual void	findElement(std::string line) = 0;
 };

@@ -1,7 +1,7 @@
 #include "LocationConfig.hpp"
 #include "utils.hpp"
 
-LocationConfig::LocationConfig(std::string content)
+LocationConfig::LocationConfig(std::string content): Config()
 {
   	std::istringstream stream(content);
 	std::string		line;

@@ -92,9 +92,12 @@ std::string Server::getIndex(std::string root, std::string path)
 	std::vector<std::string> index = this->_config.getIndex();
 	std::string file_path;
 	root = utils::joinPath(root, path);
+	std::cout << path << "    " << root << std::endl;
 	for (size_t i = 0; i < index.size(); i++)
 	{
+		std::cout << index[i] << std::endl;
 		file_path = root + index[i];
+		std::cout << file_path << std::endl;
 		if (utils::fileExists(file_path))
 			return (file_path);
 	}

@@ -2,7 +2,7 @@
 #include "utils.hpp"
 
 // Default Constructor
-ServerConfig::ServerConfig(std::string content, std::vector<std::string> location)
+ServerConfig::ServerConfig(std::string content, std::vector<std::string> location): Config()
 {
 	std::istringstream stream(content);
 	std::string		line;
@@ -38,6 +38,8 @@ void	ServerConfig::findElement(std::string line)
 void ServerConfig::checkConfig()
 {
 	// ADRESS PART
+	if (this->_adress.empty())
+		throw std::runtime_error("No listen in server block");
 	for (std::vector<std::pair<std::string, std::string> >::iterator it = this->_adress.begin(); it != this->_adress.end(); it++)
 	{
 		if (!utils::isValidRegex(it->second, "^[0-9]+$") || !utils::isValidRegex(it->first, "^[0-9]{1,3}(\\.[0-9]{1,3}){3}$"))
