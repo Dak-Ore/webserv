@@ -13,7 +13,6 @@ ConfigParser::ConfigParser(File config)
 
 	for (size_t i = 0; i < config.GetSize(); ++i) {
 		line = utils::trim(config.getLine(i));
-
 		if (inServer > 1)
 			throw std::runtime_error("server blocks in a server blocks are not allowed");
 		if (inLocation > 1 || (inServer == 0 && inLocation))
@@ -55,7 +54,8 @@ ConfigParser::ConfigParser(File config)
 			}
 			continue;
 		}
-
+		if (line[line.size() - 1] != ';')
+			throw std::runtime_error("unexpected end of line at line ");
 		(inLocation > 0 ? locationContent : serverContent) += line + '\n';
 	}
 	if (this->_server.empty())
@@ -74,7 +74,6 @@ bool ConfigParser::processServerStart(const std::string& line, int& waitBrace, i
 {
 	if (line == "server") {
 		waitBrace = 1;
-		inServer++;
 		return true;
 	}
 	return false;
@@ -84,7 +83,6 @@ bool ConfigParser::processLocationStart(const std::string& line, int& waitBrace,
 {
 	if (line.find("location") != std::string::npos && line.find("{") == std::string::npos) {
 		waitBrace = 2;
-		inLocation++;
 		return true;
 	}
 	return false;
