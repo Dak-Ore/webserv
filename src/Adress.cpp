@@ -18,13 +18,15 @@ std::string Adress::hostToString(int host)
 	return oss.str();
 }
 
-Adress::Adress()
+Adress::Adress() :
+	_addrinfo(NULL)
 {
 }
 
-Adress::Adress(int fd)
+Adress::Adress(int fd) :
+	_addrinfo(NULL)
 {
-	std::pair<int, int> adress;;
+	std::pair<int, int> adress;
 
 	struct sockaddr_in server_addr;
 	socklen_t addrlen = sizeof(server_addr);
@@ -34,11 +36,30 @@ Adress::Adress(int fd)
 	this->_port = ntohs(server_addr.sin_port);
 }
 
-Adress::Adress(int host, int port)
+Adress::Adress(int host, int port) :
+	_addrinfo(NULL)
 {
 	this->_host = host;
 	this->_port = port;
-	this->_host_string = Adress::hostToString(this->_host);
+}
+
+Adress::Adress(std::string host, std::string port) :
+	_addrinfo(NULL)
+{
+	struct addrinfo hints;
+	hints.ai_family = AF_INET;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
+	hints.ai_flags = AI_PASSIVE;
+	struct addrinfo *res;
+	int status = ::getaddrinfo(host.c_str(), port.c_str(), &hints, &res);
+	if (status != 0)
+		throw std::runtime_error(::gai_strerror(status));
+
+	struct sockaddr_in *addr_in = (struct sockaddr_in *)(res->ai_addr);
+	this->_host = addr_in->sin_addr.s_addr;
+	this->_port = res->ai_protocol;
+	this->_addrinfo = res;
 }
 
 Adress::Adress(const Adress &ref)
@@ -50,14 +71,32 @@ const Adress &Adress::operator=(const Adress &ref)
 {
 	this->_host = ref._host;
 	this->_port = ref._port;
-	this->_host_string = ref._host_string;
 	return (*this);
 }
 
 Adress::~Adress()
 {
+	if (this->_addrinfo)
+		::freeaddrinfo(this->_addrinfo);
 }
 
 int Adress::host() const {return (this->_host);}
-const std::string &Adress::host_str() const {return (this->_host_string);}
+std::string Adress::host_str() const {return (Adress::hostToString(this->_host));}
 int Adress::port() const {return (this->_port);}
+std::string Adress::port_str() const
+{
+	std::stringstream s;
+	s << this->_port;
+	return (s.str());
+}
+std::string Adress::str() const
+{
+	std::stringstream s;
+	s << Adress::hostToString(this->_host) << ":" << this->_port;
+	return (s.str());
+}
+
+bool Adress::bind(int fd)
+{
+	return (::bind(fd, this->_addrinfo->ai_addr, this->_addrinfo->ai_addrlen));
+}

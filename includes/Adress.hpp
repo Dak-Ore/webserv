@@ -6,18 +6,23 @@ class Adress
 {
 private:
 	int _host;
-	std::string _host_string;
 	int _port;
+	struct addrinfo *_addrinfo;
 public:
 	static std::string hostToString(int host);
 	Adress();
 	Adress(int fd);
 	Adress(int host, int port);
+	Adress(std::string host, std::string port);
 	Adress(const Adress &ref);
 	const Adress &operator=(const Adress &ref);
 	~Adress();
 
 	int host() const;
-	const std::string &host_str() const;
+	std::string host_str() const;
 	int port() const;
+	std::string port_str() const;
+	std::string str() const;
+
+	bool bind(int fd);
 };
