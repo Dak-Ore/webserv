@@ -127,3 +127,9 @@ bool Adress::bind(int fd)
 		throw new std::runtime_error("Can't bind empty adress");
 	return (::bind(fd, this->_addrinfo->ai_addr, this->_addrinfo->ai_addrlen) == 0);
 }
+
+std::ostream& operator<<(std::ostream& os, const Adress &ref)
+{
+	os << ref.str();
+	return (os);
+}

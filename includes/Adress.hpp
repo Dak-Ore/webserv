@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <ostream>
 
 class Adress
 {
@@ -30,3 +31,5 @@ public:
 	int createSocket();
 	bool bind(int fd);
 };
+
+std::ostream& operator<<(std::ostream& os, const Adress &ref);
