@@ -89,6 +89,11 @@ const Adress &Adress::operator=(const Adress &ref)
 	return (*this);
 }
 
+bool Adress::operator==(const Adress &ref)
+{
+	return (this->_host == ref._host && this->_port == ref._port);
+}
+
 Adress::~Adress()
 {
 	if (this->_addrinfo)
