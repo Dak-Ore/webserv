@@ -57,6 +57,8 @@ void CGI::execute(CGI::execute_arguments const& args)
 	envp["SCRIPT_FILENAME"] = args.script_pathname;
 
 	std::vector<std::string> argv(this->argv);
+	// TODO cd to the script path
+	// see https://datatracker.ietf.org/doc/html/rfc3875#section-7.2
 
 	int inout[2];
 	if (pipe(inout) < 0)
