@@ -110,7 +110,7 @@ void HttpRequest::parseRequestLine(std::istringstream& stream)
 		parseOpt();
 
 	if (this->_version != "HTTP/1.1")
-		throw std::runtime_error("505 HTTP Version Not Supported");
+		this->_error = 500;
 }
 
 
