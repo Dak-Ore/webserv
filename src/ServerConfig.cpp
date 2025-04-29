@@ -53,9 +53,9 @@ void ServerConfig::checkConfig()
 			throw std::runtime_error("Invalid server name in config file");
 }
 
-std::vector<Adress> ServerConfig::getAdress(){return this->_adress;}
-std::vector<std::string> ServerConfig::getServerNames(){return this->_serverNames;}
-std::vector<LocationConfig> ServerConfig::getLocations(){return this->_locations;}
+const std::vector<Adress>& ServerConfig::getAdress(){return this->_adress;}
+const std::vector<std::string>& ServerConfig::getServerNames(){return this->_serverNames;}
+const std::vector<LocationConfig>& ServerConfig::getLocations(){return this->_locations;}
 // Destructor
 ServerConfig::~ServerConfig() {}
 

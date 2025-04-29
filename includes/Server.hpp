@@ -11,9 +11,9 @@ class Server
 {
 private:
 	EPoll &_epoll;
-	ServerConfig	_config;
     std::string _root;
 public:
+	ServerConfig	_config;
 	Server(EPoll &epoll_ref, ServerConfig &config);
 	~Server();
 	HttpRequest readRequest(int fd);

@@ -1,9 +1,10 @@
 #include "Webserv.hpp"
 #include "HttpClient.hpp"
+#include <algorithm>
 
 Webserv::Webserv(ConfigParser &parser) : _run(true)
 {
-	Socket *socket;
+	Socket socket;
 	size_t count = parser.getServer().size();
 	for (size_t i = 0; i < count; i++)
 	{
@@ -12,10 +13,10 @@ Webserv::Webserv(ConfigParser &parser) : _run(true)
 
 		for (size_t i = 0; i < config.getAdress().size(); i++)
 		{
-			socket = new Socket(config.getAdress()[i].host_str(), config.getAdress()[i].port_str());
+			socket = Socket(config.getAdress()[i].host_str(), config.getAdress()[i].port_str());
 			std::cout << "Server launched on " << config.getAdress()[i].str() << std::endl;
 			this->_sockets.push_back(socket);
-			this->_epoll.addSocket(socket->getFd());
+			this->_epoll.addSocket(socket.getFd());
 		}
 	}
 }
@@ -25,10 +26,7 @@ Webserv::~Webserv()
 	for (size_t i = 0; i < this->_servers.size(); ++i)
 		delete this->_servers[i];
 	for (size_t i = 0; i < this->_sockets.size(); ++i)
-	{
-		this->_sockets[i]->close();
-		delete this->_sockets[i];
-	}
+		this->_sockets[i].close();
 }
 
 bool Webserv::isServerSocket(int fd)
@@ -36,7 +34,7 @@ bool Webserv::isServerSocket(int fd)
 	size_t n = this->_sockets.size();
 	for (size_t i = 0; i < n; i++)
 	{
-		if (fd == this->_sockets[i]->getFd())
+		if (fd == this->_sockets[i].getFd())
 			return (true);
 	}
 	return (false);
@@ -48,13 +46,15 @@ Server *Webserv::findServer(int fd)
 	HttpClient client = this->_client_map[fd];
 	for (size_t i = 0; i < this->_servers.size(); i++)
 	{
-		break ;
 		Server *s = this->_servers[i];
-		// if (s == client)
+		const std::vector<Adress> &adresses = s->_config.getAdress();
+		if (std::find(adresses.begin(), adresses.end(), client.getAdress()) != adresses.end())
 			v.push_back(s);
 	}
-
-	return (this->_servers[0]);
+	if (v.size() == 0)
+		return (this->_servers[0]);
+	else
+		return (v[0]);
 }
 
 void Webserv::listen()

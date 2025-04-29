@@ -85,7 +85,7 @@ const Adress &Adress::operator=(const Adress &ref)
 {
 	this->_host = ref._host;
 	this->_port = ref._port;
-	this->_addrinfo = ref._addrinfo;
+	this->_addrinfo = NULL;
 	return (*this);
 }
 

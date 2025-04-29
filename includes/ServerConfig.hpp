@@ -11,14 +11,12 @@
 class ServerConfig : public Config
 {
 public:
-    // Default Constructor
     ServerConfig(std::string content, std::vector<std::string> location);
-    // Destructor
     virtual ~ServerConfig();
 	void	findElement(std::string line);
-    std::vector<Adress> getAdress();
-	std::vector<std::string> getServerNames();
-    std::vector<LocationConfig> getLocations();
+    const std::vector<Adress>& getAdress();
+	const std::vector<std::string>& getServerNames();
+    const std::vector<LocationConfig>& getLocations();
 	void print();
 	void checkConfig();
 private:
