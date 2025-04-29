@@ -91,7 +91,7 @@ const Adress &Adress::operator=(const Adress &ref)
 
 bool Adress::operator==(const Adress &ref) const
 {
-	return (this->_host == ref._host && this->_port == ref._port);
+	return ((this->_host == 0 || ref._host == 0 || this->_host == ref._host) && this->_port == ref._port);
 }
 
 Adress::~Adress()
