@@ -12,8 +12,8 @@ Webserv::Webserv(ConfigParser &parser) : _run(true)
 
 		for (size_t i = 0; i < config.getAdress().size(); i++)
 		{
-			socket = new Socket(config.getAdress()[i].first, config.getAdress()[i].second);
-			std::cout << "Server launched on " << config.getAdress()[i].first << ":" << config.getAdress()[i].second << std::endl;
+			socket = new Socket(config.getAdress()[i].host_str(), config.getAdress()[i].port_str());
+			std::cout << "Server launched on " << config.getAdress()[i].str() << std::endl;
 			this->_sockets.push_back(socket);
 			this->_epoll.addSocket(socket->getFd());
 		}

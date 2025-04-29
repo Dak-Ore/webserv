@@ -1,11 +1,10 @@
 #ifndef SERVERCONFIG_HPP
 # define SERVERCONFIG_HPP
 
-# include <iostream>
+# include "Adress.hpp"
 # include "LocationConfig.hpp"
 # include <sstream>
 # include <map>
-# include <cstdlib>
 # include <vector>
 
 
@@ -17,13 +16,13 @@ public:
     // Destructor
     virtual ~ServerConfig();
 	void	findElement(std::string line);
-    std::vector<std::pair<std::string, std::string> > getAdress();
+    std::vector<Adress> getAdress();
 	std::vector<std::string> getServerNames();
     std::vector<LocationConfig> getLocations();
 	void print();
 	void checkConfig();
 private:
-    std::vector<std::pair<std::string, std::string> > _adress;
+    std::vector<Adress>_adress;
 	std::vector<std::string> _serverNames;
     std::vector<LocationConfig> _locations;
 };
