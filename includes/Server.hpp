@@ -16,7 +16,6 @@ public:
 	ServerConfig	_config;
 	Server(EPoll &epoll_ref, ServerConfig &config);
 	~Server();
-	HttpRequest readRequest(int fd);
 	bool handleRequest(HttpRequest const &request, int response_fd);
 	std::string getIndex(std::string root, std::string path);
 };

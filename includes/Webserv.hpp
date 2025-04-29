@@ -18,8 +18,9 @@ public:
     Webserv(ConfigParser &parser);
     ~Webserv();
 	bool isServerSocket(int fd);
-    Server *findServer(int fd);
+	Server *findServer(int fd, const HttpRequest& request);
     void listen();
 	void acceptClient(int serverFd);
     void stop();
+	HttpRequest readRequest(int fd);
 };

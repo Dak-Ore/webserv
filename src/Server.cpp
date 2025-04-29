@@ -20,29 +20,6 @@ Server::~Server()
 {
 }
 
-HttpRequest Server::readRequest(int fd)
-{
-	std::string request_string;
-	char buffer[1024];
-
-	while (true)
-	{
-		int bytes = ::recv(fd, buffer, sizeof(buffer), 0);
-		if (bytes <= 0) break;
-		request_string.append(buffer, bytes);
-
-		size_t pos = request_string.find("\r\n\r\n");
-		if (pos != std::string::npos) {
-			request_string = request_string.substr(0, pos + 4);
-			// Body
-			while (::recv(fd, buffer, sizeof(buffer), MSG_DONTWAIT) > 0)
-				continue ;
-			break;
-		}
-	}
-	return (HttpRequest(request_string));
-}
-
 bool Server::handleRequest(HttpRequest const &request, int response_fd)
 {
 	HttpResponse response;
