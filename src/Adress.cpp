@@ -41,8 +41,6 @@ Adress::Adress() :
 Adress::Adress(int fd) :
 	_addrinfo(NULL)
 {
-	std::pair<int, int> adress;
-
 	struct sockaddr_in server_addr;
 	socklen_t addrlen = sizeof(server_addr);
 	if (getsockname(fd, (struct sockaddr*)&server_addr, &addrlen) == -1)
@@ -73,11 +71,12 @@ Adress::Adress(std::string host, std::string port) :
 
 	struct sockaddr_in *addr_in = (struct sockaddr_in *)(res->ai_addr);
 	this->_host = addr_in->sin_addr.s_addr;
-	this->_port = res->ai_protocol;
+	this->_port = ntohs(addr_in->sin_port);
 	this->_addrinfo = res;
 }
 
-Adress::Adress(const Adress &ref)
+Adress::Adress(const Adress &ref) :
+	_addrinfo(NULL)
 {
 	*this = ref;
 }
