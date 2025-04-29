@@ -85,10 +85,11 @@ const Adress &Adress::operator=(const Adress &ref)
 {
 	this->_host = ref._host;
 	this->_port = ref._port;
+	this->_addrinfo = ref._addrinfo;
 	return (*this);
 }
 
-bool Adress::operator==(const Adress &ref)
+bool Adress::operator==(const Adress &ref) const
 {
 	return (this->_host == ref._host && this->_port == ref._port);
 }
