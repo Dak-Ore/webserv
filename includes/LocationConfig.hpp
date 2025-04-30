@@ -21,12 +21,10 @@ public:
 	void		checkConfig();
 	void		print();
 	std::string getPath();
-    std::vector<std::string> getAllowedMethods();
     bool getHasRedirection();
     std::pair<int, std::string> getRedirection();
 private:
 	std::string _path;
-    std::vector<std::string> _allowedMethods;
     bool _hasRedirection;
     std::pair<int, std::string> _redirection;
 };

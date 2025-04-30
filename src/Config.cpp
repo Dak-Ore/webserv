@@ -2,7 +2,7 @@
 
 Config::Config()
 {
-	this->_root = "/www";
+	this->_root = "www";
 	this->_clientMaxBodySize = 1024 * 1024;
 	this->_uploadEnabled = false;
 	this->_autoIndex = false;
@@ -27,6 +27,8 @@ int	Config::parseVar(std::string key, std::string value, std::string line)
 		utils::ft_split(value, &this->_cgiExtension);
 	else if (key == "index")
 		utils::ft_split(value, &this->_index);
+	else if (key == "allow_methods")
+		utils::ft_split(value, &this->_allowedMethods);
 	else if (key == "client_max_body_size")
 	{
 		if (utils::isValidRegex(value, "^0-9$"))
@@ -56,6 +58,9 @@ void	Config::checkVar()
 {
 	if (!this->_root.empty() && !utils::isValidRegex(this->_root, "^\\/[A-Za-z0-9\\/_.-]*$"))
 		throw std::runtime_error("Invalid root path : " + this->_root + " in configuration file");
+	for (std::vector<std::string>::iterator it = this->_allowedMethods.begin(); it != this->_allowedMethods.end(); it++)
+		if (!utils::isValidRegex(*it, "^(GET|POST|DELETE)$"))
+			throw std::runtime_error("invalid argument of allow_methods " + *it);
 }
 
 bool Config::getAutoIndex(){return this->_autoIndex;}
@@ -64,3 +69,4 @@ bool Config::getUploadEnabled(){return this->_uploadEnabled;}
 std::vector<std::string> Config::getUploadPath(){return this->_uploadPath;}
 std::string Config::getRoot() const {return this->_root;}
 std::vector<std::string> Config::getIndex() const {return this->_index;}
+std::vector<std::string> Config::getAllowedMethods(){return this->_allowedMethods;}

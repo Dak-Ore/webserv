@@ -17,7 +17,7 @@ LocationConfig::LocationConfig(std::string content): Config()
 
 void	LocationConfig::checkConfig()
 {
-	if (!utils::isValidRegex(this->_path, "^\\/[A-Za-z0-9\\/_.-]*$"))
+	if (!utils::isValidRegex(this->_path, "^\\/[A-Za-z0-9\\/_.-\\*~]*$"))
 		throw std::runtime_error("Invalid path " + this->_path + " in location config");
 	if (this->_hasRedirection)
 	{
@@ -26,9 +26,6 @@ void	LocationConfig::checkConfig()
 		if (!utils::isValidRegex(this->_redirection.second, "^(https?://[^\\s]+|/[^\\s]*)$"))
 			throw std::runtime_error("invalid return redirection " + this->_redirection.second + " in location block");
 	}	
-	for (std::vector<std::string>::iterator it = this->_allowedMethods.begin(); it != this->_allowedMethods.end(); it++)
-		if (!utils::isValidRegex(*it, "^(GET|POST|DELETE)$"))
-			throw std::runtime_error("invalid argument at allowed_method in location block");
 }
 
 void	LocationConfig::findElement(std::string line)
@@ -38,8 +35,6 @@ void	LocationConfig::findElement(std::string line)
 
 	if (parseVar(key, value, line))
 		return ;
-	else if (key == "allowed_methods")
-		utils::ft_split(value, &this->_allowedMethods);
 	else if (key == "return")
 	{
 		this->_hasRedirection = true;
@@ -76,6 +71,5 @@ LocationConfig::~LocationConfig() {
 
 //getters
 std::string LocationConfig::getPath(){return this->_path;}
-std::vector<std::string> LocationConfig::getAllowedMethods(){return this->_allowedMethods;}
 bool LocationConfig::getHasRedirection(){return this->_hasRedirection;}
 std::pair<int, std::string> LocationConfig::getRedirection(){return this->_redirection;}

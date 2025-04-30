@@ -19,6 +19,7 @@ protected:
     std::vector<std::string> _cgiExtension;
     bool _uploadEnabled;
     std::vector<std::string> _uploadPath;
+    std::vector<std::string> _allowedMethods;
     bool _autoIndex;
 public:
 	Config();
@@ -31,6 +32,7 @@ public:
     std::vector<std::string> getCgiExtension();
     bool getUploadEnabled();
     std::vector<std::string> getUploadPath();
+	std::vector<std::string> getAllowedMethods();
 	void checkVar();
 	int	parseVar(std::string key, std::string value, std::string line);
 	virtual void	findElement(std::string line) = 0;
