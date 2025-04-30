@@ -1,8 +1,8 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <unistd.h>
 #include "CGI.hpp"
-#include "utils.hpp"
 
 /*
 int main(int argc, char **argv, char **envp)
@@ -27,38 +27,44 @@ int main()
 
 	std::cout << "execute cgi" << std::endl;
 	std::string data = "favoritemeal=spaghetti";
-	int inout[2];
+	CGI::Running running;
+	int stdin;
 	{
 		CGI::execute_arguments args = {
-			script_pathname: "/home/zy/local/tmp/elawesome/index.php",
-			remote_addr: "192.168.1.247",
-			request_method: "POST",
-			script_name: "/elawesome/index.php",
-			server_name: "example.com",
-			server_port: "1234",
-			server_protocol: "HTTP/1.1",
-			query_string: "name=zy",
-			path_info: "",
-			content_exists: true,
-			content_length: data.size(),
-			content_type: "application/x-www-form-urlencoded",
+			.script_pathname = "/home/zy/local/tmp/elawesome/index.php",
+			.remote_addr = "192.168.1.247",
+			.request_method = "POST",
+			.script_name = "/elawesome/index.php",
+			.server_name = "example.com",
+			.server_port = "1234",
+			.server_protocol = "HTTP/1.1",
+			.query_string = "name=zy",
+			.path_info = "",
+			.content_exists = true,
+			.content_length = data.size(),
+			.content_type = "application/x-www-form-urlencoded",
 		};
-		cgi.execute(inout, args);
+		running = cgi.execute(stdin, args);
 	}
-	write(inout[1], data.c_str(), data.size());
-	close(inout[1]);
 
-	char buf[1000];
+	write(stdin, data.c_str(), data.size());
+	close(stdin);
 
-	while (true) {
-		int n = read(inout[0], buf, 1000);
+	while (!running.isHeadComplete())
+		running.read();
+	std::cout << "HEAD" << std::endl << running.getResponseHead() << "%"
+			<< std::endl;
+
+	while (running.read());
+
+	int bodyfd = running.getResponseBodyFd();
+	std::cout << "BODY" << std::endl;
+	char buf[2];
+	while (ssize_t n = read(bodyfd, buf, 2)) {
 		if (n < 0)
-			throw std::runtime_error("read() failed.");
-		if (!n)
-			break;
+			throw std::runtime_error("bruh.");
 		write(1, buf, n);
 	}
-	close(inout[0]);
 
-	std::cout << std::endl << ":)" << std::endl;
+	std::cout << "%" << std::endl << ":)" << std::endl << std::endl;
 }

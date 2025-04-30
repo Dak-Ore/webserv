@@ -9,20 +9,77 @@
 class CGI
 {
 
+public:
+	/**
+	 * Manages a running CGI script. This allows to send and receive data
+	 * from the CGI script until its end.
+	 *
+	 * Return type of CGI.execute().
+	 */
+	class Running
+	{
+	public:
+		Running();
+		Running(Running const& other);
+		CGI::Running& operator=(Running const& other);
+		virtual ~Running();
+
+	private:
+		/**
+		 * stdout is a reading file descriptor linked
+		 * to the stdout of the CGI script.
+		 */
+		Running(int stdout);
+
+	public:
+		/**
+		 * To call each time there is something to read on the CGI script's
+		 * stdout or if it reached EOF.
+		 *
+		 * Must be called repeteadly until this.isComplete().
+		 *
+		 * Return false when EOF.
+		 */
+		bool read();
+
+		/**
+		 * Return either the CGI script has sent the complete head.
+		 */
+		bool isHeadComplete();
+
+		/**
+		 * Get the response head of the CGI script.
+		 *
+		 * Call it only if this.isHeadComplete() is true!
+		 */
+		std::string const getResponseHead();
+
+		/**
+		 * Get a read-only fd that reads the body content of the CGI script.
+		 *
+		 * Call it only if this.isHeadComplete() is true!
+		 */
+		int getResponseBodyFd();
+
+		/**
+		 * Return either the CGI script has sent the complete head and body.
+		 */
+		bool isComplete();
+
+	private:
+		int _stdout;
+		bool _complete;
+		std::string _head;
+		bool _head_complete;
+		int _response_body_pipe[2];
+		bool _response_body_pipe_open;
+
+		friend class CGI;
+	};
+
 private:
-	/**
-	 * default constructor, results in an undefined object.
-	 */
 	CGI();
-
-	/**
-	 * copy constructor
-	 */
 	CGI(CGI const&);
-
-	/**
-	 * copy operator
-	 */
 	CGI& operator=(CGI const&);
 
 public:
@@ -63,7 +120,7 @@ public:
 		/**
 		 * defines the meta-argument SCRIPT_NAME:
 		 * URI path of the script to call.
-		 * 
+		 *
 		 * this is not the same as 'script_path',
 		 * http://example.com/foo/bar.php would give "/foo/bar.php",
 		 * while script_path could give "/var/www/foo/bar.php"
@@ -100,14 +157,14 @@ public:
 		/**
 		 * (optional) defines the meta-argument PATH_INFO:
 		 * see https://datatracker.ietf.org/doc/html/rfc3875#section-4.1.5
-		 * 
+		 *
 		 * probably not useful, i guess keep it "".
 		 */
 		std::string const& path_info;
 
 		/**
 		 * either the client sent request data (probably with REQUEST_METHOD=POST).
-		 * 
+		 *
 		 * if this is defined, content must be defined too,
 		 * and data must be wrote on inout[1].
 		 */
@@ -116,7 +173,7 @@ public:
 		/**
 		 * (optional) defines the meta-argument CONTENT_LENGTH:
 		 * size of the request data, in bytes.
-		 * 
+		 *
 		 * to use if .content_exists is true.
 		 */
 		size_t content_length;
@@ -124,7 +181,7 @@ public:
 		/**
 		 * (optional) defines the meta-argument CONTENT_LENGTH:
 		 * MIME type of the request data.
-		 * 
+		 *
 		 * to use if .content_exists is true.
 		 */
 		std::string const& content_type;
@@ -132,16 +189,14 @@ public:
 
 	/**
 	 * call the CGI with a given file and other informations.
-	 * 
-	 * inout[0] and inout[1] will be set to respectively
-	 * a reading file descriptor linked to the stdout of the program
-	 * and a writing file descriptor linked to the stdin of the program.
-	 * 
-	 * inout[0] reads the response of the CGI script.
-	 * 
-	 * inout[1] allows to write the request data if necessary.
+	 *
+	 * The return value is the link to the running CGI script
+	 * that must be used to get its response.
+	 *
+	 * 'stdin' will be set to an fd to send the CGI script
+	 * potential request data. If it isn't used, it must be closed anyway.
 	 */
-	void execute(int inout[2], CGI::execute_arguments const& args);
+	CGI::Running execute(int& stdin, CGI::execute_arguments const& args);
 
 private:
 	std::vector<std::string> argv;
