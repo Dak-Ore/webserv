@@ -75,7 +75,7 @@ LocationConfig::~LocationConfig() {
 }
 
 //getters
-std::string LocationConfig::getPath(){return this->_path;}
+std::string LocationConfig::getPath() const {return this->_path;}
 std::vector<std::string> LocationConfig::getAllowedMethods(){return this->_allowedMethods;}
 bool LocationConfig::getHasRedirection(){return this->_hasRedirection;}
 std::pair<int, std::string> LocationConfig::getRedirection(){return this->_redirection;}

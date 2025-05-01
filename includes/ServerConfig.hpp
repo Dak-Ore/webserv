@@ -14,9 +14,9 @@ public:
     ServerConfig(std::string content, std::vector<std::string> location);
     virtual ~ServerConfig();
 	void	findElement(std::string line);
-    const std::vector<Adress>& getAdress();
-	const std::vector<std::string>& getServerNames();
-    const std::vector<LocationConfig>& getLocations();
+    const std::vector<Adress>& getAdress() const;
+	const std::vector<std::string>& getServerNames() const;
+    const std::vector<LocationConfig>& getLocations() const;
 	void print();
 	void checkConfig();
 private:

@@ -40,7 +40,7 @@ bool Webserv::isServerSocket(int fd)
 	return (false);
 }
 
-Server *Webserv::findServer(int fd, const HttpRequest& request)
+Server* Webserv::findServer(int fd)
 {
 	std::vector<Server *> v;
 	HttpClient client = this->_client_map[fd];
@@ -53,8 +53,6 @@ Server *Webserv::findServer(int fd, const HttpRequest& request)
 	}
 	if (v.size() == 0)
 		return (this->_servers[0]);
-	// const std::string& path = request.getPath();
-	// utils::isValidRegex(v[0]->_config.getRoot(), path + "*");
 	return (v[0]);
 }
 
@@ -73,7 +71,7 @@ void Webserv::listen()
 			else
 			{
 				HttpRequest const request = this->readRequest(fd);
-				Server *s = this->findServer(fd, request);
+				Server *s = this->findServer(fd);
 				if (!s->handleRequest(request, fd))
 					this->_epoll.remove(fd);
 			}

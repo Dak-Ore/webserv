@@ -20,7 +20,7 @@ public:
     virtual ~LocationConfig();
 	void		checkConfig();
 	void		print();
-	std::string getPath();
+	std::string getPath() const;
     std::vector<std::string> getAllowedMethods();
     bool getHasRedirection();
     std::pair<int, std::string> getRedirection();
