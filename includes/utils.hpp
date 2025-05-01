@@ -3,6 +3,7 @@
 #include <regex.h>
 #include <sys/types.h> 
 #include <stdint.h>
+#include <iostream>
 
 namespace utils
 {

@@ -2,15 +2,26 @@
 
 HttpRequest::HttpRequest() : HttpMessage() {}
 // Default Constructor
-HttpRequest::HttpRequest(const std::string &request) : HttpMessage(),
+HttpRequest::HttpRequest(const std::string &request, std::vector<std::string> allowed) : HttpMessage(),
 	_is_empty(request.empty()), _error(0)
 {
 	if (this->empty())
 		return ;
-
 	std::istringstream stream(request);
 
 	parseRequestLine(stream);
+	if (!allowed.empty())
+	{
+		bool	find = 0;
+		for (std::vector<std::string>::iterator it = allowed.begin(); it != allowed.end(); it++)
+			if ((find = this->_method == *it) == 1)
+				break;
+		if (!find)
+		{
+			this->_error = 405;
+			return ;
+		}
+	}
 	parseHeaders(stream);
 
 	if (this->_headers.size() > MAX_HEADERS)

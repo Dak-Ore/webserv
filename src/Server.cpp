@@ -40,7 +40,7 @@ HttpRequest Server::readRequest(int fd)
 			break;
 		}
 	}
-	return (HttpRequest(request_string));
+	return (HttpRequest(request_string, this->_config.getAllowedMethods()));
 }
 
 bool Server::handleRequest(HttpRequest const &request, int response_fd)
