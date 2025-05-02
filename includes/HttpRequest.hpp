@@ -29,7 +29,7 @@ private:
 	void parseCookie();
 public:
 	HttpRequest();
-    HttpRequest(const std::string &request, std::vector<std::string> allowed);
+    HttpRequest(const std::string &request);
     ~HttpRequest();
 	const std::string &getMethod() const;
 	const std::string &getPath() const ;

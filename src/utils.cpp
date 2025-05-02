@@ -106,3 +106,17 @@ bool utils::isValidRegex(std::string str, std::string pattern)
     regfree(&regex);
     return (result == 0);
 }
+
+std::string utils::addTrailingSlash(const std::string& path)
+{
+	if (!path.empty() && path[path.length() - 1] != '/')
+		return path + "/";
+	return path;
+}
+
+std::string utils::removeTrailingSlash(const std::string& path)
+{
+	if (!path.empty() && path[path.length() - 1] == '/')
+		return path.substr(0, path.length() - 1);
+	return path;
+}

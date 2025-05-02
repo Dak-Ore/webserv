@@ -27,9 +27,9 @@ void	ServerConfig::findElement(std::string line)
 	else if (key == "listen")
 	{
 		if (line.find(":") == std::string::npos)
-			this->_adress.push_back(std::pair<std::string, std::string>("0.0.0.0", utils::smartSubstr(line, key, ";")));
+			this->_adress.push_back(Adress("0.0.0.0", utils::smartSubstr(line, key, ";")));
 		else
-			this->_adress.push_back(std::pair<std::string, std::string>(utils::smartSubstr(line, key, ":"), utils::smartSubstr(value, ":", ";")));
+			this->_adress.push_back(Adress(utils::smartSubstr(line, key, ":"), utils::smartSubstr(value, ":", ";")));
 	}
 	else if (key == "server_name")
 		utils::ft_split(value, &this->_serverNames);
@@ -40,15 +40,18 @@ void ServerConfig::checkConfig()
 	// ADRESS PART
 	if (this->_adress.empty())
 		throw std::runtime_error("No listen in server block");
-	for (std::vector<std::pair<std::string, std::string> >::iterator it = this->_adress.begin(); it != this->_adress.end(); it++)
+	for (std::vector<Adress>::iterator it = this->_adress.begin(); it != this->_adress.end(); it++)
 	{
-		if (!utils::isValidRegex(it->second, "^[0-9]+$") || 
-			(!utils::isValidRegex(it->first, "^[0-9]{1,3}(\\.[0-9]{1,3}){3}$") 
-			&& (!utils::isValidRegex(it->first, "^[A-Za-z0-9_.-]+$") 
-			|| it->first[0] == '-' || it->first[it->first.length() - 1] == '-')))
-			throw std::runtime_error("Invalid adress in config file: " + it->first + ":" + it->second);
-		int	port = atoi(it->second.c_str());
+		if (!utils::isValidRegex(it->port_str(), "^[0-9]+$") || 
+			(!utils::isValidRegex(it->host_str(), "^[0-9]{1,3}(\\.[0-9]{1,3}){3}$") 
+			&& (!utils::isValidRegex(it->host_str(), "^[A-Za-z0-9_.-]+$") 
+			|| it->host_str()[0] == '-' || it->host_str()[it->host_str().length() - 1] == '-')))
+			throw std::runtime_error("Invalid adress in config file: " + it->host_str() + ":" + it->port_str());
+		int	port = atoi(it->port_str().c_str());
 		if (port < 1 || port > 65535)
+		if (!utils::isValidRegex(it->port_str(), "^[0-9]+$") || !utils::isValidRegex(it->host_str(), "^[0-9]{1,3}(\\.[0-9]{1,3}){3}$"))
+			throw std::runtime_error("Invalid adress in config file");
+		if (it->port() < 1 || it->port() > 65535)
 			throw std::runtime_error("Invalid port in config file");
 	}
 	// SERVER NAME
@@ -57,17 +60,17 @@ void ServerConfig::checkConfig()
 			throw std::runtime_error("Invalid server name in config file");
 }
 
-std::vector<std::pair<std::string, std::string> > ServerConfig::getAdress(){return this->_adress;}
-std::vector<std::string> ServerConfig::getServerNames(){return this->_serverNames;}
-std::vector<LocationConfig> ServerConfig::getLocations(){return this->_locations;}
+const std::vector<Adress>& ServerConfig::getAdress() const {return this->_adress;}
+const std::vector<std::string>& ServerConfig::getServerNames() const {return this->_serverNames;}
+const std::vector<LocationConfig>& ServerConfig::getLocations() const {return this->_locations;}
 // Destructor
 ServerConfig::~ServerConfig() {}
 
 void	ServerConfig::print()
 {
 	std::cout << "Server" << std::endl << "My host:" << std::endl;
-	for (std::vector<std::pair<std::string, std::string> >::iterator it = this->_adress.begin(); it != this->_adress.end(); it++)
-		std::cout << it->first << ":" << it->second << std::endl;
+	for (std::vector<Adress>::iterator it = this->_adress.begin(); it != this->_adress.end(); it++)
+		std::cout << it->str() << std::endl;
 	std::cout << "Root: " << this->_root << std::endl;
 	std::cout << "Index" << std::endl;
 	for (std::vector<std::string>::iterator it = this->_index.begin(); it != this->_index.end(); it++)

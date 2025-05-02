@@ -63,10 +63,10 @@ void	Config::checkVar()
 			throw std::runtime_error("invalid argument of allow_methods " + *it);
 }
 
-bool Config::getAutoIndex(){return this->_autoIndex;}
-std::vector<std::string> Config::getCgiExtension(){return this->_cgiExtension;}
-bool Config::getUploadEnabled(){return this->_uploadEnabled;}
-std::vector<std::string> Config::getUploadPath(){return this->_uploadPath;}
+bool Config::getAutoIndex() const {return this->_autoIndex;}
+std::vector<std::string> Config::getCgiExtension() const {return this->_cgiExtension;}
+bool Config::getUploadEnabled() const {return this->_uploadEnabled;}
+std::vector<std::string> Config::getUploadPath() const {return this->_uploadPath;}
 std::string Config::getRoot() const {return this->_root;}
 std::vector<std::string> Config::getIndex() const {return this->_index;}
-std::vector<std::string> Config::getAllowedMethods(){return this->_allowedMethods;}
+std::vector<std::string> Config::getAllowedMethods() const{return this->_allowedMethods;}

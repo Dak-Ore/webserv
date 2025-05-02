@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <ostream>
 
 class Adress
 {
@@ -18,7 +19,7 @@ public:
 	Adress(std::string host, std::string port);
 	Adress(const Adress &ref);
 	const Adress &operator=(const Adress &ref);
-	bool operator==(const Adress &ref);
+	bool operator==(const Adress &ref) const;
 	~Adress();
 
 	int host() const;
@@ -30,3 +31,5 @@ public:
 	int createSocket();
 	bool bind(int fd);
 };
+
+std::ostream& operator<<(std::ostream& os, const Adress &ref);

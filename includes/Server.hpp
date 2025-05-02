@@ -11,12 +11,12 @@ class Server
 {
 private:
 	EPoll &_epoll;
-	ServerConfig	_config;
     std::string _root;
 public:
+	ServerConfig	_config;
 	Server(EPoll &epoll_ref, ServerConfig &config);
 	~Server();
-	HttpRequest readRequest(int fd);
 	bool handleRequest(HttpRequest const &request, int response_fd);
-	std::string getIndex(std::string root, std::string path);
+	std::string getIndex(const std::string& root, const std::string& path);
+	const LocationConfig *matchLocation(const HttpRequest& request);
 };

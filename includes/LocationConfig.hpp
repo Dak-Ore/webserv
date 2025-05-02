@@ -20,9 +20,9 @@ public:
     virtual ~LocationConfig();
 	void		checkConfig();
 	void		print();
-	std::string getPath();
-    bool getHasRedirection();
-    std::pair<int, std::string> getRedirection();
+	std::string getPath() const;
+    bool getHasRedirection() const;
+    std::pair<int, std::string> getRedirection() const;
 private:
 	std::string _path;
     bool _hasRedirection;

@@ -70,6 +70,6 @@ LocationConfig::~LocationConfig() {
 }
 
 //getters
-std::string LocationConfig::getPath(){return this->_path;}
-bool LocationConfig::getHasRedirection(){return this->_hasRedirection;}
-std::pair<int, std::string> LocationConfig::getRedirection(){return this->_redirection;}
+std::string LocationConfig::getPath() const{return this->_path;}
+bool LocationConfig::getHasRedirection() const{return this->_hasRedirection;}
+std::pair<int, std::string> LocationConfig::getRedirection() const{return this->_redirection;}
