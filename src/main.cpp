@@ -23,7 +23,6 @@ int main(int argc, char **argv, char **envp)
 		std::cout << "Usage " << argv[0] << " <file.conf>" << std::endl;
 		return 1;
 	}
-
 	std::string config_file_name = (argc == 2) ? argv[1] : "";
 	try
 	{

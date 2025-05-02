@@ -17,4 +17,6 @@ namespace utils
 	void ft_split(std::string line, std::vector<std::string> *list);
 	bool isValidRegex(std::string str, std::string pattern); 
 	bool isDirectory(const std::string &path);
+	std::string	regexWildcardGenerator(const std::string &path);
+	bool	isValidPath(std::string str, std::string path);
 }

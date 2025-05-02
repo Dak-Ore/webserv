@@ -106,3 +106,32 @@ bool utils::isValidRegex(std::string str, std::string pattern)
     regfree(&regex);
     return (result == 0);
 }
+
+std::string	utils::regexWildcardGenerator(const std::string &path)
+{
+	std::string	regex;
+
+	for (size_t i = 0; i < path.size(); i++)
+	{
+		if (path[i] == '*')
+			regex += "[a-zA-Z0-9\\-_\\.\\%]*";
+		else if (path[i] == '.')
+			regex += "\\.";
+		else if (path[i] == '/')
+			regex += "\\/";
+		else 
+			regex += path[i];
+	}
+	return "^" + regex + "$";
+}
+
+bool	utils::isValidPath(std::string str, std::string path)
+{
+	regex_t regex;
+	std::string pattern = utils::regexWildcardGenerator(path);
+    if (regcomp(&regex, pattern.c_str(), REG_EXTENDED | REG_NOSUB) != 0)
+        return false;
+    int result = regexec(&regex, str.c_str(), 0, NULL, 0);
+    regfree(&regex);
+    return (result == 0);
+}
