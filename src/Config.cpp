@@ -63,6 +63,7 @@ void	Config::checkVar()
 			throw std::runtime_error("invalid argument of allow_methods " + *it);
 }
 
+const std::map<int, std::string>& Config::getErrorPages() const {return this->_errorPages;}
 bool Config::getAutoIndex() const {return this->_autoIndex;}
 std::vector<std::string> Config::getCgiExtension() const {return this->_cgiExtension;}
 bool Config::getUploadEnabled() const {return this->_uploadEnabled;}

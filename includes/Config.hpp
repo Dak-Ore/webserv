@@ -27,7 +27,7 @@ public:
 	std::string getRoot() const;
     std::vector<std::string> getIndex() const;
 	size_t getClientMaxBodySize() const;
-    std::map<int, std::string> getErrorPages() const;
+    const std::map<int, std::string>& getErrorPages() const;
 	bool getAutoIndex() const;
     std::vector<std::string> getCgiExtension()const;
     bool getUploadEnabled() const;
