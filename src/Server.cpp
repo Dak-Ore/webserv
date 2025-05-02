@@ -38,10 +38,23 @@ bool Server::handleRequest(HttpRequest const &request, int response_fd)
 		std::string relativePath = path;
 		if (location)
 		{
-			const std::string& locPath = location->getPath();
+			std::string locPath = location->getPath();
+			std::string normPath = path;
+
+			if (!locPath.empty() && locPath[locPath.length() - 1] != '/')
+				locPath += "/";
+			if (!normPath.empty() && normPath[normPath.length() - 1] != '/')
+				normPath += "/";
+
 			std::cout << "   - LOCATION: " << locPath << std::endl;
-			if (path.compare(0, locPath.size(), locPath) == 0)
-				relativePath = path.substr(locPath.size());
+			if (normPath.compare(0, locPath.length(), locPath) == 0)
+			{
+				relativePath = path.substr(locPath.length() - 1);
+				if (!relativePath.empty() && relativePath[relativePath.length() - 1] == '/')
+					relativePath.erase(relativePath.length() - 1);
+			}
+			else
+				relativePath = "";
 		}
 		std::string file_path = utils::joinPath(root, relativePath);
 		if (utils::isDirectory(file_path))
@@ -56,12 +69,14 @@ bool Server::handleRequest(HttpRequest const &request, int response_fd)
 
 std::string Server::getIndex(const std::string& root, const std::string& path)
 {
-	std::vector<std::string> indexList = this->_config.getIndex();
+	const std::vector<std::string>& indexList = this->_config.getIndex();
 	std::string directory = utils::joinPath(root, path);
+	if (!directory.empty() && directory[directory.length() - 1] != '/')
+		directory += "/";
 
 	for (size_t i = 0; i < indexList.size(); ++i)
 	{
-		std::string file_path = utils::joinPath(directory, indexList[i]);
+		std::string file_path = directory + indexList[i];
 		if (utils::fileExists(file_path))
 			return (file_path);
 	}
@@ -79,7 +94,9 @@ const LocationConfig* Server::matchLocation(const HttpRequest& request)
 	const std::vector<LocationConfig>& locations = this->_config.getLocations();
 	for (size_t i = 0; i < locations.size(); i++)
 	{
-		const std::string& locPath = locations[i].getPath();
+		std::string locPath = locations[i].getPath();
+		if (!locPath.empty() && locPath[locPath.length() - 1] != '/')
+			locPath += '/';
 		if (path.compare(0, locPath.length(), locPath) == 0 && locPath.length() > bestLength)
 		{
 			bestMatch = &locations[i];
