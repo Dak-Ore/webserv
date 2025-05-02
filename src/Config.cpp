@@ -3,7 +3,7 @@
 Config::Config()
 {
 	this->_root = "www";
-	this->_clientMaxBodySize = 1024 * 1024;
+	this->_clientMaxBodySize = pow(1024, 2);
 	this->_uploadEnabled = false;
 	this->_autoIndex = false;
 	this->_index.push_back("index.html");
