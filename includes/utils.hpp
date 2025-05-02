@@ -16,4 +16,6 @@ namespace utils
 	void ft_split(std::string line, std::vector<std::string> *list);
 	bool isValidRegex(std::string str, std::string pattern); 
 	bool isDirectory(const std::string &path);
+	std::string utils::addTrailingSlash(const std::string& path);
+	std::string utils::removeTrailingSlash(const std::string& path);
 }

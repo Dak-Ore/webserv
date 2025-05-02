@@ -38,21 +38,12 @@ bool Server::handleRequest(HttpRequest const &request, int response_fd)
 		std::string relativePath = path;
 		if (location)
 		{
-			std::string locPath = location->getPath();
-			std::string normPath = path;
-
-			if (!locPath.empty() && locPath[locPath.length() - 1] != '/')
-				locPath += "/";
-			if (!normPath.empty() && normPath[normPath.length() - 1] != '/')
-				normPath += "/";
+			std::string locPath = utils::addTrailingSlash(location->getPath());
+			std::string normPath = utils::addTrailingSlash(path);
 
 			std::cout << "   - LOCATION: " << locPath << std::endl;
 			if (normPath.compare(0, locPath.length(), locPath) == 0)
-			{
-				relativePath = path.substr(locPath.length() - 1);
-				if (!relativePath.empty() && relativePath[relativePath.length() - 1] == '/')
-					relativePath.erase(relativePath.length() - 1);
-			}
+				relativePath = utils::removeTrailingSlash(path.substr(locPath.length() - 1));
 			else
 				relativePath = "";
 		}
@@ -70,9 +61,7 @@ bool Server::handleRequest(HttpRequest const &request, int response_fd)
 std::string Server::getIndex(const std::string& root, const std::string& path)
 {
 	const std::vector<std::string>& indexList = this->_config.getIndex();
-	std::string directory = utils::joinPath(root, path);
-	if (!directory.empty() && directory[directory.length() - 1] != '/')
-		directory += "/";
+	std::string directory = utils::addTrailingSlash(utils::joinPath(root, path));
 
 	for (size_t i = 0; i < indexList.size(); ++i)
 	{
@@ -85,18 +74,14 @@ std::string Server::getIndex(const std::string& root, const std::string& path)
 
 const LocationConfig* Server::matchLocation(const HttpRequest& request)
 {
-	std::string path = request.getPath();
-	if (path != "/" && path[path.length() - 1] != '/')
-		path += '/';
+	std::string path = utils::addTrailingSlash(request.getPath());
 	const LocationConfig* bestMatch = NULL;
 	size_t bestLength = 0;
 
 	const std::vector<LocationConfig>& locations = this->_config.getLocations();
 	for (size_t i = 0; i < locations.size(); i++)
 	{
-		std::string locPath = locations[i].getPath();
-		if (!locPath.empty() && locPath[locPath.length() - 1] != '/')
-			locPath += '/';
+		std::string locPath = utils::addTrailingSlash(locations[i].getPath());
 		if (path.compare(0, locPath.length(), locPath) == 0 && locPath.length() > bestLength)
 		{
 			bestMatch = &locations[i];
