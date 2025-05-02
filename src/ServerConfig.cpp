@@ -42,8 +42,11 @@ void ServerConfig::checkConfig()
 		throw std::runtime_error("No listen in server block");
 	for (std::vector<std::pair<std::string, std::string> >::iterator it = this->_adress.begin(); it != this->_adress.end(); it++)
 	{
-		if (!utils::isValidRegex(it->second, "^[0-9]+$") || !utils::isValidRegex(it->first, "^[0-9]{1,3}(\\.[0-9]{1,3}){3}$"))
-			throw std::runtime_error("Invalid adress in config file");
+		if (!utils::isValidRegex(it->second, "^[0-9]+$") || 
+			(!utils::isValidRegex(it->first, "^[0-9]{1,3}(\\.[0-9]{1,3}){3}$") 
+			&& (!utils::isValidRegex(it->first, "^[A-Za-z0-9_.-]+$") 
+			|| it->first[0] == '-' || it->first[it->first.length() - 1] == '-')))
+			throw std::runtime_error("Invalid adress in config file: " + it->first + ":" + it->second);
 		int	port = atoi(it->second.c_str());
 		if (port < 1 || port > 65535)
 			throw std::runtime_error("Invalid port in config file");
