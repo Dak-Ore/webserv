@@ -127,11 +127,6 @@ std::string	utils::regexWildcardGenerator(const std::string &path)
 
 bool	utils::isValidPath(std::string str, std::string path)
 {
-	regex_t regex;
 	std::string pattern = utils::regexWildcardGenerator(path);
-    if (regcomp(&regex, pattern.c_str(), REG_EXTENDED | REG_NOSUB) != 0)
-        return false;
-    int result = regexec(&regex, str.c_str(), 0, NULL, 0);
-    regfree(&regex);
-    return (result == 0);
+	return (utils::isValidRegex(str, pattern));
 }
