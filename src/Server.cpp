@@ -28,39 +28,34 @@ bool Server::handleRequest(HttpRequest const &request, int response_fd)
 	const std::string path = request.getPath();
 	std::cout << request.getMethod() << " - " << path << std::endl;
 	const LocationConfig* location = this->matchLocation(request);
-	const std::string& root = location ? location->getRoot() : this->_config.getRoot();
+	const std::string& root = (location) ? location->getRoot() : this->_config.getRoot();
 
-	int code;
-	if (!request.isValid(&code))
-		response = HttpResponse(code);
+	if (!request.isValid())
+		response = HttpResponse(request.getErrorCode());
 	else
 	{
-		std::string relativePath = path;
-		if (location)
-		{
-			std::string locPath = utils::addTrailingSlash(location->getPath());
-			std::string normPath = utils::addTrailingSlash(path);
-
-			std::cout << "   - LOCATION: " << locPath << std::endl;
-			if (normPath.compare(0, locPath.length(), locPath) == 0)
-				relativePath = utils::removeTrailingSlash(path.substr(locPath.length() - 1));
-			else
-				relativePath = "";
-		}
+		std::string relativePath = (location) ? location->getRelativePath(path) : path;
 		std::string file_path = utils::joinPath(root, relativePath);
 		if (utils::isDirectory(file_path))
-			file_path = this->getIndex(root, relativePath);
+			file_path = this->findIndex(relativePath, location);
+		if (file_path.empty())
+			; // check autoindex
 		std::cout << "   - FILE: " <<  file_path << std::endl;
 		response.setBodySource(file_path);
 	}
+
+	std::map<int, std::string>::const_iterator it = this->_config.getErrorPages().find(response.getCode());
+	if (it != this->_config.getErrorPages().end())
+		response.setBodySource(it->second);
 	response.send(response_fd);
 	this->_epoll.remove(response_fd);
 	return (true);
 }
 
-std::string Server::getIndex(const std::string& root, const std::string& path)
+std::string Server::findIndex(const std::string& path, const LocationConfig* location)
 {
-	const std::vector<std::string>& indexList = this->_config.getIndex();
+	const std::string& root = (location) ? location->getRoot() : this->_config.getRoot() ;
+	const std::vector<std::string>& indexList = (location) ? location->getIndex() : this->_config.getIndex();
 	std::string directory = utils::addTrailingSlash(utils::joinPath(root, path));
 
 	for (size_t i = 0; i < indexList.size(); ++i)

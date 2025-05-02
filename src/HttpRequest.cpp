@@ -192,11 +192,14 @@ std::string HttpRequest::toString() const
 	return (request);
 }
 
-bool HttpRequest::isValid(int *code) const
+bool HttpRequest::isValid() const
 {
-	if (this->_error && code)
-		*code = this->_error;
 	return (!this->_error);
+}
+
+int HttpRequest::getErrorCode() const
+{
+	return (this->_error);
 }
 
 //getter

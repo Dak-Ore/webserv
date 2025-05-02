@@ -23,6 +23,7 @@ public:
 	std::string getPath() const;
     bool getHasRedirection() const;
     std::pair<int, std::string> getRedirection() const;
+	std::string getRelativePath(const std::string& path) const;
 private:
 	std::string _path;
     bool _hasRedirection;

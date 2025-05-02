@@ -33,7 +33,7 @@ public:
 	std::string getReason() const;
 	std::string toString();
 	void setBody(const std::string &body);
-	void setBodySource(const std::string &file_name);
+	bool setBodySource(const std::string &file_name);
 	void setCode(int code);
 	void setHeader(const std::string &key, const std::string &value);
 	void setCookie(const std::string &key, const std::string &value, std::map<cookie_options, std::string> options = std::map<cookie_options, std::string>());

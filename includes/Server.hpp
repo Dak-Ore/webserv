@@ -17,6 +17,6 @@ public:
 	Server(EPoll &epoll_ref, ServerConfig &config);
 	~Server();
 	bool handleRequest(HttpRequest const &request, int response_fd);
-	std::string getIndex(const std::string& root, const std::string& path);
+	std::string findIndex(const std::string& path, const LocationConfig* location);
 	const LocationConfig *matchLocation(const HttpRequest& request);
 };

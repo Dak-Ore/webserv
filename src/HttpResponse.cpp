@@ -122,22 +122,23 @@ void HttpResponse::setBody(const std::string &body)
 	this->_body = body;
 }
 
-void HttpResponse::setBodySource(const std::string &file_name)
+bool HttpResponse::setBodySource(const std::string &file_name)
 {
 	if (!utils::fileExists(file_name))
 	{
 		this->_status_code = 404;
-		return ;
+		return (false);
 	}
 	this->closeBody();
 	this->_bodyFd = open(file_name.c_str(), O_RDONLY);
 	if (this->_bodyFd == -1)
 	{
 		this->_status_code = 403;
-		return ;
+		return (false);
 	}
 	this->_setContentType(file_name);
 	this->_setHeader(CONTENT_LENGHT, utils::numToString((size_t)utils::getFileSize(file_name)));
+	return (true);
 }
 
 void HttpResponse::setCode(int code)

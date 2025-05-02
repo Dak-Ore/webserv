@@ -69,6 +69,17 @@ void		LocationConfig::print()
 LocationConfig::~LocationConfig() {
 }
 
+std::string LocationConfig::getRelativePath(const std::string& path) const
+{
+	std::string locPath = utils::addTrailingSlash(this->getPath());
+	std::string normPath = utils::addTrailingSlash(path);
+
+	// std::cout << "   - LOCATION: " << locPath << std::endl;
+	if (normPath.compare(0, locPath.length(), locPath) == 0)
+		return utils::removeTrailingSlash(path.substr(locPath.length() - 1));
+	return ("");
+}
+
 //getters
 std::string LocationConfig::getPath() const{return this->_path;}
 bool LocationConfig::getHasRedirection() const{return this->_hasRedirection;}

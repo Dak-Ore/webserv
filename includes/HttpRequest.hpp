@@ -35,7 +35,8 @@ public:
 	const std::string &getPath() const ;
 	std::string toString() const;
 	bool		empty() const;
-	bool		isValid(int *code = 0) const;
+	bool		isValid() const;
+	int			getErrorCode() const;
 };
 
 #endif
