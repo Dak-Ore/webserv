@@ -39,7 +39,9 @@ bool Server::handleRequest(HttpRequest const &request, int response_fd)
 		if (utils::isDirectory(file_path))
 			file_path = this->findIndex(relativePath, location);
 		if (file_path.empty())
+		{
 			; // check autoindex
+		}
 		std::cout << "   - FILE: " <<  file_path << std::endl;
 		response.setBodySource(file_path);
 	}

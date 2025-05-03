@@ -87,6 +87,15 @@ std::string	utils::extractKey(std::string line)
 	iss >> word;
 	return word;
 }
+
+std::string	utils::extractElem(std::string line, int pos)
+{
+	std::istringstream iss(utils::trim(line));
+	std::string word;
+	for (int i = 0; i < pos; i++)
+		iss >> word;
+	return word;
+}
 void utils::ft_split(std::string line, std::vector<std::string> *list)
 {
 	std::istringstream	stream(line);

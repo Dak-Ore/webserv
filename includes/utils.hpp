@@ -19,4 +19,5 @@ namespace utils
 	bool isDirectory(const std::string &path);
 	std::string addTrailingSlash(const std::string& path);
 	std::string removeTrailingSlash(const std::string& path);
+	std::string	extractElem(std::string line, int pos);
 }

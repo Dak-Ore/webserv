@@ -46,7 +46,7 @@ int	Config::parseVar(std::string key, std::string value, std::string line)
 	}
 	else if (key == "error_page")
 	{
-		std::string pLine = utils::smartSubstr(line, "error_pages", "/");
+		std::string pLine = utils::extractElem(line, 2);
 		this->_errorPages.insert(std::pair<int,std::string>(atoi(pLine.c_str()), utils::smartSubstr(line, pLine, ";")));
 	}
 	else
