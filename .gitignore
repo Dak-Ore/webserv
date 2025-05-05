@@ -2,3 +2,4 @@
 **/*.o
 obj/
 webserv
+compile_flags.txt
