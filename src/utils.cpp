@@ -1,6 +1,7 @@
 #include "utils.hpp"
 
 #include <sstream>
+#include <cctype>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <stdint.h>
@@ -213,4 +214,33 @@ void forkexec(int inout[2], std::vector<std::string> const argv, std::map<std::s
 void lower(std::string& str)
 {
 	std::transform(str.begin(), str.end(), str.begin(), tolower);
+}
+
+void utils::parseHostAndPort(std::string& host, std::string& port,
+	std::string const& default_port,
+	std::string str
+) {
+	size_t i(0);
+
+	// read host
+	host = "";
+	while (i < str.size() && str[i] != ':') {
+		host += str[i];
+		i++;
+	}
+	if (i >= str.size()) {
+		port = default_port;
+		return;
+	}
+	i++;
+
+	// read port
+	port = "";
+	for (size_t j = 0; j < 5; j++) {
+		if (i >= str.size() || !std::isdigit(str[i]))
+			throw std::runtime_error("digit or EOF expected.");
+		port += str[i];
+	}
+	if (i < str.size())
+		throw std::runtime_error("EOF expected.");
 }

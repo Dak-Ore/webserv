@@ -14,7 +14,7 @@
 
 #define MAX_HEADERS 100
 
-class HttpRequest : HttpMessage
+class HttpRequest : public HttpMessage
 {
 private:
 	bool			_is_empty;

@@ -48,6 +48,7 @@ namespace utils
 	 * @return Path with a trailing slash.
 	 */
 	std::string addTrailingSlash(const std::string& path);
+
 	/**
 	 * @brief Remove the trailing slash from a path if it exists.
 	 * @param path Input path.
@@ -56,6 +57,20 @@ namespace utils
 	std::string removeTrailingSlash(const std::string& path);
 
 	std::string extractElem(std::string line, int pos);
+
+	/**
+	 * Get the host and port from 'str'.
+	 * 
+	 * Syntax: host-and-port :== *char [ ":" 1*5digit ]
+	 *
+	 * 'host' and 'port' are set to the result.
+	 * 
+	 * If the port is not given, defaults to 'default_port'.
+	 */
+	void parseHostAndPort(std::string& host, std::string& port,
+		std::string const& default_port,
+		std::string str
+	);
 };
 void forkexec(int inout[2], std::vector<std::string> const argv, std::map<std::string, std::string> const envp);
 

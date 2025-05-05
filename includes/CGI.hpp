@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "HttpRequest.hpp"
 
 /**
  * Allows to execute a CGI script with a given file and other informations.
@@ -201,12 +202,24 @@ public:
 	 *
 	 * The return value is the link to the running CGI script
 	 * that must be used to get its response.
+	 * 
+	 * 'script_pathname' is the absolute path of the script to call.
+	 * 
+	 * 'script_name' is the URI path of the script.
 	 *
 	 * 'stdin' will be set to an fd to send the CGI script
 	 * potential request data. If it isn't used, it must be closed anyway.
+	 *
+	 * 'request' is the client's request.
 	 */
-	CGI::Running execute(int& stdin, CGI::execute_arguments const& args);
+	CGI::Running execute(int& stdin,
+		std::string const& script_pathname,
+		std::string const& script_name,
+		HttpRequest const& request
+	);
 
 private:
+	CGI::Running _execute(int& stdin, CGI::execute_arguments const& args);
+
 	std::vector<std::string> argv;
 };

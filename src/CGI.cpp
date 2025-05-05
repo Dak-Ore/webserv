@@ -92,7 +92,7 @@ CGI::CGI(std::vector<std::string> const& argv)
 CGI::~CGI()
 {}
 
-CGI::Running CGI::execute(int& stdin, CGI::execute_arguments const& args)
+CGI::Running CGI::_execute(int& stdin, CGI::execute_arguments const& args)
 {
 	std::map<std::string, std::string> envp;
 	envp["GATEWAY_INTERFACE"] = "CGI/1.1";
@@ -126,6 +126,32 @@ CGI::Running CGI::execute(int& stdin, CGI::execute_arguments const& args)
 	stdin = inout[1];
 	return CGI::Running(inout[0]);
 }
+
+CGI::Running CGI::execute(int& stdin,
+	std::string const& script,
+	std::string const& script_name,
+	HttpRequest const& request
+) {
+	std::string host, port;
+	size_t content_length(atoi(request.getHeader("content-length").c_str()));
+	utils::parseHostAndPort(host, port, "80", request.getHeader("host"));
+	CGI::execute_arguments args = {
+		.script_pathname = script,
+		.remote_addr = "TODO",
+		.request_method = "TODO",
+		.script_name = script_name,
+		.server_name = host,
+		.server_port = port,
+		.server_protocol = "HTTP/1.1",
+		.query_string = "", // TODO!!
+		.path_info = "",
+		.content_exists = true ? content_length != 0 : false,
+		.content_length = content_length,
+		.content_type = request.getHeader("content-type"),
+	};
+	return this->_execute(stdin, args);
+}
+
 
 CGI::Running::Running()
 {}
