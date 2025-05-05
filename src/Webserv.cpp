@@ -96,23 +96,49 @@ void Webserv::stop()
 
 HttpRequest Webserv::readRequest(int fd)
 {
-	std::string request_string;
+	std::string headers, body;
+
+	this->readHeaders(fd, headers, body);
+	HttpRequest request(headers);
+	this->readBody(fd, body);
+	return (request);
+}
+
+bool Webserv::readHeaders(int fd, std::string& headers, std::string& body)
+{
 	char buffer[1024];
+	int bytes;
+	size_t header_limit;
 
 	while (true)
 	{
-		int bytes = ::recv(fd, buffer, sizeof(buffer), 0);
-		if (bytes <= 0) break;
-		request_string.append(buffer, bytes);
+		bytes = ::recv(fd, buffer, sizeof(buffer), 0);
+		if (bytes <= 0)
+			return (false);
+		headers.append(buffer, bytes);
 
-		size_t pos = request_string.find("\r\n\r\n");
-		if (pos != std::string::npos) {
-			request_string = request_string.substr(0, pos + 4);
-			// Body
-			while (::recv(fd, buffer, sizeof(buffer), MSG_DONTWAIT) > 0)
-				continue ;
-			break;
+		header_limit = headers.find("\r\n\r\n");
+		if (header_limit != std::string::npos)
+		{
+			body = headers.substr(header_limit + 4);
+			headers.erase(header_limit, 4);
+			break ;
 		}
 	}
-	return (HttpRequest(request_string));
+	return (true);
+}
+
+bool Webserv::readBody(int fd, std::string& body)
+{
+	char buffer[1024];
+	int bytes;
+
+	while (true)
+	{
+		bytes = ::recv(fd, buffer, sizeof(buffer), 0);
+		if (bytes <= 0)
+			return (false);
+		body.append(buffer, bytes);
+	}
+	return (true);
 }

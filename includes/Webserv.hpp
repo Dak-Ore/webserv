@@ -23,4 +23,6 @@ public:
 	void acceptClient(int serverFd);
     void stop();
 	HttpRequest readRequest(int fd);
+	bool readHeaders(int fd, std::string& headers, std::string& body);
+	bool readBody(int fd, std::string& body);
 };
