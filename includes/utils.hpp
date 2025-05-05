@@ -1,5 +1,6 @@
 #include <string>
 #include <vector>
+#include <map>
 #include <regex.h>
 #include <sys/types.h> 
 #include <stdint.h>
@@ -55,4 +56,10 @@ namespace utils
 	std::string removeTrailingSlash(const std::string& path);
 
 	std::string extractElem(std::string line, int pos);
-}
+};
+void forkexec(int inout[2], std::vector<std::string> const argv, std::map<std::string, std::string> const envp);
+
+/**
+ * Make the given string lowercase.
+ */
+void lower(std::string& str);

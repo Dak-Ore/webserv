@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <csignal>
 #include "Webserv.hpp"
@@ -14,6 +15,7 @@ void signalHandler(int signum)
 		std::cout << std::endl << "Stopping server ..." << std::endl;
 	}
 }
+
 
 int main(int argc, char **argv, char **envp)
 {
