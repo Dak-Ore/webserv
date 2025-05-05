@@ -20,3 +20,8 @@ void forkexec(int inout[2], std::vector<std::string> const argv, std::map<std::s
  * Convert an int to a str::string.
  */
 std::string int_to_string(int i);
+
+/**
+ * Make the given string lowercase.
+ */
+void lower(std::string& str);

@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 /**
  * Allows to execute a CGI script with a given file and other informations.
@@ -47,12 +48,19 @@ public:
 		 */
 		bool isHeadComplete();
 
+		struct ResponseHead
+		{
+			int status_code;
+			std::string status_reason;
+			std::map<std::string, std::string> fields;
+		};
+
 		/**
 		 * Get the response head of the CGI script.
 		 *
 		 * Call it only if this.isHeadComplete() is true!
 		 */
-		std::string const getResponseHead();
+		ResponseHead const getResponseHead();
 
 		/**
 		 * Get a read-only fd that reads the body content of the CGI script.
@@ -71,6 +79,7 @@ public:
 		bool _complete;
 		std::string _head;
 		bool _head_complete;
+		ResponseHead _head_parsed;
 		int _response_body_pipe[2];
 		bool _response_body_pipe_open;
 

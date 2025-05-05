@@ -1,7 +1,9 @@
 #include "utils.hpp"
 
+#include <algorithm>
 #include <stdexcept>
 #include <map>
+#include <string>
 #include <vector>
 #include <cstring>
 #include <sstream>
@@ -83,4 +85,9 @@ std::string int_to_string(int i)
 	std::stringstream ss;
 	ss << i;
 	return ss.str();
+}
+
+void lower(std::string& str)
+{
+	std::transform(str.begin(), str.end(), str.begin(), tolower);
 }

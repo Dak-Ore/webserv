@@ -52,8 +52,13 @@ int main()
 
 	while (!running.isHeadComplete())
 		running.read();
-	std::cout << "HEAD" << std::endl << running.getResponseHead() << "%"
-			<< std::endl;
+	std::cout << "HEAD" << std::endl;
+	CGI::Running::ResponseHead head(running.getResponseHead());
+	std::cout << "status code: "<< head.status_code << std::endl;
+	std::cout << "status reason: '"<< head.status_reason << "'" << std::endl;
+	for (std::map<std::string, std::string>::const_iterator it = head.fields.begin(); it != head.fields.end(); it++)
+		std::cout << "'" << it->first << "': '" << it->second << "'" << std::endl;
+	std::cout << std::endl;
 
 	while (running.read());
 

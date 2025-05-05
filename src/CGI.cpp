@@ -1,13 +1,75 @@
 #include "CGI.hpp"
 
+#include <cctype>
 #include <string>
 #include <unistd.h>
 #include <stdexcept>
 #include <map>
+#include <cstdlib>
 #include "utils.hpp"
 #include "const.hpp"
 
 #define CGI_BUFFER_SIZE 1000
+
+static void skip_spc(std::string const& str, size_t &i)
+{
+	while (i < str.size() && str[i] == ' ')
+		i++;
+}
+
+static CGI::Running::ResponseHead parse_head(std::string const& head)
+{
+	CGI::Running::ResponseHead r;
+	r.status_code = 200;
+	r.status_reason = "OK";
+
+	size_t i = 0;
+	while (i < head.size()) {
+		// read field name
+		std::string name("");
+		while (i < head.size() && head[i] != ':') {
+			name += head[i];
+			i++;
+		}
+		if (name.size() == 0)
+			throw std::runtime_error("field name expected.");
+		lower(name);
+		i++;
+		skip_spc(head, i);
+
+		if (name == "status") {
+			// read status code
+			std::string status("");
+			for (size_t j = 0; j < 3; j++) {
+				if (i >= head.size() || !isdigit(head[i]))
+					throw std::runtime_error("status code expected.");
+				status += head[i];
+				i++;
+			}
+			r.status_code = atoi(status.c_str());
+			skip_spc(head, i);
+
+			// read status reason
+			std::string reason("");
+			while (i < head.size() && head[i] != '\n' && head[i] != '\r') {
+				reason += head[i];
+				i++;
+			}
+			r.status_reason = reason;
+		}
+		else {
+			// read field value
+			std::string value("");
+			while (i < head.size() && head[i] != '\n' && head[i] != '\r') {
+				value += head[i];
+				i++;
+			}
+			if (value != "")
+				r.fields[name] = value;
+		}
+	}
+	return r;
+}
 
 CGI::CGI()
 {}
@@ -79,6 +141,7 @@ CGI::Running& CGI::Running::operator=(CGI::Running const& other)
 	this->_complete = other._complete;
 	this->_head = other._head;
 	this->_head_complete = other._head_complete;
+	this->_head_parsed = other._head_parsed;
 	this->_response_body_pipe_open = other._response_body_pipe_open;
 	if (other._response_body_pipe_open) {
 		this->_response_body_pipe[0] = dup(other._response_body_pipe[0]);
@@ -150,6 +213,7 @@ bool CGI::Running::read()
 			head = head.substr(0, sep) + "\n";
 
 			this->_head_complete = true;
+			this->_head_parsed = parse_head(this->_head);
 			return true;
 		}
 
@@ -167,9 +231,9 @@ bool CGI::Running::isHeadComplete()
 	return this->_head_complete;
 }
 
-std::string const CGI::Running::getResponseHead()
+CGI::Running::ResponseHead const CGI::Running::getResponseHead()
 {
-	return this->_head;
+	return this->_head_parsed;
 }
 
 int CGI::Running::getResponseBodyFd()
