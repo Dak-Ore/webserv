@@ -28,16 +28,6 @@ int EPollEvent::getFd() const {
 	return (this->_event.data.fd);
 }
 
-void EPollEvent::setFd(int fd)
-{
-	this->_event.data.fd = fd;
-}
-
-epoll_event* EPollEvent::raw()
-{
-	return &this->_event;
-}
-
 const epoll_event* EPollEvent::raw() const {
-	return &this->_event;
+	return (&this->_event);
 }

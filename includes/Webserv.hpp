@@ -14,15 +14,15 @@ private:
     std::map<int, HttpClient> _client_map;
     std::vector<Server*> _servers;
 	std::vector<Socket> _sockets;
-public:
-    Webserv(ConfigParser &parser);
-    ~Webserv();
 	bool isServerSocket(int fd);
 	Server* findServer(int fd);
-    void listen();
 	void acceptClient(int serverFd);
-    void stop();
 	HttpRequest readRequest(int fd);
 	bool readHeaders(int fd, std::string& headers, std::string& body);
 	bool readBody(int fd, std::string& body);
+public:
+    Webserv(ConfigParser &parser);
+    ~Webserv();
+    void listen();
+    void stop();
 };

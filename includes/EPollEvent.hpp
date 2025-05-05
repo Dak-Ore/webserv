@@ -11,12 +11,11 @@ public:
     EPollEvent();
     EPollEvent(EPollEvent const &ref);
 	EPollEvent &operator=(const EPollEvent &ref);
-    EPollEvent(epoll_event ev);
     ~EPollEvent();
 
-    int getFd() const;
-    void setFd(int fd);
+    EPollEvent(epoll_event ev);
 
-    epoll_event* raw();
+    int getFd() const;
+
     const epoll_event* raw() const;
 };
