@@ -11,7 +11,7 @@ ConfigParser::ConfigParser(File config)
 	int inLocation = 0;
 	int waitBrace = 0;
 
-	for (size_t i = 0; i < config.GetSize(); ++i) {
+	for (size_t i = 0; i < config.getLineNumber(); ++i) {
 		line = utils::trim(config.getLine(i));
 		if (inServer > 1)
 			throw std::runtime_error("server blocks in a server blocks are not allowed");
@@ -46,7 +46,7 @@ ConfigParser::ConfigParser(File config)
 				locationContent.clear();
 			} else if (inServer) {
 				inServer--;
-				AddServer(serverContent, locationBlocks);
+				addServer(serverContent, locationBlocks);
 				locationBlocks.clear();
 				serverContent.clear();
 			} else {
@@ -64,7 +64,7 @@ ConfigParser::ConfigParser(File config)
 
 ConfigParser::~ConfigParser() {}
 
-void ConfigParser::AddServer(std::string content, std::vector<std::string> location)
+void ConfigParser::addServer(std::string content, std::vector<std::string> location)
 {
 	ServerConfig newServ(content, location);
 	_server.push_back(newServ);

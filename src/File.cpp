@@ -21,8 +21,8 @@ File::File(std::string name) : _name(name)
 
 std::string File::getLine(size_t nb)
 {
-	if (nb > this->_content.size())
-		throw std::runtime_error("Error trying to get line of a file that doesn't exist.");
+	if (nb >= this->_content.size())
+		throw std::runtime_error("Error: line index out of bounds.");
 	else
 		return (this->_content[nb] + '\n');
 }
@@ -35,7 +35,7 @@ std::string File::getContent()
 	return content;
 }
 
-size_t File::GetSize()
+size_t File::getLineNumber()
 {
 	return this->_content.size();
 }

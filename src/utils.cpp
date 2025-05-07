@@ -171,7 +171,7 @@ static const char** map_to_c_array(std::map<std::string, std::string> const& a)
 	return r;
 }
 
-void forkexec(int inout[2], std::vector<std::string> const argv, std::map<std::string, std::string> const envp)
+void utils::forkexec(int inout[2], std::vector<std::string> const argv, std::map<std::string, std::string> const envp)
 {
 	// create pipes
 	int pipein[2];
@@ -211,7 +211,7 @@ void forkexec(int inout[2], std::vector<std::string> const argv, std::map<std::s
 	close(pipeout[1]);
 }
 
-void lower(std::string& str)
+void utils::lower(std::string& str)
 {
 	std::transform(str.begin(), str.end(), str.begin(), tolower);
 }
@@ -243,4 +243,11 @@ void utils::parseHostAndPort(std::string& host, std::string& port,
 	}
 	if (i < str.size())
 		throw std::runtime_error("EOF expected.");
+}
+
+bool utils::endswith(std::string const& str, std::string const& substr)
+{
+	if (substr.size() > str.size())
+		return false;
+	return str.substr(str.size() - substr.size()) == substr;
 }

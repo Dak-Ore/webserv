@@ -33,7 +33,7 @@ static CGI::Running::ResponseHead parse_head(std::string const& head)
 		}
 		if (name.size() == 0)
 			throw std::runtime_error("field name expected.");
-		lower(name);
+		utils::lower(name);
 		i++;
 		skip_spc(head, i);
 
@@ -122,7 +122,7 @@ CGI::Running CGI::_execute(int& stdin, CGI::execute_arguments const& args)
 	// see https://datatracker.ietf.org/doc/html/rfc3875#section-7.2
 
 	int inout[2];
-	forkexec(inout, argv, envp);
+	utils::forkexec(inout, argv, envp);
 	stdin = inout[1];
 	return CGI::Running(inout[0]);
 }

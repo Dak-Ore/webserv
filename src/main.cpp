@@ -7,7 +7,10 @@
 
 Webserv* g_server = NULL;
 
-void signalHandler(int signum)
+/**
+ * Handle SIGINT.
+ */
+static void signalHandler(int signum)
 {
 	if (signum == SIGINT && g_server != NULL)
 	{
@@ -17,30 +20,22 @@ void signalHandler(int signum)
 }
 
 
-int main(int argc, char **argv, char **envp)
+int main(int argc, char **argv)
 {
-	(void)envp;
 	if (argc != 2)
 	{
 		std::cout << "Usage " << argv[0] << " <file.conf>" << std::endl;
 		return 1;
 	}
 
-	std::string config_file_name = (argc == 2) ? argv[1] : "";
-	try
-	{
-		if (config_file_name.find(".conf") == std::string::npos)
-			throw std::runtime_error("Invalid config file");
-		ConfigParser parser(config_file_name);
-		Webserv server(parser);
-		g_server = &server;
-		signal(SIGINT, signalHandler);
-		server.listen();
-	}
-	catch (const std::exception &e)
-	{
-		std::cerr << "Error: " << e.what() << std::endl;
-	}
+	std::string config_file_name = argv[1];
+	if (!utils::endswith(config_file_name, ".conf"))
+		throw std::runtime_error("Config file must have extension '.conf'.");
+	ConfigParser parser(config_file_name);
+	Webserv server(parser);
+	g_server = &server;
+	signal(SIGINT, signalHandler);
+	server.listen();
 
 	return 0;
 }

@@ -71,10 +71,25 @@ namespace utils
 		std::string const& default_port,
 		std::string str
 	);
-};
-void forkexec(int inout[2], std::vector<std::string> const argv, std::map<std::string, std::string> const envp);
 
-/**
- * Make the given string lowercase.
- */
-void lower(std::string& str);
+	/**
+	 * Return either the end of 'str' is 'substr'.
+	 */
+	bool endswith(std::string const& str, std::string const& substr);
+
+	/**
+	 * Create a subprocess from 'argv'.
+	 * 
+	 * - inout[0] and inout[1] will be set to two open file descriptors
+	 *   respectively the subprocess' stdout and stdin.
+	 * - argv are the arguments that will be given to the subprocess.
+	 *   argv[0] must be a path to the executable to call.
+	 * - envp is the environment to the subprocess.
+	 */
+	void forkexec(int inout[2], std::vector<std::string> const argv, std::map<std::string, std::string> const envp);
+
+	/**
+	 * Make the given string lowercase.
+	 */
+	void lower(std::string& str);
+};
