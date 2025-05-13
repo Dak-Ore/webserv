@@ -20,13 +20,8 @@ void signalHandler(int signum)
 int main(int argc, char **argv, char **envp)
 {
 	(void)envp;
-	if (argc != 2)
-	{
-		std::cout << "Usage " << argv[0] << " <file.conf>" << std::endl;
-		return 1;
-	}
 
-	std::string config_file_name = (argc == 2) ? argv[1] : "";
+	std::string config_file_name = (argc == 2) ? argv[1] : "conf/default.conf";
 	try
 	{
 		if (config_file_name.find(".conf") == std::string::npos)
