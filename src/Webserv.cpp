@@ -48,7 +48,7 @@ Server* Webserv::findServer(int fd)
 	{
 		Server *s = this->_servers[i];
 		const std::vector<Adress> &adresses = s->_config.getAdress();
-		if (std::find(adresses.begin(), adresses.end(), client.getAdress()) != adresses.end())
+		if (std::find(adresses.begin(), adresses.end(), client.getServerAdress()) != adresses.end())
 			v.push_back(s);
 	}
 	if (v.size() == 0)

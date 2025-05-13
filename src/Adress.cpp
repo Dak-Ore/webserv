@@ -36,6 +36,8 @@ int Adress::createSocket(const Adress &adress)
 Adress::Adress() :
 	_addrinfo(NULL)
 {
+	this->_host = 0;
+	this->_port = 0;
 }
 
 Adress::Adress(int fd) :
@@ -47,6 +49,13 @@ Adress::Adress(int fd) :
 		throw std::runtime_error("Invalid fd");
 	this->_host = server_addr.sin_addr.s_addr;
 	this->_port = ntohs(server_addr.sin_port);
+}
+
+Adress::Adress(struct sockaddr_in sockaddr) :
+	_addrinfo(NULL)
+{
+	this->_host = sockaddr.sin_addr.s_addr;
+	this->_port = ntohs(sockaddr.sin_port);
 }
 
 Adress::Adress(int host, int port) :

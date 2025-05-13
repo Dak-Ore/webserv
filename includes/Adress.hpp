@@ -35,6 +35,8 @@ public:
 	 */
 	Adress(int fd);
 
+	Adress(struct sockaddr_in addrinfo);
+
 	/**
 	 * @brief Constructs an Adress from host and port (as integers).
 	 * @param host IP address in network byte order.

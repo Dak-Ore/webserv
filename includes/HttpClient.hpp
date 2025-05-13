@@ -8,6 +8,8 @@
 
 class HttpClient : public Socket
 {
+private:
+	Adress _serverAdress;
 public:
 	HttpClient();
 	HttpClient(HttpClient const &ref);
@@ -15,4 +17,5 @@ public:
 	~HttpClient();
 
 	HttpClient(int serverFd);
+	const Adress &getServerAdress() const;
 };

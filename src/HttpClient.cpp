@@ -1,6 +1,8 @@
 #include "HttpClient.hpp"
 #include "Socket.hpp"
 #include "Adress.hpp"
+#include "utils.hpp"
+#include <netdb.h>
 
 HttpClient::HttpClient() : Socket()
 {
@@ -8,10 +10,13 @@ HttpClient::HttpClient() : Socket()
 
 HttpClient::HttpClient(int serverFd) : Socket()
 {
-	this->_fd = ::accept(serverFd, NULL, NULL);
+	sockaddr_in client_addr;
+    socklen_t client_len = sizeof(client_addr);
+    this->_fd = ::accept(serverFd, (struct sockaddr *)&client_addr, &client_len);
 	if (this->_fd == -1)
 		return ;
-	this->_adress = Adress(this->_fd);
+	this->_adress = Adress(client_addr);
+	this->_serverAdress = Adress(this->_fd);
 }
 
 HttpClient::HttpClient(HttpClient const &ref) : Socket()
@@ -27,4 +32,9 @@ HttpClient &HttpClient::operator=(HttpClient const &ref)
 
 HttpClient::~HttpClient()
 {
+}
+
+const Adress &HttpClient::getServerAdress() const
+{
+	return (this->_serverAdress);
 }
