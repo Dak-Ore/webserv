@@ -11,8 +11,8 @@
 #include <iomanip>
 #include <sys/socket.h>
 
-Server::Server(EPoll &epoll_ref, ServerConfig &config) :
-	_epoll(epoll_ref), _config(config)
+Server::Server(ServerConfig &config) :
+	_config(config)
 {
 }
 
@@ -26,7 +26,7 @@ bool Server::handleRequest(HttpRequest const &request, int response_fd)
 	if (request.empty())
 		return (false);
 	const std::string path = request.getPath();
-	std::cout << request.getMethod() << " - " << path << " " << request.getHeader("Host") << std::endl;
+	std::cout << request.getHeader("Host") << request.getMethod() << " - " << path  << std::endl;
 	const LocationConfig* location = this->matchLocation(request);
 	const std::string& root = (location) ? location->getRoot() : this->_config.getRoot();
 
@@ -50,7 +50,6 @@ bool Server::handleRequest(HttpRequest const &request, int response_fd)
 	if (it != this->_config.getErrorPages().end())
 		response.setBodySource(it->second);
 	response.send(response_fd);
-	(void)_epoll;
 	return (true);
 }
 
