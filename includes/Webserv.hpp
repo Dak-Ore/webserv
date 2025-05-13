@@ -6,6 +6,8 @@
 #include <vector>
 #include <map>
 
+class HttpClient;
+
 class Webserv
 {
 private:

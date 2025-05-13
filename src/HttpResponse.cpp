@@ -1,4 +1,5 @@
 #include "HttpResponse.hpp"
+#include "HttpClient.hpp"
 #include "utils.hpp"
 
 #include <stdexcept>
@@ -7,10 +8,12 @@
 #include <sys/socket.h>
 #include <set>
 #include <map>
+#include <exception>
 
 HttpResponse::HttpResponse(int status_code) : HttpMessage(),
 	_status_code(status_code),
-	_bodyFd(-1)
+	_bodyFd(-1),
+	_client(NULL)
 {
 	this->_version = "HTTP/1.1";
 }
@@ -190,6 +193,18 @@ void HttpResponse::_setContentType(const std::string& file_name)
 	std::string ext = file_name.substr(file_name.find_last_of('.'));
 	std::map<std::string, std::string>::const_iterator it = mimeTypes.find(ext);
 	this->_setHeader(CONTENT_TYPE, (it != mimeTypes.end()) ? it->second : DEFAULT_CONTENT_TYPE);
+}
+
+void HttpResponse::bindClient(const HttpClient &client)
+{
+	this->_client = &client;
+}
+
+void HttpResponse::send()
+{
+	if (this->_client == NULL)
+		throw std::runtime_error("Client is NULL");
+	return (this->send(this->_client->getFd()));
 }
 
 void HttpResponse::send(int fd)

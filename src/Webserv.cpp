@@ -12,7 +12,7 @@ Webserv::Webserv(ConfigParser &parser) : _run(true)
 	for (size_t i = 0; i < count; i++)
 	{
 		ServerConfig config = parser.getServer()[i];
-		this->_servers.push_back(new Server(this->_epoll, config));
+		this->_servers.push_back(new Server(config));
 
 		for (size_t i = 0; i < config.getAdress().size(); i++)
 		{
@@ -95,7 +95,7 @@ void Webserv::listen()
 				HttpRequest const request = this->readRequest(fd);
 				HttpClient client = this->_client_map[fd];
 				Server *s = this->findServer(request, client);
-				if (!s->handleRequest(request, fd))
+				if (!s->handleRequest(request, client))
 					this->_epoll.remove(fd);
 			}
 		}
