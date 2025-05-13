@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 #include <vector>
 #include <map>
@@ -5,6 +7,7 @@
 #include <sys/types.h> 
 #include <stdint.h>
 #include <iostream>
+#include "HttpResponse.hpp"
 
 namespace utils
 {
@@ -56,6 +59,8 @@ namespace utils
 	std::string removeTrailingSlash(const std::string& path);
 
 	std::string extractElem(std::string line, int pos);
+
+	std::string generateDefaultError(int statusCode);
 };
 void forkexec(int inout[2], std::vector<std::string> const argv, std::map<std::string, std::string> const envp);
 

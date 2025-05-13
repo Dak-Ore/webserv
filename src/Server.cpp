@@ -45,10 +45,11 @@ bool Server::handleRequest(HttpRequest const &request, int response_fd)
 		std::cout << "   - FILE: " <<  file_path << std::endl;
 		response.setBodySource(file_path);
 	}
-
 	std::map<int, std::string>::const_iterator it = this->_config.getErrorPages().find(response.getCode());
 	if (it != this->_config.getErrorPages().end())
 		response.setBodySource(it->second);
+	else if (response.getCode() >= 400 && response.getCode() <= 599)
+		response.setBody(utils::generateDefaultError(response.getCode()));
 	response.send(response_fd);
 	this->_epoll.remove(response_fd);
 	return (true);

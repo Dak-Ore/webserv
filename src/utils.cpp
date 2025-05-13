@@ -214,3 +214,20 @@ void lower(std::string& str)
 {
 	std::transform(str.begin(), str.end(), str.begin(), tolower);
 }
+
+std::string utils::generateDefaultError(int statusCode)
+{
+	std::ostringstream	page;
+	std::string			statusMessage = HttpResponse::getReason(statusCode);
+
+	page << "<!DOCTYPE html>\n"
+	<< "<html>\n"
+	<< "<head><title>" << statusCode << " " << statusMessage << "</title></head>\n"
+	<< "<body>\n"
+	<< "<h1>" << statusCode << " " << statusMessage << "</h1>\n"
+	<< "<p>The server returned an error: " << statusMessage << ".</p>\n"
+	<< "</body>\n"
+	<< "</html>\n";
+
+	return page.str();
+}
