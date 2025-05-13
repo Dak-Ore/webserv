@@ -6,6 +6,8 @@
 #include <vector>
 #include <map>
 
+class HttpClient;
+
 class Webserv
 {
 private:
@@ -15,7 +17,7 @@ private:
     std::vector<Server*> _servers;
 	std::vector<Socket> _sockets;
 	bool isServerSocket(int fd);
-	Server* findServer(int fd);
+	Server* findServer(const HttpRequest  &request, const HttpClient &client);
 	void acceptClient(int serverFd);
 	HttpRequest readRequest(int fd);
 	bool readHeaders(int fd, std::string& headers, std::string& body);

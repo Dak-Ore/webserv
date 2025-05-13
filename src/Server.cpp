@@ -3,6 +3,7 @@
 #include "ServerConfig.hpp"
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
+#include "HttpClient.hpp"
 #include "utils.hpp"
 
 #include <stdexcept>
@@ -11,8 +12,8 @@
 #include <iomanip>
 #include <sys/socket.h>
 
-Server::Server(EPoll &epoll_ref, ServerConfig &config) :
-	_epoll(epoll_ref), _config(config)
+Server::Server(ServerConfig &config) :
+	_config(config)
 {
 }
 
@@ -20,16 +21,16 @@ Server::~Server()
 {
 }
 
-bool Server::handleRequest(HttpRequest const &request, int response_fd)
+bool Server::handleRequest(HttpRequest const &request, const HttpClient &client)
 {
-	HttpResponse response;
 	if (request.empty())
 		return (false);
 	const std::string path = request.getPath();
-	std::cout << request.getMethod() << " - " << path << std::endl;
+	std::cout << request.getMethod() << " - " << request.getHeader("Host")  << path  << std::endl;
 	const LocationConfig* location = this->matchLocation(request);
 	const std::string& root = (location) ? location->getRoot() : this->_config.getRoot();
 
+	HttpResponse response;
 	if (!request.isValid())
 		response = HttpResponse(request.getErrorCode());
 	else
@@ -50,8 +51,8 @@ bool Server::handleRequest(HttpRequest const &request, int response_fd)
 		response.setBodySource(it->second);
 	else if (response.getCode() >= 400 && response.getCode() <= 599)
 		response.setBody(utils::generateDefaultError(response.getCode()));
-	response.send(response_fd);
-	this->_epoll.remove(response_fd);
+	response.bindClient(client);
+	response.send();
 	return (true);
 }
 
