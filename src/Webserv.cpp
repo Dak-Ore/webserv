@@ -47,20 +47,35 @@ bool Webserv::isServerSocket(int fd)
 	return (false);
 }
 
-Server* Webserv::findServer(int fd)
+Server* Webserv::findServer(const HttpRequest &request, const HttpClient &client)
 {
-	std::vector<Server *> v;
-	HttpClient client = this->_client_map[fd];
+	std::vector<Server *> matches;
 	for (size_t i = 0; i < this->_servers.size(); i++)
 	{
 		Server *s = this->_servers[i];
 		const std::vector<Adress> &adresses = s->_config.getAdress();
 		if (std::find(adresses.begin(), adresses.end(), client.getServerAdress()) != adresses.end())
-			v.push_back(s);
+			matches.push_back(s);
 	}
-	if (v.size() == 0)
-		return (this->_servers[0]);
-	return (v[0]);
+	if (!matches.empty())
+	{
+		std::string host = request.getHeader("Host");
+		if (host.empty())
+			return (matches[0]);
+		size_t pos = host.find(':');
+		if (pos != std::string::npos)
+			host = host.substr(0, pos);
+		for (size_t i = 0; i < matches.size(); ++i)
+		{
+			const std::vector<std::string>& names = matches[i]->_config.getServerNames();
+			if (std::find(names.begin(), names.end(), host) != names.end())
+				return matches[i];
+		}
+		if (!matches.empty())
+			return (matches[0]);
+	}
+
+	return (this->_servers[0]);	
 }
 
 void Webserv::listen()
@@ -78,7 +93,8 @@ void Webserv::listen()
 			else
 			{
 				HttpRequest const request = this->readRequest(fd);
-				Server *s = this->findServer(fd);
+				HttpClient client = this->_client_map[fd];
+				Server *s = this->findServer(request, client);
 				if (!s->handleRequest(request, fd))
 					this->_epoll.remove(fd);
 			}

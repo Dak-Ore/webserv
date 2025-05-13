@@ -27,6 +27,7 @@ HttpClient &HttpClient::operator=(HttpClient const &ref)
 {
 	this->_fd = ref._fd;
 	this->_adress = ref._adress;
+	this->_serverAdress = ref._serverAdress;
 	return (*this);
 }
 
