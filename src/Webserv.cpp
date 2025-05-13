@@ -23,7 +23,7 @@ Webserv::Webserv(ConfigParser &parser) : _run(true)
 			socket = Socket(adress.host_str(), adress.port_str());
 			std::cout << "Server launched on " << adress << std::endl;
 			this->_sockets.push_back(socket);
-			this->_epoll.addSocket(socket.getFd());
+			this->_epoll.addSocket(socket);
 		}
 	}
 }
@@ -107,7 +107,7 @@ void Webserv::acceptClient(int serverFd)
 	HttpClient client(serverFd);
 	if (client.getFd() != -1)
 	{
-		this->_epoll.addClient(client.getFd());
+		this->_epoll.addClient(client);
 		this->_client_map[client.getFd()] = client;
 	}
 }

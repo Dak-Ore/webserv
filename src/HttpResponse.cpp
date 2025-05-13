@@ -18,7 +18,7 @@ HttpResponse::HttpResponse(int status_code) : HttpMessage(),
 HttpResponse::~HttpResponse()
 {
 	if (this->_bodyFd != -1)
-		close(this->_bodyFd);
+		::close(this->_bodyFd);
 }
 
 std::string HttpResponse::toString()
@@ -111,7 +111,7 @@ void HttpResponse::closeBody()
 {
 	if (this->_bodyFd != -1)
 	{
-		close(this->_bodyFd);
+		::close(this->_bodyFd);
 		this->_bodyFd = -1;
 	}
 }
