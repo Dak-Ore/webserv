@@ -16,7 +16,7 @@ HttpClient::HttpClient(int serverFd) : Socket()
 	if (this->_fd == -1)
 		return ;
 	this->_adress = Adress(client_addr);
-	this->_serverAdress = Adress(this->_fd);
+	this->_serverAdress = Adress(this);
 }
 
 HttpClient::HttpClient(HttpClient const &ref) : Socket()

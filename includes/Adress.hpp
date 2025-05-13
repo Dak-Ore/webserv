@@ -3,6 +3,8 @@
 #include <string>
 #include <ostream>
 
+class Socket;
+
 class Adress
 {
 private:
@@ -30,10 +32,10 @@ public:
 	bool operator==(const Adress &ref) const;
 
 	/**
-	 * @brief Constructs an Adress from an existing file descriptor.
-	 * @param fd Socket file descriptor.
+	 * @brief Constructs an Adress from an existing Socket.
+	 * @param socket Socket pointer
 	 */
-	Adress(int fd);
+	Adress(Socket *socket);
 
 	Adress(struct sockaddr_in addrinfo);
 

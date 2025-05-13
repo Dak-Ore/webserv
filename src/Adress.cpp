@@ -1,7 +1,9 @@
 #include "Adress.hpp"
+#include "Socket.hpp"
 
 #include <sstream>
 #include <stdexcept>
+#include <exception>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <unistd.h>
@@ -40,12 +42,14 @@ Adress::Adress() :
 	this->_port = 0;
 }
 
-Adress::Adress(int fd) :
+Adress::Adress(Socket *socket) :
 	_addrinfo(NULL)
 {
+	if (socket == NULL)
+		throw std::runtime_error("Socket pointer is NULL");
 	struct sockaddr_in server_addr;
 	socklen_t addrlen = sizeof(server_addr);
-	if (getsockname(fd, (struct sockaddr*)&server_addr, &addrlen) == -1)
+	if (getsockname(socket->getFd(), (struct sockaddr*)&server_addr, &addrlen) == -1)
 		throw std::runtime_error("Invalid fd");
 	this->_host = server_addr.sin_addr.s_addr;
 	this->_port = ntohs(server_addr.sin_port);
