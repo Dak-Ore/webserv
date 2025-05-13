@@ -1,5 +1,6 @@
 #pragma once
 
+#include <netdb.h>
 #include <string>
 #include <ostream>
 
@@ -10,7 +11,8 @@ class Adress
 private:
 	int _host;
 	int _port;
-	struct addrinfo *_addrinfo;
+	sockaddr_in  _sockaddr;
+	socklen_t    _addrlen;
 public:
 	/**
 	 * @brief Converts a host integer to a human-readable string.
@@ -18,12 +20,6 @@ public:
 	 * @return IP address as a dotted string.
 	 */
 	static std::string hostToString(int host);
-	/**
-	 * @brief Creates a socket using the given Adress.
-	 * @param adress Reference to an Adress object.
-	 * @return A socket file descriptor, or throws on failure.
-	 */
-	static int createSocket(const Adress &adress);
 
 	Adress();
 	Adress(const Adress &ref);
@@ -37,7 +33,7 @@ public:
 	 */
 	Adress(Socket *socket);
 
-	Adress(struct sockaddr_in addrinfo);
+	Adress(const struct sockaddr_in &addrinfo);
 
 	/**
 	 * @brief Constructs an Adress from host and port (as integers).
@@ -51,7 +47,7 @@ public:
 	 * @param host IP address or hostname.
 	 * @param port Port number as string.
 	 */
-	Adress(std::string host, std::string port);
+	Adress(const std::string &host, const std::string &port);
 
 	int host() const;
 	int port() const;
@@ -64,14 +60,14 @@ public:
 	 * @brief Creates a socket from the current Adress.
 	 * @return A socket file descriptor, or throws on failure.
 	 */
-	int createSocket();
+	int createSocket() const;
 
 	/**
 	 * @brief Binds the current Adress to the given file descriptor.
 	 * @param fd Socket file descriptor.
 	 * @return True on success, false otherwise.
 	 */
-	bool bind(int fd);
+	bool bind(int fd) const;
 };
 
 std::ostream& operator<<(std::ostream& os, const Adress &ref);
