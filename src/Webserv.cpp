@@ -1,10 +1,13 @@
 #include "Webserv.hpp"
 #include "HttpClient.hpp"
+#include "Adress.hpp"
 #include <algorithm>
+#include <vector>
 
 Webserv::Webserv(ConfigParser &parser) : _run(true)
 {
 	Socket socket;
+	std::vector<int> ports;
 	size_t count = parser.getServer().size();
 	for (size_t i = 0; i < count; i++)
 	{
@@ -13,8 +16,12 @@ Webserv::Webserv(ConfigParser &parser) : _run(true)
 
 		for (size_t i = 0; i < config.getAdress().size(); i++)
 		{
-			socket = Socket(config.getAdress()[i].host_str(), config.getAdress()[i].port_str());
-			std::cout << "Server launched on " << config.getAdress()[i].str() << std::endl;
+			const Adress &adress = config.getAdress()[i];
+			if (std::find(ports.begin(), ports.end(), adress.port()) != ports.end())
+				continue;
+			ports.push_back(adress.port());
+			socket = Socket(adress.host_str(), adress.port_str());
+			std::cout << "Server launched on " << adress << std::endl;
 			this->_sockets.push_back(socket);
 			this->_epoll.addSocket(socket.getFd());
 		}
