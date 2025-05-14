@@ -29,7 +29,8 @@ bool Server::handleRequest(HttpRequest const &request, const HttpClient &client)
 		return (false);
 	const std::string path = request.getPath();
 	std::cout << request.getMethod() << " - " << request.getHeader("Host")  << path  << std::endl;
-	const LocationConfig* location = this->matchLocation(request);
+	Config* config = this->matchLocation(request);
+	LocationConfig *location = dynamic_cast<LocationConfig *>(config);
 	if (location && location->getHasRedirection())
 	{
 		response.setCode(location->getRedirection().first);
@@ -37,7 +38,7 @@ bool Server::handleRequest(HttpRequest const &request, const HttpClient &client)
 		response.send();
 		return (true);
 	}
-	const std::string& root = (location) ? location->getRoot() : this->_config.getRoot();
+	const std::string& root = (config) ? config->getRoot() : this->_config.getRoot();
 
 	if (!request.isValid())
 		response = HttpResponse(request.getErrorCode());
@@ -46,10 +47,16 @@ bool Server::handleRequest(HttpRequest const &request, const HttpClient &client)
 		std::string relativePath = (location) ? location->getRelativePath(path) : path;
 		std::string file_path = utils::joinPath(root, relativePath);
 		if (utils::isDirectory(file_path))
-			file_path = this->findIndex(relativePath, location);
-		if (file_path.empty())
 		{
-			; // check autoindex
+			if (this->_config.getAutoIndex())
+			{
+				std::string html = utils::generateAutoIndex(file_path, request.getPath());
+				response.setBody(html); 
+				response.send();
+				return (true);
+			}
+			else
+				file_path = this->findIndex(relativePath, location);
 		}
 		std::cout << "   - FILE: " <<  file_path << std::endl;
 		response.setBodySource(file_path);
@@ -78,10 +85,10 @@ std::string Server::findIndex(const std::string& path, const LocationConfig* loc
 	return std::string();
 }
 
-const LocationConfig* Server::matchLocation(const HttpRequest& request)
+Config* Server::matchLocation(const HttpRequest& request)
 {
 	std::string path = utils::addTrailingSlash(request.getPath());
-	const LocationConfig* bestMatch = NULL;
+	const Config* bestMatch = NULL;
 	size_t bestLength = 0;
 
 	const std::vector<LocationConfig>& locations = this->_config.getLocations();
@@ -94,5 +101,7 @@ const LocationConfig* Server::matchLocation(const HttpRequest& request)
 			bestLength = locPath.length();
 		}
 	}
-	return (bestMatch);
+	if (bestMatch == NULL)
+		bestMatch = (ServerConfig *)&this->_config;
+	return ((Config *)bestMatch);
 }

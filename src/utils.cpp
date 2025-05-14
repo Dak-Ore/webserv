@@ -231,3 +231,45 @@ std::string utils::generateDefaultError(int statusCode)
 
 	return page.str();
 }
+
+#include <dirent.h>
+#include <sys/stat.h>
+
+std::string utils::generateAutoIndex(const std::string& path, const std::string& urlPath)
+{
+    DIR *dir;
+    struct dirent *entry;
+    std::ostringstream page;
+
+    dir = opendir(path.c_str());
+    if (!dir)
+		return "403";
+	page
+		<< "<!DOCTYPE html>"
+    	<< "<html><head><title> Index of " << urlPath << " </title></head>"
+    	<< "<body><h1>Index of " << urlPath << "</h1><ul>";
+
+    if (urlPath != "/")
+        page << "<li><a href=\"../\">../</a></li>";
+
+    while ((entry = readdir(dir)) != NULL)
+	{
+        std::string name = entry->d_name;
+        if (name == "." || name == "..")
+            continue;
+
+        std::string fullPath = path + "/" + name;
+        struct stat st;
+        if (stat(fullPath.c_str(), &st) == 0) {
+            if (S_ISDIR(st.st_mode))
+                name += "/";
+        }
+
+        page << "<li><a href=\"" << name << "\">" << name << "</a></li>";
+    }
+
+    closedir(dir);
+
+    page << "</ul></body></html>";
+    return page.str();
+}

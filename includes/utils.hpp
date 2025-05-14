@@ -61,6 +61,9 @@ namespace utils
 	std::string extractElem(std::string line, int pos);
 
 	std::string generateDefaultError(int statusCode);
+
+	std::string generateAutoIndex(const std::string& path, const std::string& urlPath);
+
 };
 void forkexec(int inout[2], std::vector<std::string> const argv, std::map<std::string, std::string> const envp);
 
