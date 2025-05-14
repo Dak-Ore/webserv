@@ -133,6 +133,7 @@ bool HttpResponse::setBodySource(const std::string &file_name)
 		return (false);
 	}
 	this->closeBody();
+	this->_body.clear();
 	this->_bodyFd = open(file_name.c_str(), O_RDONLY);
 	if (this->_bodyFd == -1)
 	{
@@ -142,6 +143,11 @@ bool HttpResponse::setBodySource(const std::string &file_name)
 	this->_setContentType(file_name);
 	this->_setHeader(CONTENT_LENGHT, utils::numToString((size_t)utils::getFileSize(file_name)));
 	return (true);
+}
+
+bool HttpResponse::hasBody()
+{
+	return (!this->_body.empty() || this->_bodyFd != -1);
 }
 
 void HttpResponse::setCode(int code)

@@ -64,7 +64,7 @@ bool Server::handleRequest(HttpRequest const &request, const HttpClient &client)
 	std::map<int, std::string>::const_iterator it = this->_config.getErrorPages().find(response.getCode());
 	if (it != this->_config.getErrorPages().end())
 		response.setBodySource(it->second);
-	else if (response.getCode() >= 400 && response.getCode() <= 599)
+	if (!response.hasBody() && response.getCode() >= 400 && response.getCode() <= 599)
 		response.setBody(utils::generateDefaultError(response.getCode()));
 	response.send();
 	return (true);

@@ -65,6 +65,8 @@ public:
 	 */
 	bool setBodySource(const std::string &file_name);
 
+	bool hasBody();
+
 	/**
 	 * @brief Set the HTTP status code.
 	 * @param code HTTP status code.
