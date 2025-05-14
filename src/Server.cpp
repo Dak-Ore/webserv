@@ -23,14 +23,22 @@ Server::~Server()
 
 bool Server::handleRequest(HttpRequest const &request, const HttpClient &client)
 {
+	HttpResponse response;
+	response.bindClient(client);
 	if (request.empty())
 		return (false);
 	const std::string path = request.getPath();
 	std::cout << request.getMethod() << " - " << request.getHeader("Host")  << path  << std::endl;
 	const LocationConfig* location = this->matchLocation(request);
+	if (location && location->getHasRedirection())
+	{
+		response.setCode(location->getRedirection().first);
+		response.setHeader("Location", location->getRedirection().second);
+		response.send();
+		return (true);
+	}
 	const std::string& root = (location) ? location->getRoot() : this->_config.getRoot();
 
-	HttpResponse response;
 	if (!request.isValid())
 		response = HttpResponse(request.getErrorCode());
 	else
@@ -51,7 +59,6 @@ bool Server::handleRequest(HttpRequest const &request, const HttpClient &client)
 		response.setBodySource(it->second);
 	else if (response.getCode() >= 400 && response.getCode() <= 599)
 		response.setBody(utils::generateDefaultError(response.getCode()));
-	response.bindClient(client);
 	response.send();
 	return (true);
 }
