@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <vector>
 
+#define REQUEST_MAX_SIZE 8192
+
 Webserv::Webserv(ConfigParser &parser) : _run(true)
 {
 	Socket socket;
@@ -123,18 +125,23 @@ HttpRequest Webserv::readRequest(int fd)
 
 	this->readHeaders(fd, headers, body);
 	HttpRequest request(headers);
+	// body size
 	this->readBody(fd, body);
+
 	return (request);
 }
 
 bool Webserv::readHeaders(int fd, std::string& headers, std::string& body)
-{
+{\
+	ssize_t size = 0;
 	char buffer[1024];
 	int bytes;
 	size_t header_limit;
 
 	while (true)
 	{
+		if (size > REQUEST_MAX_SIZE)
+			return false;
 		bytes = ::recv(fd, buffer, sizeof(buffer), 0);
 		if (bytes <= 0)
 			return (false);
@@ -153,11 +160,14 @@ bool Webserv::readHeaders(int fd, std::string& headers, std::string& body)
 
 bool Webserv::readBody(int fd, std::string& body)
 {
+	ssize_t size = 0;
 	char buffer[1024];
 	int bytes;
 
 	while (true)
 	{
+		if (size > REQUEST_MAX_SIZE)
+			return false;
 		bytes = ::recv(fd, buffer, sizeof(buffer), 0);
 		if (bytes <= 0)
 			return (false);
