@@ -14,11 +14,9 @@ SOURCES = ./Adress.cpp ./CGI.cpp ./Config.cpp ./ConfigParser.cpp ./EPoll.cpp ./E
 
 OBJS = $(addprefix $(OBJDIR)/, $(SOURCES:.cpp=.o))
 
-_PROGRESS_BAR_EXISTS=false
-
 all: $(NAME)
 
-$(NAME): $(OBJS)
+$(NAME): _init_progress_bar $(OBJS) _end_progress_bar
 	@echo "$(GREEN)Compiling $(NAME)...$(RESET)"
 	@c++ $(FLAGS) $(OBJS) -o $(NAME) $(INC)
 	@echo "$(GREEN)Compilation finished successfully!$(RESET)"
@@ -26,7 +24,7 @@ $(NAME): $(OBJS)
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	@mkdir -p $(dir $@)
 	@c++ $(FLAGS) $(INC) -c $< -o $@
-	@if $(_PROGRESS_BAR_EXISTS); then echo -n ' '; fi  # fill progress bar
+	@echo -n ' '  # fill progress bar
 
 clean:
 	@echo "$(RED)Cleaning object files...$(RESET)"
@@ -36,15 +34,18 @@ fclean: clean
 	@echo "$(RED)Cleaning all...$(RESET)"
 	@rm -f $(NAME)
 
-re:
-	@$(MAKE) _PROGRESS_BAR_EXISTS=true --no-print-directory fclean sources _init_progress_bar $(OBJS) _end_progress_bar $(NAME)
+re: fclean sources $(NAME)
 
 sources:
 	@./update_sources
 
 _init_progress_bar:
 	@echo -ne '\e[0;44m'
-	@for i in $$(seq $(words $(OBJS))); do echo -n ' '; done
+	@for obj in $(OBJS); do \
+		if ! $(MAKE) -q $$obj; then \
+			echo -n ' ' \
+		; fi \
+	; done
 	@echo -ne '\r\e[0;46m'
 
 _end_progress_bar:
