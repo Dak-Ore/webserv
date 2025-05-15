@@ -4,6 +4,7 @@
 # include <iostream>
 # include <vector>
 # include <sstream>
+#include "CGI.hpp"
 # include "File.hpp"
 # include "Config.hpp"
 # include <cstdlib>
@@ -14,9 +15,10 @@ private:
 	std::string _path;
     bool _hasRedirection;
     std::pair<int, std::string> _redirection;
+    std::vector<CGI> _cgis;
 public:
     // Default Constructor
-    LocationConfig(std::string content);
+    LocationConfig(std::string content, std::vector<CGI> cgis);
 	// Destructor
     virtual ~LocationConfig();
     /**
@@ -44,6 +46,12 @@ public:
 
     // DEBUG
 	void		print();
+
+    /**
+     * Return a pointer to a CGI that can answer to the given script file.
+     * Return NULL if no such CGI is found.
+     */
+    CGI const* getCgi(std::string const& filename) const;
 };
 
 #endif

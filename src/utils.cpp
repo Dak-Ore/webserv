@@ -246,6 +246,13 @@ void utils::parseHostAndPort(std::string& host, std::string& port,
 		throw std::runtime_error("EOF expected.");
 }
 
+bool utils::startswith(std::string const& str, std::string const& substr)
+{
+	if (substr.size() > str.size())
+		return false;
+	return str.substr(0, substr.size()) == substr;
+}
+
 bool utils::endswith(std::string const& str, std::string const& substr)
 {
 	if (substr.size() > str.size())

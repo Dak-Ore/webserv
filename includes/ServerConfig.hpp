@@ -2,6 +2,7 @@
 # define SERVERCONFIG_HPP
 
 # include "Adress.hpp"
+# include "CGI.hpp"
 # include "LocationConfig.hpp"
 # include <sstream>
 # include <map>
@@ -27,9 +28,10 @@ public:
     /**
     	* @brief Parse the content of server and his locations.
         * @param content string that contain all parameters of config file.
-        * @param location list of contents of the location(s) of the server.
+        * @param locations list of contents of the locations(s) of the server.
+        *        the CGIs are in locations.second
     */
-    ServerConfig(std::string content, std::vector<std::string> location);
+    ServerConfig(std::string content, std::vector<std::pair<std::string, std::vector<CGI> > > locations);
     // Delete
     virtual ~ServerConfig();
     /**

@@ -84,6 +84,11 @@ namespace utils
 	);
 
 	/**
+	 * Return either the start of 'str' is 'substr'.
+	 */
+	bool startswith(std::string const& str, std::string const& substr);
+
+	/**
 	 * Return either the end of 'str' is 'substr'.
 	 */
 	bool endswith(std::string const& str, std::string const& substr);

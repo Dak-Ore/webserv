@@ -42,10 +42,6 @@ protected:
     */
     std::map<int, std::string> _errorPages;
     /*
-        List of cgi allowed in the server / location.
-    */
-    std::vector<std::string> _cgiExtension;
-    /*
         Default : false
     */
     bool _uploadEnabled;
@@ -70,7 +66,6 @@ public:
 	size_t                              getClientMaxBodySize() const;
     const std::map<int, std::string>&   getErrorPages() const;
 	bool                                getAutoIndex() const;
-    std::vector<std::string>            getCgiExtension()const;
     bool                                getUploadEnabled() const;
     std::vector<std::string>            getUploadPath()const;
 	std::vector<std::string>            getAllowedMethods()const;

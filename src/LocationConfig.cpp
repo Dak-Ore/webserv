@@ -1,7 +1,8 @@
 #include "LocationConfig.hpp"
 #include "utils.hpp"
+#include <vector>
 
-LocationConfig::LocationConfig(std::string content): Config()
+LocationConfig::LocationConfig(std::string content, std::vector<CGI> cgis): Config()
 {
   	std::istringstream stream(content);
 	std::string		line;
@@ -13,6 +14,7 @@ LocationConfig::LocationConfig(std::string content): Config()
 	while (std::getline(stream, line) && this->_hasRedirection == false)
 		this->findElement(line);
 	this->checkConfig();
+	this->_cgis = cgis;
 }
 
 void	LocationConfig::checkConfig()
@@ -42,6 +44,8 @@ void	LocationConfig::findElement(std::string line)
 		this->_redirection.first = atoi(word.c_str());
 		this->_redirection.second = utils::smartSubstr(value, word, ";");
 	}
+	else
+		std::cerr << "! Warning ! In configuration file: parameter '" << key << "' is unknown. Ignored." << std::endl;
 }
 
 void		LocationConfig::print()
@@ -50,9 +54,6 @@ void		LocationConfig::print()
 	std::cout << this->_root << std::endl;
 	std::cout << "Upload enabled: " << this->_uploadEnabled << " Autoindex: " << this->_autoIndex << " Has redirection: " << this->_hasRedirection << std::endl;
 	std::cout << "Redirection : " << this->_redirection.first << this->_redirection.second << std::endl;
-	std::cout << "CGI Extension : ";
-	for (std::vector<std::string>::iterator it = this->_cgiExtension.begin(); it != this->_cgiExtension.end(); it++)
-		std::cout << *it << " - ";
 	std::cout << std::endl << "Allowed methods : ";
 	for (std::vector<std::string>::iterator it = this->_allowedMethods.begin(); it != this->_allowedMethods.end(); it++)
 		std::cout << *it << " - ";
@@ -78,6 +79,14 @@ std::string LocationConfig::getRelativePath(const std::string& path) const
 	if (normPath.compare(0, locPath.length(), locPath) == 0)
 		return utils::removeTrailingSlash(path.substr(locPath.length() - 1));
 	return ("");
+}
+
+CGI const* LocationConfig::getCgi(std::string const& filename) const
+{
+	for (std::vector<CGI>::const_iterator it = this->_cgis.begin(); it != this->_cgis.end(); it++)
+		if (it->fileForMe(filename))
+			return &*it;  // this is art
+	return NULL;
 }
 
 //getters

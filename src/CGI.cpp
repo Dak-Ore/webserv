@@ -82,17 +82,19 @@ CGI::CGI(CGI const& other)
 CGI& CGI::operator=(CGI const& other)
 {
 	this->argv = other.argv;
+	this->extension = other.extension;
 	return *this;
 }
 
-CGI::CGI(std::vector<std::string> const& argv)
+CGI::CGI(std::vector<std::string> const& argv, std::string const& extension)
 : argv(argv)
+, extension(extension)
 {}
 
 CGI::~CGI()
 {}
 
-CGI::Running CGI::_execute(int& stdin, CGI::execute_arguments const& args)
+CGI::Running CGI::_execute(int& stdin, CGI::execute_arguments const& args) const
 {
 	std::map<std::string, std::string> envp;
 	envp["GATEWAY_INTERFACE"] = "CGI/1.1";
@@ -131,7 +133,7 @@ CGI::Running CGI::execute(int& stdin,
 	std::string const& script,
 	std::string const& script_name,
 	HttpRequest const& request
-) {
+) const {
 	std::string host, port;
 	size_t content_length(atoi(request.getHeader("content-length").c_str()));
 	utils::parseHostAndPort(host, port, "80", request.getHeader("host"));
@@ -150,6 +152,11 @@ CGI::Running CGI::execute(int& stdin,
 		.content_type = request.getHeader("content-type"),
 	};
 	return this->_execute(stdin, args);
+}
+
+bool CGI::fileForMe(std::string const& filename) const
+{
+	return utils::endswith(filename, "." + this->extension);
 }
 
 
