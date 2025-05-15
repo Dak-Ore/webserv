@@ -1,7 +1,6 @@
 #include "EPoll.hpp"
 #include "Socket.hpp"
 #include "HttpClient.hpp"
-
 #include <stdexcept>
 #include <sys/epoll.h>
 #include <cstring>
