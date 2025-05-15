@@ -14,6 +14,8 @@ SOURCES = ./Adress.cpp ./CGI.cpp ./Config.cpp ./ConfigParser.cpp ./EPoll.cpp ./E
 
 OBJS = $(addprefix $(OBJDIR)/, $(SOURCES:.cpp=.o))
 
+_PROGRESS_BAR_EXISTS=false
+
 all: $(NAME)
 
 $(NAME): $(OBJS)
@@ -24,6 +26,7 @@ $(NAME): $(OBJS)
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	@mkdir -p $(dir $@)
 	@c++ $(FLAGS) $(INC) -c $< -o $@
+	@if $(_PROGRESS_BAR_EXISTS); then echo -n ' '; fi  # fill progress bar
 
 clean:
 	@echo "$(RED)Cleaning object files...$(RESET)"
@@ -33,9 +36,18 @@ fclean: clean
 	@echo "$(RED)Cleaning all...$(RESET)"
 	@rm -f $(NAME)
 
-re: fclean sources $(NAME)
+re:
+	@$(MAKE) _PROGRESS_BAR_EXISTS=true --no-print-directory fclean sources _init_progress_bar $(OBJS) _end_progress_bar $(NAME)
 
 sources:
 	@./update_sources
 
-.PHONY: all clean fclean re sources
+_init_progress_bar:
+	@echo -ne '\e[0;44m'
+	@for i in $$(seq $(words $(OBJS))); do echo -n ' '; done
+	@echo -ne '\r\e[0;46m'
+
+_end_progress_bar:
+	@echo "\e[0m"
+
+.PHONY: all clean fclean re sources _init_progress_bar _end_progress_bar
