@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 #include <vector>
 #include <map>
@@ -5,6 +7,7 @@
 #include <sys/types.h> 
 #include <stdint.h>
 #include <iostream>
+#include "HttpResponse.hpp"
 
 namespace utils
 {
@@ -57,6 +60,14 @@ namespace utils
 	std::string removeTrailingSlash(const std::string& path);
 
 	std::string extractElem(std::string line, int pos);
+
+	std::string generateDefaultError(int statusCode);
+
+	std::string generateAutoIndex(const std::string& path, const std::string& urlPath);
+	
+	std::string	regexWildcardGenerator(const std::string &path);
+
+	bool	isValidPath(std::string str, std::string path);
 
 	/**
 	 * Get the host and port from 'str'.

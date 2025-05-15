@@ -3,6 +3,7 @@
 #include "ServerConfig.hpp"
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
+#include "HttpClient.hpp"
 #include "utils.hpp"
 
 #include <stdexcept>
@@ -11,8 +12,8 @@
 #include <iomanip>
 #include <sys/socket.h>
 
-Server::Server(EPoll &epoll_ref, ServerConfig &config) :
-	_epoll(epoll_ref), _config(config)
+Server::Server(ServerConfig &config) :
+	_config(config)
 {
 }
 
@@ -20,39 +21,87 @@ Server::~Server()
 {
 }
 
-bool Server::handleRequest(HttpRequest const &request, int response_fd)
+bool Server::handleRequest(HttpRequest const &request, const HttpClient &client)
 {
 	HttpResponse response;
+	response.bindClient(client);
 	if (request.empty())
 		return (false);
-	const std::string path = request.getPath();
-	std::cout << request.getMethod() << " - " << path << std::endl;
-	const LocationConfig* location = this->matchLocation(request);
-	const std::string& root = (location) ? location->getRoot() : this->_config.getRoot();
+	const std::string &path = request.getPath();
+	std::cout << request.getMethod() << " - " << request.getHeader("Host")  << path  << std::endl;
+	Config* config = this->matchLocation(request);
+	LocationConfig *location = dynamic_cast<LocationConfig *>(config);
+	if (this->handleRedirect(response, location))
+		return (true);
 
 	if (!request.isValid())
 		response = HttpResponse(request.getErrorCode());
 	else
 	{
-		std::string relativePath = (location) ? location->getRelativePath(path) : path;
-		std::string file_path = utils::joinPath(root, relativePath);
+		std::string relativePath = (location) ? location->getRelativePath(request.getPath()) : request.getPath();
+		std::string file_path = utils::joinPath(config->getRoot(), relativePath);
 		if (utils::isDirectory(file_path))
-			file_path = this->findIndex(relativePath, location);
-		if (file_path.empty())
 		{
-			; // check autoindex
+			if (config->getAutoIndex())
+				return (this->sendAutoindex(request, response, file_path), true);
+			else
+				file_path = this->findIndex(relativePath, location);
 		}
 		std::cout << "   - FILE: " <<  file_path << std::endl;
 		response.setBodySource(file_path);
 	}
-
-	std::map<int, std::string>::const_iterator it = this->_config.getErrorPages().find(response.getCode());
-	if (it != this->_config.getErrorPages().end())
-		response.setBodySource(it->second);
-	response.send(response_fd);
-	this->_epoll.remove(response_fd);
+	this->handleErrorPages(response, config);
+	response.send();
 	return (true);
 }
+
+Config* Server::matchLocation(const HttpRequest& request)
+{
+	std::string path = utils::addTrailingSlash(request.getPath());
+	const Config* bestMatch = NULL;
+	size_t bestLength = 0;
+
+	const std::vector<LocationConfig>& locations = this->_config.getLocations();
+	for (size_t i = 0; i < locations.size(); i++)
+	{
+		std::string locPath = utils::addTrailingSlash(locations[i].getPath());
+		if (path.compare(0, locPath.length(), locPath) == 0 && locPath.length() > bestLength)
+		{
+			bestMatch = &locations[i];
+			bestLength = locPath.length();
+		}
+	}
+	if (bestMatch == NULL)
+		bestMatch = (ServerConfig *)&this->_config;
+	return ((Config *)bestMatch);
+}
+
+bool Server::handleRedirect(HttpResponse &response, LocationConfig *location)
+{
+	if (!location || !location->getHasRedirection())
+		return (false);
+	response.setCode(location->getRedirection().first);
+	response.setHeader("Location", location->getRedirection().second);
+	response.send();
+	return (true);
+}
+
+void Server::sendAutoindex(const HttpRequest &request, HttpResponse &response, const std::string &directory)
+{
+	std::string html = utils::generateAutoIndex(directory, request.getPath());
+	response.setBody(html); 
+	response.send();
+}
+
+void Server::handleErrorPages(HttpResponse &response, Config *config)
+{
+	std::map<int, std::string>::const_iterator it = config->getErrorPages().find(response.getCode());
+	if (!response.hasBody() && it != config->getErrorPages().end())
+		response.setBodySource(it->second);
+	if (!response.hasBody() && response.getCode() >= 400 && response.getCode() <= 599)
+		response.setBody(utils::generateDefaultError(response.getCode()));
+}
+
 
 std::string Server::findIndex(const std::string& path, const LocationConfig* location)
 {
@@ -67,23 +116,4 @@ std::string Server::findIndex(const std::string& path, const LocationConfig* loc
 			return (file_path);
 	}
 	return std::string();
-}
-
-const LocationConfig* Server::matchLocation(const HttpRequest& request)
-{
-	std::string path = utils::addTrailingSlash(request.getPath());
-	const LocationConfig* bestMatch = NULL;
-	size_t bestLength = 0;
-
-	const std::vector<LocationConfig>& locations = this->_config.getLocations();
-	for (size_t i = 0; i < locations.size(); i++)
-	{
-		std::string locPath = utils::addTrailingSlash(locations[i].getPath());
-		if (path.compare(0, locPath.length(), locPath) == 0 && locPath.length() > bestLength)
-		{
-			bestMatch = &locations[i];
-			bestLength = locPath.length();
-		}
-	}
-	return (bestMatch);
 }

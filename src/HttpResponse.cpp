@@ -1,4 +1,5 @@
 #include "HttpResponse.hpp"
+#include "HttpClient.hpp"
 #include "utils.hpp"
 
 #include <stdexcept>
@@ -7,10 +8,12 @@
 #include <sys/socket.h>
 #include <set>
 #include <map>
+#include <exception>
 
 HttpResponse::HttpResponse(int status_code) : HttpMessage(),
 	_status_code(status_code),
-	_bodyFd(-1)
+	_bodyFd(-1),
+	_client(NULL)
 {
 	this->_version = "HTTP/1.1";
 }
@@ -18,7 +21,7 @@ HttpResponse::HttpResponse(int status_code) : HttpMessage(),
 HttpResponse::~HttpResponse()
 {
 	if (this->_bodyFd != -1)
-		close(this->_bodyFd);
+		::close(this->_bodyFd);
 }
 
 std::string HttpResponse::toString()
@@ -111,7 +114,7 @@ void HttpResponse::closeBody()
 {
 	if (this->_bodyFd != -1)
 	{
-		close(this->_bodyFd);
+		::close(this->_bodyFd);
 		this->_bodyFd = -1;
 	}
 }
@@ -130,6 +133,7 @@ bool HttpResponse::setBodySource(const std::string &file_name)
 		return (false);
 	}
 	this->closeBody();
+	this->_body.clear();
 	this->_bodyFd = open(file_name.c_str(), O_RDONLY);
 	if (this->_bodyFd == -1)
 	{
@@ -139,6 +143,11 @@ bool HttpResponse::setBodySource(const std::string &file_name)
 	this->_setContentType(file_name);
 	this->_setHeader(CONTENT_LENGHT, utils::numToString((size_t)utils::getFileSize(file_name)));
 	return (true);
+}
+
+bool HttpResponse::hasBody()
+{
+	return (!this->_body.empty() || this->_bodyFd != -1);
 }
 
 void HttpResponse::setCode(int code)
@@ -190,6 +199,18 @@ void HttpResponse::_setContentType(const std::string& file_name)
 	std::string ext = file_name.substr(file_name.find_last_of('.'));
 	std::map<std::string, std::string>::const_iterator it = mimeTypes.find(ext);
 	this->_setHeader(CONTENT_TYPE, (it != mimeTypes.end()) ? it->second : DEFAULT_CONTENT_TYPE);
+}
+
+void HttpResponse::bindClient(const HttpClient &client)
+{
+	this->_client = &client;
+}
+
+void HttpResponse::send()
+{
+	if (this->_client == NULL)
+		throw std::runtime_error("Client is NULL");
+	return (this->send(this->_client->getFd()));
 }
 
 void HttpResponse::send(int fd)

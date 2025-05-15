@@ -16,11 +16,14 @@ enum cookie_options
 	COOKIE_SAME_SITE
 };
 
+class HttpClient;
+
 class HttpResponse : HttpMessage
 {
 private:
 	int _status_code;
 	int _bodyFd;
+	const HttpClient *_client;
 	// bool _keep_alive;
 	void closeBody();
 	void _setContentType(const std::string& file_name);
@@ -62,6 +65,8 @@ public:
 	 */
 	bool setBodySource(const std::string &file_name);
 
+	bool hasBody();
+
 	/**
 	 * @brief Set the HTTP status code.
 	 * @param code HTTP status code.
@@ -89,9 +94,16 @@ public:
 	 */
 	int getCode() const;
 
+	void		bindClient(const HttpClient &client);
+
 	/**
 	 * @brief Send the HTTP response to a socket.
 	 * @param fd File descriptor of the client socket.
 	 */
 	void send(int fd);
+
+	/**
+	 * @brief Send the HTTP response to the binded client.
+	 */
+	void send();
 };

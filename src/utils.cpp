@@ -12,6 +12,7 @@
 #include <vector>
 #include <cstring>
 #include <sstream>
+#include <dirent.h>
 
 std::string utils::numToString(size_t value)
 {
@@ -250,4 +251,84 @@ bool utils::endswith(std::string const& str, std::string const& substr)
 	if (substr.size() > str.size())
 		return false;
 	return str.substr(str.size() - substr.size()) == substr;
+}
+
+std::string utils::generateDefaultError(int statusCode)
+{
+	std::ostringstream	page;
+	std::string			statusMessage = HttpResponse::getReason(statusCode);
+
+	page << "<!DOCTYPE html>\n"
+	<< "<html>\n"
+	<< "<head><title>" << statusCode << " " << statusMessage << "</title></head>\n"
+	<< "<body>\n"
+	<< "<h1>" << statusCode << " " << statusMessage << "</h1>\n"
+	<< "<p>The server returned an error: " << statusMessage << ".</p>\n"
+	<< "</body>\n"
+	<< "</html>\n";
+
+	return page.str();
+}
+
+std::string utils::generateAutoIndex(const std::string& path, const std::string& urlPath)
+{
+    DIR *dir;
+    struct dirent *entry;
+    std::ostringstream page;
+
+    dir = opendir(path.c_str());
+    if (!dir)
+		return "403";
+	page
+		<< "<!DOCTYPE html>"
+    	<< "<html><head><title> Index of " << urlPath << " </title></head>"
+    	<< "<body><h1>Index of " << urlPath << "</h1><ul>";
+
+    if (urlPath != "/")
+        page << "<li><a href=\"../\">../</a></li>";
+
+    while ((entry = readdir(dir)) != NULL)
+	{
+        std::string name = entry->d_name;
+        if (name == "." || name == "..")
+            continue;
+
+        std::string fullPath = path + "/" + name;
+        struct stat st;
+        if (stat(fullPath.c_str(), &st) == 0) {
+            if (S_ISDIR(st.st_mode))
+                name += "/";
+        }
+
+        page << "<li><a href=\"" << name << "\">" << name << "</a></li>";
+    }
+
+    closedir(dir);
+
+    page << "</ul></body></html>";
+    return page.str();
+}
+
+std::string	utils::regexWildcardGenerator(const std::string &path)
+{
+	std::string	regex;
+
+	for (size_t i = 0; i < path.size(); i++)
+	{
+		if (path[i] == '*')
+			regex += "[a-zA-Z0-9\\-_\\.\\%]*";
+		else if (path[i] == '.')
+			regex += "\\.";
+		else if (path[i] == '/')
+			regex += "\\/";
+		else 
+			regex += path[i];
+	}
+	return "^" + regex + "$";
+}
+
+bool	utils::isValidPath(std::string str, std::string path)
+{
+	std::string pattern = utils::regexWildcardGenerator(path);
+	return (utils::isValidRegex(str, pattern));
 }

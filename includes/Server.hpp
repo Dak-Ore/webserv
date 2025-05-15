@@ -10,13 +10,16 @@
 class Server
 {
 private:
-	EPoll &_epoll;
     std::string _root;
+	bool handleRedirect(HttpResponse &response, LocationConfig *location);
+	void sendAutoindex(const HttpRequest &request, HttpResponse &response, const std::string &directory);
+	void handleErrorPages(HttpResponse &response, Config *config);
+
 public:
 	ServerConfig	_config;
-	Server(EPoll &epoll_ref, ServerConfig &config);
+	Server(ServerConfig &config);
 	~Server();
-	bool handleRequest(HttpRequest const &request, int response_fd);
+	bool handleRequest(HttpRequest const &request, const HttpClient &client);
+	Config *matchLocation(const HttpRequest& request);
 	std::string findIndex(const std::string& path, const LocationConfig* location);
-	const LocationConfig *matchLocation(const HttpRequest& request);
 };
