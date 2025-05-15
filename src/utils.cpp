@@ -273,3 +273,26 @@ std::string utils::generateAutoIndex(const std::string& path, const std::string&
     page << "</ul></body></html>";
     return page.str();
 }
+std::string	utils::regexWildcardGenerator(const std::string &path)
+{
+	std::string	regex;
+
+	for (size_t i = 0; i < path.size(); i++)
+	{
+		if (path[i] == '*')
+			regex += "[a-zA-Z0-9\\-_\\.\\%]*";
+		else if (path[i] == '.')
+			regex += "\\.";
+		else if (path[i] == '/')
+			regex += "\\/";
+		else 
+			regex += path[i];
+	}
+	return "^" + regex + "$";
+}
+
+bool	utils::isValidPath(std::string str, std::string path)
+{
+	std::string pattern = utils::regexWildcardGenerator(path);
+	return (utils::isValidRegex(str, pattern));
+}

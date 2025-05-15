@@ -63,7 +63,9 @@ namespace utils
 	std::string generateDefaultError(int statusCode);
 
 	std::string generateAutoIndex(const std::string& path, const std::string& urlPath);
-
+	
+	std::string	regexWildcardGenerator(const std::string &path);
+	bool	isValidPath(std::string str, std::string path);
 };
 void forkexec(int inout[2], std::vector<std::string> const argv, std::map<std::string, std::string> const envp);
 
