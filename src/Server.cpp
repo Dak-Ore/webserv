@@ -29,7 +29,7 @@ bool Server::handleRequest(HttpRequest const &request, const HttpClient &client)
 		return (false);
 	const std::string path = request.getPath();
 	std::cout << request.getMethod() << " - " << request.getHeader("Host")  << path  << std::endl;
-	Config* config = this->matchLocation(request);
+	Config* config = this->getConfig(request);
 	LocationConfig *location = dynamic_cast<LocationConfig *>(config);
 	if (location && location->getHasRedirection())
 	{
@@ -41,7 +41,7 @@ bool Server::handleRequest(HttpRequest const &request, const HttpClient &client)
 	const std::string& root = (config) ? config->getRoot() : this->_config.getRoot();
 
 	if (!request.isValid())
-		response = HttpResponse(request.getErrorCode());
+		response.setCode(request.getErrorCode());
 	else
 	{
 		std::string relativePath = (location) ? location->getRelativePath(path) : path;
@@ -85,7 +85,7 @@ std::string Server::findIndex(const std::string& path, const LocationConfig* loc
 	return std::string();
 }
 
-Config* Server::matchLocation(const HttpRequest& request)
+Config* Server::getConfig(const HttpRequest& request)
 {
 	std::string path = utils::addTrailingSlash(request.getPath());
 	const Config* bestMatch = NULL;

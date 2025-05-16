@@ -71,3 +71,4 @@ std::vector<std::string> Config::getUploadPath() const {return this->_uploadPath
 std::string Config::getRoot() const {return this->_root;}
 std::vector<std::string> Config::getIndex() const {return this->_index;}
 std::vector<std::string> Config::getAllowedMethods() const{return this->_allowedMethods;}
+size_t Config::getClientMaxBodySize() const {return this->_clientMaxBodySize;}
