@@ -40,7 +40,8 @@ sources:
 	@./update_sources
 
 _init_progress_bar:
-	@echo -ne '\e[0;44m'
+	@{ while kill -0 $$PPID 2> /dev/null; do true; done; echo -n '\e[?25h\e[0m'; }&
+	@echo -ne '\e[?25l\e[0;44m'
 	@for obj in $(OBJS); do \
 		if ! $(MAKE) -q $$obj; then \
 			echo -n ' ' \
@@ -49,6 +50,6 @@ _init_progress_bar:
 	@echo -ne '\r\e[0;46m'
 
 _end_progress_bar:
-	@echo "\e[0m"
+	@echo "\e[0m\e[?25h"
 
 .PHONY: all clean fclean re sources _init_progress_bar _end_progress_bar
