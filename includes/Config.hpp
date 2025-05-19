@@ -90,6 +90,8 @@ public:
     */
 	int	parseVar(std::string key, std::string value, std::string line);
 	virtual void	findElement(std::string line) = 0;
+
+	virtual std::string getRelativePath(const std::string& path) const = 0;
 };
 
 #endif

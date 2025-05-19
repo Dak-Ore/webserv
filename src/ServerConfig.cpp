@@ -84,3 +84,12 @@ void	ServerConfig::print()
 	std::cout << std::endl;
 	
 }
+
+std::string ServerConfig::getRelativePath(const std::string & path) const
+{
+	std::string normPath = utils::addTrailingSlash(path);
+
+	if (!normPath.empty() && normPath[0] == '/')
+		return utils::removeTrailingSlash(normPath.substr(1));
+	return "";
+}

@@ -1,41 +1,138 @@
 #include "HttpRequest.hpp"
+#include "HttpClient.hpp"
+#include "Config.hpp"
+#include "Webserv.hpp"
+
+#define REQUEST_MAX_SIZE 8192
 
 HttpRequest::HttpRequest() : HttpMessage() {}
 // Default Constructor
-HttpRequest::HttpRequest(const std::string &request) : HttpMessage(),
-	_is_empty(request.empty()), _error(0)
+HttpRequest::HttpRequest(const HttpClient &client, const Webserv &serv)
+    : HttpMessage(), _is_empty(true), _error(0)
 {
-	if (this->empty())
-		return ;
-	std::istringstream stream(request);
+    std::string headers, body;
 
-	parseRequestLine(stream);
-	// if (!allowed.empty())
-	// {
-	// 	bool	find = 0;
-	// 	for (std::vector<std::string>::iterator it = allowed.begin(); it != allowed.end(); it++)
-	// 		if ((find = this->_method == *it) == 1)
-	// 			break;
-	// 	if (!find)
-	// 	{
-	// 		this->_error = 405;
-	// 		return ;
-	// 	}
-	// }
-	parseHeaders(stream);
+    // Étape 1 : Lire les en-têtes et le corps
+    if (!readHeaders(client.getFd(), headers, body))
+    {
+        this->_error = 400;
+        return;
+    }
 
-	if (this->_headers.size() > MAX_HEADERS)
+    std::istringstream stream(headers);
+    parseRequestLine(stream);
+
+    // Étape 2 : Valider le chemin autorisé (à décommenter si nécessaire)
+    // if (!allowed.empty()) {
+    //     bool allowedMethod = false;
+    //     for (std::vector<std::string>::iterator it = allowed.begin(); it != allowed.end(); ++it) {
+    //         if (this->_method == *it) {
+    //             allowedMethod = true;
+    //             break;
+    //         }
+    //     }
+    //     if (!allowedMethod) {
+    //         this->_error = 405;
+    //         return;
+    //     }
+    // }
+
+    parseHeaders(stream);
+
+    if (this->_headers.size() > MAX_HEADERS) {
+        this->_error = 431;
+        return;
+    }
+
+    // Étape 3 : Trouver la config en fonction de la requête et client
+    this->_config = serv.findConfig(*this, client);
+    if (this->_config == NULL) {
+        this->_error = 500;
+        return;
+    }
+
+    // Étape 4 : Ajouter le reste du corps s'il est incomplet
+    if (!readBody(client.getFd(), body)) {
+        this->_error = 413; // Payload Too Large
+        return;
+    }
+
+    std::istringstream fullBodyStream(body);
+    parseBody(fullBodyStream);
+
+    if (_method == "POST")
+        validateBodySize();
+
+    if (!this->_headers["Cookie"].empty())
+        parseCookie();
+
+    this->_is_empty = false;
+}
+
+
+
+void HttpRequest::readRequest(const HttpClient &client, const Webserv &serv)
+{
+	std::string headers, body;
+
+	this->readHeaders(client.getFd(), headers, body);
+	// this->parseRequestLine(headers);
+	// this->parseHeaders(stream);
+	this->_config = serv.findConfig(*this, client);
+	if (this->_config == NULL)
+		throw std::exception();
+	this->readBody(client.getFd(), body);
+	std::cout << "REQ: " << std::endl << headers << body << "\n\n\nEND\n";
+}
+
+bool HttpRequest::readHeaders(int fd, std::string& headers, std::string& body)
+{\
+	size_t size = 0;
+	char buffer[1024];
+	int bytes;
+	size_t header_limit;
+
+	while (true)
 	{
-		this->_error = 431;
-		return ;
+		if (size > REQUEST_MAX_SIZE)
+			return false;
+		bytes = ::recv(fd, buffer, sizeof(buffer), 0);
+		if (bytes <= 0)
+			return (false);
+		size += bytes;
+		headers.append(buffer, bytes);
+
+		header_limit = headers.find("\r\n\r\n");
+		if (header_limit != std::string::npos)
+		{
+			body = headers.substr(header_limit + 4);
+			headers.erase(header_limit, 4);
+			break ;
+		}
 	}
-	parseBody(stream);
-	std::cout << this->toString() << std::endl;
-	if (_method == "POST")
-		validateBodySize();
-	if (!this->_headers["Cookie"].empty())
-		parseCookie();
-	hasMultipart();
+	return (true);
+}
+
+bool HttpRequest::readBody(int fd, std::string& body)
+{
+	if (this->_config == NULL)
+		throw std::exception();
+	size_t size = 0;
+	size_t limit = this->_config->getClientMaxBodySize();
+	char buffer[1024];
+	int bytes;
+
+	while (true)
+	{
+		if (size > limit)
+			return false;
+		bytes = ::recv(fd, buffer, sizeof(buffer), 0);
+		if (bytes <= 0)
+			break ;
+		size += bytes;
+		body.append(buffer, bytes);
+	}
+	return (true);
 }
 
 void HttpRequest::parseCookie()
@@ -262,6 +359,7 @@ void HttpRequest::handleUploadDir(const std::string& path)
 //getter
 const std::string &HttpRequest::getMethod() const {return (this->_method);}
 const std::string &HttpRequest::getPath() const {return (this->_path);}
+Config *HttpRequest::getConfig() const {return (this->_config);}
 bool HttpRequest::empty() const {return (this->_is_empty);}
 
 HttpRequest::~HttpRequest(){};

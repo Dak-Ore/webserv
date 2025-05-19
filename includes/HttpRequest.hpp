@@ -2,7 +2,9 @@
 # define HTTPREQUEST_HPP
 
 #include "HttpMessage.hpp"
-#include "utils.hpp"
+#include "Webserv.hpp"
+#include "Config.hpp"
+
 # include <iostream>
 # include <map>
 # include <cstring>
@@ -19,9 +21,13 @@ class HttpRequest : public HttpMessage
 {
 private:
 	bool			_is_empty;
+	Config			*_config;
 	std::string		_method;
 	std::string		_path;
 	int				_error;
+	void readRequest(const HttpClient &client, const Webserv &serv);
+	bool readHeaders(int fd, std::string& headers, std::string& body);
+	bool readBody(int fd, std::string& body);
 	void parseRequestLine(std::istringstream& stream);
 	void parseHeaders(std::istringstream& stream);
 	void parseBody(std::istringstream& stream);
@@ -34,10 +40,11 @@ private:
 	void saveFile(const std::string& filename, const std::string& content, std::string &path);
 public:
 	HttpRequest();
-    HttpRequest(const std::string &request);
+    HttpRequest(const HttpClient &client, const Webserv &serv);
     ~HttpRequest();
 	const std::string &getMethod() const;
 	const std::string &getPath() const ;
+	Config *getConfig() const ;
 	std::string toString() const;
 	bool		empty() const;
 	bool		isValid() const;

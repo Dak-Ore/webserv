@@ -1,3 +1,5 @@
+#pragma once
+
 #include "ConfigParser.hpp"
 #include "Server.hpp"
 #include "EPoll.hpp"
@@ -7,6 +9,7 @@
 #include <map>
 
 class HttpClient;
+class HttpRequest;
 
 class Webserv
 {
@@ -17,14 +20,12 @@ private:
     std::vector<Server*> _servers;
 	std::vector<Socket> _sockets;
 	bool isServerSocket(int fd);
-	Server* findServer(const HttpRequest  &request, const HttpClient &client);
+	Server& findServer(const HttpRequest  &request, const HttpClient &client) const;
 	void acceptClient(int serverFd);
-	HttpRequest readRequest(int fd);
-	bool readHeaders(int fd, std::string& headers, std::string& body);
-	bool readBody(int fd, std::string& body);
 public:
     Webserv(ConfigParser &parser);
     ~Webserv();
+	Config* findConfig(const HttpRequest  &request, const HttpClient &client) const;
     void listen();
     void stop();
 };

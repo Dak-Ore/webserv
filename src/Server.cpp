@@ -29,7 +29,7 @@ bool Server::handleRequest(HttpRequest const &request, const HttpClient &client)
 		return (false);
 	const std::string &path = request.getPath();
 	std::cout << request.getMethod() << " - " << request.getHeader("Host")  << path  << std::endl;
-	Config* config = this->getConfig(request);
+	Config* config = request.getConfig();
 	LocationConfig *location = dynamic_cast<LocationConfig *>(config);
 	if (this->handleRedirect(response, location))
 		return (true);
@@ -38,7 +38,7 @@ bool Server::handleRequest(HttpRequest const &request, const HttpClient &client)
 		response.setCode(request.getErrorCode());
 	else
 	{
-		std::string relativePath = (location) ? location->getRelativePath(request.getPath()) : request.getPath();
+		std::string relativePath = config->getRelativePath(request.getPath());
 		std::string file_path = utils::joinPath(config->getRoot(), relativePath);
 		if (utils::isDirectory(file_path))
 		{

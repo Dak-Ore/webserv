@@ -51,6 +51,9 @@ public:
     */
 	void checkConfig();
 
+
+	std::string getRelativePath(const std::string& path) const;
+
     // DEBUG
     void print();
 };

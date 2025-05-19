@@ -1,5 +1,6 @@
 #include "Webserv.hpp"
 #include "HttpClient.hpp"
+#include "HttpRequest.hpp"
 #include "Adress.hpp"
 #include <algorithm>
 #include <vector>
@@ -49,7 +50,7 @@ bool Webserv::isServerSocket(int fd)
 	return (false);
 }
 
-Server* Webserv::findServer(const HttpRequest &request, const HttpClient &client)
+Server& Webserv::findServer(const HttpRequest &request, const HttpClient &client) const
 {
 	std::vector<Server *> matches;
 	for (size_t i = 0; i < this->_servers.size(); i++)
@@ -63,7 +64,7 @@ Server* Webserv::findServer(const HttpRequest &request, const HttpClient &client
 	{
 		std::string host = request.getHeader("Host");
 		if (host.empty())
-			return (matches[0]);
+			return (*matches[0]);
 		size_t pos = host.find(':');
 		if (pos != std::string::npos)
 			host = host.substr(0, pos);
@@ -71,13 +72,18 @@ Server* Webserv::findServer(const HttpRequest &request, const HttpClient &client
 		{
 			const std::vector<std::string>& names = matches[i]->_config.getServerNames();
 			if (std::find(names.begin(), names.end(), host) != names.end())
-				return matches[i];
+				return (*matches[i]);
 		}
 		if (!matches.empty())
-			return (matches[0]);
+			return (*matches[0]);
 	}
 
-	return (this->_servers[0]);	
+	return (*this->_servers[0]);	
+}
+
+Config* Webserv::findConfig(const HttpRequest  &request, const HttpClient &client) const
+{
+	return (this->findServer(request, client).getConfig(request));
 }
 
 void Webserv::listen()
@@ -94,10 +100,10 @@ void Webserv::listen()
 				this->acceptClient(fd);
 			else
 			{
-				HttpRequest const request = this->readRequest(fd);
 				HttpClient client = this->_client_map[fd];
-				Server *s = this->findServer(request, client);
-				if (!s->handleRequest(request, client))
+				HttpRequest const request(client, *this);
+				Server &s = this->findServer(request, client);
+				if (!s.handleRequest(request, client))
 					this->_epoll.remove(fd);
 			}
 		}
@@ -117,61 +123,4 @@ void Webserv::acceptClient(int serverFd)
 void Webserv::stop()
 {
 	this->_run = false;
-}
-
-HttpRequest Webserv::readRequest(int fd)
-{
-	std::string headers, body;
-
-	this->readHeaders(fd, headers, body);
-	HttpRequest request(headers);
-	// body size
-	this->readBody(fd, body);
-
-	return (request);
-}
-
-bool Webserv::readHeaders(int fd, std::string& headers, std::string& body)
-{\
-	ssize_t size = 0;
-	char buffer[1024];
-	int bytes;
-	size_t header_limit;
-
-	while (true)
-	{
-		if (size > REQUEST_MAX_SIZE)
-			return false;
-		bytes = ::recv(fd, buffer, sizeof(buffer), 0);
-		if (bytes <= 0)
-			return (false);
-		headers.append(buffer, bytes);
-
-		header_limit = headers.find("\r\n\r\n");
-		if (header_limit != std::string::npos)
-		{
-			body = headers.substr(header_limit + 4);
-			headers.erase(header_limit, 4);
-			break ;
-		}
-	}
-	return (true);
-}
-
-bool Webserv::readBody(int fd, std::string& body)
-{
-	ssize_t size = 0;
-	char buffer[1024];
-	int bytes;
-
-	while (true)
-	{
-		if (size > REQUEST_MAX_SIZE)
-			return false;
-		bytes = ::recv(fd, buffer, sizeof(buffer), 0);
-		if (bytes <= 0)
-			return (false);
-		body.append(buffer, bytes);
-	}
-	return (true);
 }

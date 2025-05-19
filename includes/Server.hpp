@@ -2,10 +2,11 @@
 
 #include "Socket.hpp"
 #include "EPoll.hpp"
-#include "HttpRequest.hpp"
 #include "ServerConfig.hpp"
 #include <vector>
 #include <string>
+
+class HttpRequest;
 
 class Server
 {
