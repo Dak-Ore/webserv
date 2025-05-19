@@ -213,7 +213,7 @@ void HttpRequest::parseRequestLine(std::istringstream& stream)
 	std::istringstream request_line(line);
 	if (!(request_line >> this->_method >> this->_path >> this->_version))
 	{
-		this->_error = 400;
+		this->_error = 406;
 		return ;
 	}
 
@@ -229,6 +229,8 @@ void HttpRequest::parseHeaders(std::istringstream& stream)
 {
 	std::string line;
 	while (std::getline(stream, line) && line != "\r") {
+		if (line.empty() || line == "\r")
+			break;
 		size_t pos = line.find("\r");
 		if (pos != std::string::npos)
 			line = line.substr(0, pos);
@@ -237,7 +239,8 @@ void HttpRequest::parseHeaders(std::istringstream& stream)
 			std::string key = line.substr(0, pos);
 			if (this->_headers.find(key) != this->_headers.end())
 			{
-				this->_error = 400;
+				std::cout << key << std::endl;
+				this->_error = 407; // DUPLICATE HEADER
 				return ;
 			}
 			this->_headers[key] = line.substr(pos + 2);
@@ -246,7 +249,7 @@ void HttpRequest::parseHeaders(std::istringstream& stream)
 
 	if (this->_headers.find("Host") == this->_headers.end() || this->_headers["Host"].empty() )
 	{
-		this->_error = 400;
+		this->_error = 405;
 		return;
 	}
 }
@@ -257,7 +260,6 @@ void HttpRequest::parseBody(std::istringstream& stream)
 	while (std::getline(stream, line))
 	{
 		this->_body += line + "\n";
-		std::cout << line << std::endl;
 	}
 }
 
@@ -266,7 +268,7 @@ void HttpRequest::validateBodySize()
 	std::map<std::string, std::string>::iterator len = this->_headers.find(CONTENT_LENGHT);
 	if (len == this->_headers.end() || len->second.empty())
 	{
-		this->_error = 400;
+		this->_error = 404;
 		return ;
 	}
 
@@ -275,7 +277,7 @@ void HttpRequest::validateBodySize()
 
 	if (actualLength != expectedLength)
 	{
-		this->_error = 400;
+		this->_error = 403;
 		return ;
 	}
 }
@@ -319,7 +321,7 @@ void HttpRequest::hasMultipart()
 	size_t boundaryPos = contentType.find(boundaryKey);
 	if (boundaryPos == std::string::npos)
 	{
-		_error = 400;
+		_error = 402;
 		return;
 	}
 
