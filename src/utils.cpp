@@ -296,3 +296,16 @@ bool	utils::isValidPath(std::string str, std::string path)
 	std::string pattern = utils::regexWildcardGenerator(path);
 	return (utils::isValidRegex(str, pattern));
 }
+
+std::string utils::getHeaderParam(const std::string& header, const std::string& key)
+{
+	size_t start = header.find(key + "=\"");
+	if (start == std::string::npos)
+		return "";
+	start += key.length() + 2;
+	size_t end = header.find("\"", start);
+	if (end == std::string::npos)
+		return "";
+	return header.substr(start, end - start);
+}
+

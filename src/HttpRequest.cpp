@@ -30,10 +30,13 @@ HttpRequest::HttpRequest(const std::string &request) : HttpMessage(),
 		return ;
 	}
 	parseBody(stream);
+	std::cout << "oui" << std::endl;
+	std::cout << this->toString() << std::endl;
 	if (_method == "POST")
 		validateBodySize();
 	if (!this->_headers["Cookie"].empty())
 		parseCookie();
+	hasMultipart();
 }
 
 void HttpRequest::parseCookie()
@@ -202,12 +205,99 @@ int HttpRequest::getErrorCode() const
 	return (this->_error);
 }
 
+void HttpRequest::hasMultipart()
+{
+	std::map<std::string, std::string>::iterator it = _headers.find("Content-Type");
+	if (it == _headers.end())
+		return;
+
+	const std::string& contentType = it->second;
+	if (contentType.find("multipart/form-data") != 0)
+		return;
+
+	std::string boundaryKey = "boundary=";
+	size_t boundaryPos = contentType.find(boundaryKey);
+	if (boundaryPos == std::string::npos)
+	{
+		_error = 400;
+		return;
+	}
+
+	std::string boundary = "--" + contentType.substr(boundaryPos + boundaryKey.length());
+	parseMultipartBody(boundary);
+}
+
+void HttpRequest::parseMultipartBody(std::string boundary)
+{
+	size_t pos = 0;
+	std::cout << "oui" << std::endl;
+	std::string upload = "upload"; // TO CHANGE
+	while ((pos = this->_body.find(boundary, pos)) != std::string::npos)
+	{
+		pos += boundary.length();
+		if (this->_body.compare(pos, 2, "\r\n") == 0)
+			pos += 2;
+
+		size_t nextPart = this->_body.find(boundary, pos);
+		if (nextPart == std::string::npos)
+			break;
+
+		std::string part = this->_body.substr(pos, nextPart - pos);
+		size_t headerEnd = part.find("\r\n\r\n");
+		if (headerEnd == std::string::npos)
+			continue;
+
+		std::string headerSection = part.substr(0, headerEnd);
+		std::string content = part.substr(headerEnd + 4);
+		if (content.size() >= 2 && content.substr(content.size() - 2) == "\r\n")
+			content = content.substr(0, content.size() - 2);
+
+		std::istringstream headerStream(headerSection);
+		std::string line;
+		std::string name, filename;
+		while (std::getline(headerStream, line))
+		{
+			int	eof = line.size() - 1;
+			if (line[eof] == '\r') line.erase(eof);
+			if (line.find("Content-Disposition:") == 0) {
+				name = utils::getHeaderParam(line, "name");
+				filename = utils::getHeaderParam(line, "filename");
+			}
+		}
+	
+		if (!filename.empty()) {
+			saveFile(filename, content, upload); 
+		}
+	}
+}
+
+void HttpRequest::saveFile(const std::string& filename, const std::string& content, std::string &path)
+{
+	handleUploadDir(path);
+	std::string	upload = utils::joinPath(path, filename);
+	std::ofstream fichier;
+	fichier.open(upload.c_str(), std::ofstream::out);
+	if (!fichier.is_open())
+		throw std::runtime_error("Failed to create file: " + filename);
+	fichier << content;
+	fichier.close();
+}
+
+void HttpRequest::handleUploadDir(const std::string& path)
+{
+	if (!utils::isDirectory(path))
+		if (mkdir(path.c_str(), 0755) != 0)
+			throw std::runtime_error("Failed to create upload directory");
+}
+
 //getter
 const std::string &HttpRequest::getMethod() const {return (this->_method);}
 const std::string &HttpRequest::getPath() const {return (this->_path);}
 bool HttpRequest::empty() const {return (this->_is_empty);}
 
 HttpRequest::~HttpRequest(){};
+
+
 
 // void HTTPParser::checkHeader()
 // {
@@ -221,7 +311,7 @@ HttpRequest::~HttpRequest(){};
 // 		case 0: { // GET
 // 			std::string allowedHeadersGet[] = {"Host", "Connection", "Accept", "User-Agent", "Referer"};
 // 			checkAllowed(allowedHeadersGet, 5);
-// 			break;
+// 			break;cd
 // 		}
 // 		case 1: { // POST
 // 			std::string allowedHeadersPost[] = {"Host", "Connection", "Content-Length", "Content-Type", "User-Agent", "Accept", "Referer"};

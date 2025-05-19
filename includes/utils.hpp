@@ -66,6 +66,8 @@ namespace utils
 	
 	std::string	regexWildcardGenerator(const std::string &path);
 	bool	isValidPath(std::string str, std::string path);
+	std::string getHeaderParam(const std::string& header, const std::string& key);
+
 };
 void forkexec(int inout[2], std::vector<std::string> const argv, std::map<std::string, std::string> const envp);
 
