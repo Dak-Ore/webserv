@@ -29,13 +29,13 @@ bool Server::handleRequest(HttpRequest const &request, const HttpClient &client)
 		return (false);
 	const std::string &path = request.getPath();
 	std::cout << request.getMethod() << " - " << request.getHeader("Host")  << path  << std::endl;
-	Config* config = this->matchLocation(request);
+	Config* config = this->getConfig(request);
 	LocationConfig *location = dynamic_cast<LocationConfig *>(config);
 	if (this->handleRedirect(response, location))
 		return (true);
 
 	if (!request.isValid())
-		response = HttpResponse(request.getErrorCode());
+		response.setCode(request.getErrorCode());
 	else
 	{
 		std::string relativePath = (location) ? location->getRelativePath(request.getPath()) : request.getPath();
@@ -55,7 +55,22 @@ bool Server::handleRequest(HttpRequest const &request, const HttpClient &client)
 	return (true);
 }
 
-Config* Server::matchLocation(const HttpRequest& request)
+std::string Server::findIndex(const std::string& path, const LocationConfig* location)
+{
+	const std::string& root = (location) ? location->getRoot() : this->_config.getRoot() ;
+	const std::vector<std::string>& indexList = (location) ? location->getIndex() : this->_config.getIndex();
+	std::string directory = utils::addTrailingSlash(utils::joinPath(root, path));
+
+	for (size_t i = 0; i < indexList.size(); ++i)
+	{
+		std::string file_path = directory + indexList[i];
+		if (utils::fileExists(file_path))
+			return (file_path);
+	}
+	return std::string();
+}
+
+Config* Server::getConfig(const HttpRequest& request)
 {
 	std::string path = utils::addTrailingSlash(request.getPath());
 	const Config* bestMatch = NULL;

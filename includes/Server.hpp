@@ -20,6 +20,6 @@ public:
 	Server(ServerConfig &config);
 	~Server();
 	bool handleRequest(HttpRequest const &request, const HttpClient &client);
-	Config *matchLocation(const HttpRequest& request);
+	Config *getConfig(const HttpRequest& request);
 	std::string findIndex(const std::string& path, const LocationConfig* location);
 };
