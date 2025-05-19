@@ -116,19 +116,3 @@ void Server::handleErrorPages(HttpResponse &response, Config *config)
 	if (!response.hasBody() && response.getCode() >= 400 && response.getCode() <= 599)
 		response.setBody(utils::generateDefaultError(response.getCode()));
 }
-
-
-std::string Server::findIndex(const std::string& path, const LocationConfig* location)
-{
-	const std::string& root = (location) ? location->getRoot() : this->_config.getRoot() ;
-	const std::vector<std::string>& indexList = (location) ? location->getIndex() : this->_config.getIndex();
-	std::string directory = utils::addTrailingSlash(utils::joinPath(root, path));
-
-	for (size_t i = 0; i < indexList.size(); ++i)
-	{
-		std::string file_path = directory + indexList[i];
-		if (utils::fileExists(file_path))
-			return (file_path);
-	}
-	return std::string();
-}
