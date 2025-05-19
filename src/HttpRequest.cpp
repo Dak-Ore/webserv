@@ -30,7 +30,6 @@ HttpRequest::HttpRequest(const std::string &request) : HttpMessage(),
 		return ;
 	}
 	parseBody(stream);
-	std::cout << "oui" << std::endl;
 	std::cout << this->toString() << std::endl;
 	if (_method == "POST")
 		validateBodySize();
@@ -158,7 +157,10 @@ void HttpRequest::parseBody(std::istringstream& stream)
 {
 	std::string line;
 	while (std::getline(stream, line))
+	{
 		this->_body += line + "\n";
+		std::cout << line << std::endl;
+	}
 }
 
 void HttpRequest::validateBodySize()
