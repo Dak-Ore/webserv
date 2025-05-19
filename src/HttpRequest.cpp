@@ -232,7 +232,7 @@ void HttpRequest::hasMultipart()
 void HttpRequest::parseMultipartBody(std::string boundary)
 {
 	(void) boundary;
-	std::string upload = "upload"; // TO CHANGE
+	std::string upload = "uploads"; // TO CHANGE
 	std::string filename = utils::getHeaderParam(this->_headers.find("Content-Disposition")->second, "filename");
 	std::cout << "name :" << filename << std::endl;
 	if (!filename.empty()) {
