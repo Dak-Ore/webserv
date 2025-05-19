@@ -67,6 +67,7 @@ HttpRequest::HttpRequest(const HttpClient &client, const Webserv &serv)
         parseCookie();
 
     this->_is_empty = false;
+	hasMultipart();
 }
 
 
@@ -328,12 +329,46 @@ void HttpRequest::hasMultipart()
 
 void HttpRequest::parseMultipartBody(std::string boundary)
 {
-	(void) boundary;
+	size_t pos = 0;
+	std::cout << "boundary: " << boundary << std::endl;
 	std::string upload = "uploads"; // TO CHANGE
 	std::string filename = utils::getHeaderParam(this->_headers.find("Content-Disposition")->second, "filename");
-	std::cout << "name :" << filename << std::endl;
-	if (!filename.empty()) {
-		saveFile(filename, this->_body, upload); 
+	while ((pos = this->_body.find(boundary, pos)) != std::string::npos)
+	{
+		pos += boundary.length();
+		if (this->_body.compare(pos, 2, "\r\n") == 0)
+			pos += 2;
+
+		size_t nextPart = this->_body.find(boundary, pos);
+		if (nextPart == std::string::npos)
+			break;
+
+		std::string part = this->_body.substr(pos, nextPart - pos);
+		size_t headerEnd = part.find("\r\n\r\n");
+		if (headerEnd == std::string::npos)
+			continue;
+
+		std::string headerSection = part.substr(0, headerEnd);
+		std::string content = part.substr(headerEnd + 4);
+		if (content.size() >= 2 && content.substr(content.size() - 2) == "\r\n")
+			content = content.substr(0, content.size() - 2);
+
+		std::istringstream headerStream(headerSection);
+		std::string line;
+		std::string name, filename;
+		while (std::getline(headerStream, line))
+		{
+			int	eof = line.size() - 1;
+			if (line[eof] == '\r') line.erase(eof);
+			if (line.find("Content-Disposition:") == 0) {
+				name = utils::getHeaderParam(line, "name");
+				filename = utils::getHeaderParam(line, "filename");
+			}
+		}
+	
+		if (!filename.empty()) {
+			saveFile(filename, content, upload); 
+		}
 	}
 }
 
