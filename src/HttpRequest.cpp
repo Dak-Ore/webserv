@@ -2,6 +2,7 @@
 #include "HttpClient.hpp"
 #include "Config.hpp"
 #include "Webserv.hpp"
+#include <algorithm>
 
 #define REQUEST_MAX_SIZE 8192
 
@@ -12,47 +13,39 @@ HttpRequest::HttpRequest(const HttpClient &client, const Webserv &serv)
 {
     std::string headers, body;
 
-    // Étape 1 : Lire les en-têtes et le corps
     if (!readHeaders(client.getFd(), headers, body))
     {
         this->_error = 400;
         return;
     }
-
+	if (headers.size() > 0)
+	    this->_is_empty = false;
     std::istringstream stream(headers);
     parseRequestLine(stream);
-
-    // Étape 2 : Valider le chemin autorisé (à décommenter si nécessaire)
-    // if (!allowed.empty()) {
-    //     bool allowedMethod = false;
-    //     for (std::vector<std::string>::iterator it = allowed.begin(); it != allowed.end(); ++it) {
-    //         if (this->_method == *it) {
-    //             allowedMethod = true;
-    //             break;
-    //         }
-    //     }
-    //     if (!allowedMethod) {
-    //         this->_error = 405;
-    //         return;
-    //     }
-    // }
-
     parseHeaders(stream);
 
-    if (this->_headers.size() > MAX_HEADERS) {
+    if (this->_headers.size() > MAX_HEADERS)
+	{
         this->_error = 431;
         return;
     }
-
-    // Étape 3 : Trouver la config en fonction de la requête et client
     this->_config = serv.findConfig(*this, client);
-    if (this->_config == NULL) {
+    if (this->_config == NULL)
+	{
         this->_error = 500;
         return;
     }
 
-    // Étape 4 : Ajouter le reste du corps s'il est incomplet
-    if (!readBody(client.getFd(), body)) {
+	const std::vector<std::string> &allowed = this->_config->getAllowedMethods();
+    if (!allowed.empty()) {
+		if (std::find(allowed.begin(), allowed.end(), this->_method) == allowed.end())
+		{
+            this->_error = 405;
+            return;	
+		}
+    }
+    if (!readBody(client.getFd(), body))
+	{
         this->_error = 413; // Payload Too Large
         return;
     }
@@ -68,22 +61,6 @@ HttpRequest::HttpRequest(const HttpClient &client, const Webserv &serv)
 
     this->_is_empty = false;
 	hasMultipart();
-}
-
-
-
-void HttpRequest::readRequest(const HttpClient &client, const Webserv &serv)
-{
-	std::string headers, body;
-
-	this->readHeaders(client.getFd(), headers, body);
-	// this->parseRequestLine(headers);
-	// this->parseHeaders(stream);
-	this->_config = serv.findConfig(*this, client);
-	if (this->_config == NULL)
-		throw std::exception();
-	this->readBody(client.getFd(), body);
-	std::cout << "REQ: " << std::endl << headers << body << "\n\n\nEND\n";
 }
 
 bool HttpRequest::readHeaders(int fd, std::string& headers, std::string& body)
@@ -407,53 +384,4 @@ Config *HttpRequest::getConfig() const {return (this->_config);}
 bool HttpRequest::empty() const {return (this->_is_empty);}
 
 HttpRequest::~HttpRequest(){};
-
-
-
-// void HTTPParser::checkHeader()
-// {
-// 	std::string methods[] = {"GET", "POST", "DELETE"};
-// 	int i = 0;
-// 	while (i < 3 && methods[i] != this->method)
-// 		i++;
-
-// 	switch (i)
-// 	{
-// 		case 0: { // GET
-// 			std::string allowedHeadersGet[] = {"Host", "Connection", "Accept", "User-Agent", "Referer"};
-// 			checkAllowed(allowedHeadersGet, 5);
-// 			break;cd
-// 		}
-// 		case 1: { // POST
-// 			std::string allowedHeadersPost[] = {"Host", "Connection", "Content-Length", "Content-Type", "User-Agent", "Accept", "Referer"};
-// 			checkAllowed(allowedHeadersPost, 7);
-// 			break;
-// 		}
-// 		case 2: { // DELETE
-// 			std::string allowedHeadersDelete[] = {"Host", "Connection", "User-Agent", "Accept"};
-// 			checkAllowed(allowedHeadersDelete, 4);
-// 			break;
-// 		}
-// 		default:
-// 			throw std::runtime_error("405 Method Not Allowed");
-// 	}
-// }
-
-// void HTTPParser::checkAllowed(std::string allowedHeaders[], size_t allowedCount)
-// {
-// 	for (std::map<std::string, std::string>::iterator it = this->headers.begin(); it != this->headers.end(); ++it)
-// 	{
-// 		bool found = false;
-// 		for (size_t i = 0; i < allowedCount; ++i)
-// 		{
-// 			if (it->first == allowedHeaders[i])
-// 			{
-// 				found = true;
-// 				break;
-// 			}
-// 		}
-// 		if (!found)
-// 			throw std::runtime_error("400 Bad Request: Header \"" + it->first + "\" not allowed in " + this->method + " request");
-// 	}
-// }
 
