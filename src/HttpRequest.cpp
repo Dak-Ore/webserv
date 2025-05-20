@@ -107,7 +107,8 @@ bool HttpRequest::readHeaders(int fd, std::string& headers, std::string& body)
 		if (header_limit != std::string::npos)
 		{
 			body = headers.substr(header_limit + 4);
-			headers.erase(header_limit, 4);
+			headers.erase(header_limit, 4 + body.size());
+			std::cout << headers << std::endl;
 			break ;
 		}
 	}
@@ -332,9 +333,15 @@ void HttpRequest::hasMultipart()
 void HttpRequest::parseMultipartBody(std::string boundary)
 {
 	size_t pos = 0;
-	std::cout << "boundary: " << boundary << std::endl;
 	std::string upload = "uploads"; // TO CHANGE
-	std::string filename = utils::getHeaderParam(this->_headers.find("Content-Disposition")->second, "filename");
+	size_t start = this->_body.find("Content-Disposition:");
+	if (start == std::string::npos)
+		return;
+	size_t end = this->_body.find("\r\n", pos);
+	if (end == std::string::npos)
+		end = this->_body.length();
+	std::string contentDispositionLine = this->_body.substr(start, end - start);
+	std::string filename = utils::getHeaderParam(contentDispositionLine, "filename");
 	while ((pos = this->_body.find(boundary, pos)) != std::string::npos)
 	{
 		pos += boundary.length();
