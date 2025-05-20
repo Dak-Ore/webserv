@@ -67,8 +67,8 @@ const std::map<int, std::string>& Config::getErrorPages() const {return this->_e
 bool Config::getAutoIndex() const {return this->_autoIndex;}
 std::vector<std::string> Config::getCgiExtension() const {return this->_cgiExtension;}
 bool Config::getUploadEnabled() const {return this->_uploadEnabled;}
-std::vector<std::string> Config::getUploadPath() const {return this->_uploadPath;}
-std::string Config::getRoot() const {return this->_root;}
-std::vector<std::string> Config::getIndex() const {return this->_index;}
-std::vector<std::string> Config::getAllowedMethods() const{return this->_allowedMethods;}
+const std::vector<std::string> &Config::getUploadPath() const {return this->_uploadPath;}
+const std::string &Config::getRoot() const {return this->_root;}
+const std::vector<std::string> &Config::getIndex() const {return this->_index;}
+const std::vector<std::string> &Config::getAllowedMethods() const{return this->_allowedMethods;}
 size_t Config::getClientMaxBodySize() const {return this->_clientMaxBodySize;}
