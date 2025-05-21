@@ -3,7 +3,8 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "HttpRequest.hpp"
+
+class HttpRequest;
 
 /**
  * Allows to execute a CGI script with a given file and other informations.

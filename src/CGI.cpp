@@ -1,5 +1,5 @@
 #include "CGI.hpp"
-
+#include "HttpRequest.hpp"
 #include <cctype>
 #include <string>
 #include <unistd.h>
