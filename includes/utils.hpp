@@ -108,8 +108,10 @@ namespace utils
 	 * - argv are the arguments that will be given to the subprocess.
 	 *   argv[0] must be a path to the executable to call.
 	 * - envp is the environment to the subprocess.
+	 *
+	 * The returned value is the pid of the subprocess.
 	 */
-	void forkexec(int inout[2], std::vector<std::string> const argv, std::map<std::string, std::string> const envp);
+	pid_t forkexec(int inout[2], std::vector<std::string> const argv, std::map<std::string, std::string> const envp);
 
 	/**
 	 * Make the given string lowercase.

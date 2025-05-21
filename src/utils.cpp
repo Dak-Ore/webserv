@@ -179,7 +179,7 @@ static const char** map_to_c_array(std::map<std::string, std::string> const& a)
 	return r;
 }
 
-void utils::forkexec(int inout[2], std::vector<std::string> const argv, std::map<std::string, std::string> const envp)
+pid_t utils::forkexec(int inout[2], std::vector<std::string> const argv, std::map<std::string, std::string> const envp)
 {
 	// create pipes
 	int pipein[2];
@@ -217,6 +217,7 @@ void utils::forkexec(int inout[2], std::vector<std::string> const argv, std::map
 	inout[1] = pipein[1];
 	close(pipein[0]);
 	close(pipeout[1]);
+	return pid;
 }
 
 void utils::lower(std::string& str)
