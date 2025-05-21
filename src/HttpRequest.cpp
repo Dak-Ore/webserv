@@ -64,7 +64,7 @@ HttpRequest::HttpRequest(const HttpClient &client, const Webserv &serv)
 }
 
 bool HttpRequest::readHeaders(int fd, std::string& headers, std::string& body)
-{\
+{
 	size_t size = 0;
 	char buffer[1024];
 	int bytes;
@@ -85,7 +85,6 @@ bool HttpRequest::readHeaders(int fd, std::string& headers, std::string& body)
 		{
 			body = headers.substr(header_limit + 4);
 			headers.erase(header_limit, 4 + body.size());
-			std::cout << headers << std::endl;
 			break ;
 		}
 	}
@@ -217,7 +216,6 @@ void HttpRequest::parseHeaders(std::istringstream& stream)
 			std::string key = line.substr(0, pos);
 			if (this->_headers.find(key) != this->_headers.end())
 			{
-				std::cout << key << std::endl;
 				this->_error = 407; // DUPLICATE HEADER
 				return ;
 			}

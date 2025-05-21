@@ -24,7 +24,7 @@ Webserv::Webserv(ConfigParser &parser) : _run(true)
 				continue;
 			ports.push_back(adress.port());
 			socket = Socket(adress.host_str(), adress.port_str());
-			std::cout << "Server launched on " << adress << std::endl;
+			std::cout << "Server launched on \033[4mhttp://" << adress << "\033[0m" << std::endl;
 			this->_sockets.push_back(socket);
 			this->_epoll.addSocket(socket);
 		}
