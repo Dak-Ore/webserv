@@ -106,11 +106,11 @@ CGI::Running CGI::execute(int& stdin,
 
 	std::map<std::string, std::string> envp;
 	envp["GATEWAY_INTERFACE"] = "CGI/1.1";
-	envp["QUERY_STRING"] = request.getRawOpt(); // TODO!!
+	envp["QUERY_STRING"] = request.getRawOpt();
 	envp["REMOTE_ADDR"] = "ADD CLIENT TO REQUEST"; // TODO
 	envp["REQUEST_METHOD"] = request.getMethod();
 	envp["PATH_INFO"] = "";
-	// TODO(maybe) PATH_TRANSLATED
+	envp["PATH_TRANSLATED"] = "";
 	envp["SCRIPT_NAME"] = script_name;
 	envp["SERVER_NAME"] = host;
 	envp["SERVER_PORT"] = port;
@@ -120,7 +120,6 @@ CGI::Running CGI::execute(int& stdin,
 		envp["CONTENT_LENGTH"] = content_length_str;
 		envp["CONTENT_TYPE"] = request.getHeader("Content-Type");
 	}
-	// TODO(maybe) HTTP_*
 
 	// for some reason, this isn't specified in the specification
 	// at https://datatracker.ietf.org/doc/html/rfc3875#section-5
@@ -128,9 +127,6 @@ CGI::Running CGI::execute(int& stdin,
 	envp["SCRIPT_FILENAME"] = script;
 
 	std::vector<std::string> argv(this->argv);
-	// TODO cd to the script path
-	// see https://datatracker.ietf.org/doc/html/rfc3875#section-7.2
-
 	int inout[2];
 	utils::forkexec(inout, argv, envp);
 	stdin = inout[1];
