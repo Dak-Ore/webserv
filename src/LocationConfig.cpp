@@ -1,21 +1,49 @@
 #include "LocationConfig.hpp"
 #include "utils.hpp"
 #include <vector>
+#include "ServerConfig.hpp"
 
-LocationConfig::LocationConfig(std::string content, std::vector<CGI> cgis): Config()
+LocationConfig::LocationConfig(std::string content, std::vector<CGI> cgis, const ServerConfig &father): Config(), _cgis(cgis)
 {
   	std::istringstream stream(content);
 	std::string		line;
 	
 	this->_hasRedirection = false;
-	this->_uploadEnabled = false;
+
 	stream >> this->_path;
 	std::getline(stream, line);
 	while (std::getline(stream, line) && this->_hasRedirection == false)
 		this->findElement(line);
 	this->checkConfig();
-	this->_cgis = cgis;
+	heritFromFather(father);
 }
+
+void LocationConfig::heritFromFather(const ServerConfig &father) {
+    if (!this->flags.hasRoot)
+        this->_root = father.getRoot();
+
+    if (!this->flags.hasIndex)
+		this->_index = father.getIndex();
+
+    if (!this->flags.hasAutoIndex)
+        this->_autoIndex = father.getAutoIndex();
+
+    if (!this->flags.hasClientMaxBodySize)
+        this->_clientMaxBodySize = father.getClientMaxBodySize();
+
+    if (!this->flags.hasUploadEnabled)
+        this->_uploadEnabled = father.getUploadEnabled();
+
+    if (!this->flags.hasUploadPath)
+        this->_uploadPath = father.getUploadPath();
+
+    if (!this->flags.hasAllowedMethods)
+		this->_allowedMethods = father.getAllowedMethods();
+
+	if (this->flags.hasErrorPages)
+		this->_errorPages = father.getErrorPages();
+}
+
 
 void	LocationConfig::checkConfig()
 {

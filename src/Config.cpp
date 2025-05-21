@@ -7,7 +7,17 @@ Config::Config()
 	this->_uploadEnabled = false;
 	this->_autoIndex = false;
 	this->_index.push_back("index.html");
+
+	this->flags.hasAllowedMethods = false;
+	this->flags.hasAutoIndex = false;
+	this->flags.hasClientMaxBodySize = false;
+	this->flags.hasErrorPages = false;
+	this->flags.hasIndex = false;
+	this->flags.hasRoot = false;
+	this->flags.hasUploadEnabled = false;
+	this->flags.hasUploadPath = false;
 }
+
 
 Config::~Config()
 {
@@ -16,19 +26,38 @@ Config::~Config()
 int	Config::parseVar(std::string key, std::string value, std::string line)
 {
 	if (key == "autoindex")
+	{
+		this->flags.hasAutoIndex = true;
 		this->_autoIndex = value == "on";
+	}
 	else if (key == "root")
+	{
+		this->flags.hasAutoIndex = true;
 		this->_root = value;
+	}
 	else if (key == "upload_path")
+	{
+		this->flags.hasUploadPath = true;
 		this->_uploadPath.push_back(value);
+	}
 	else if (key == "upload_enabled")
+	{
+		this->flags.hasUploadEnabled = true;
 		this->_uploadEnabled = true;
+	}
 	else if (key == "index")
+	{
+		this->flags.hasIndex = true;
 		utils::ft_split(value, &this->_index);
+	}
 	else if (key == "allow_methods")
+	{
+		this->flags.hasAllowedMethods = true;
 		utils::ft_split(value, &this->_allowedMethods);
+	}
 	else if (key == "client_max_body_size")
 	{
+		this->flags.hasClientMaxBodySize = true;
 		if (utils::isValidRegex(value, "^0-9$"))
 			this->_clientMaxBodySize = atoi(value.c_str());
 		else if (!utils::isValidRegex(value, "^0-9([kKmMgG]?)$"))
@@ -44,6 +73,7 @@ int	Config::parseVar(std::string key, std::string value, std::string line)
 	}
 	else if (key == "error_page")
 	{
+		this->flags.hasErrorPages = true;
 		std::string pLine = utils::extractElem(line, 2);
 		this->_errorPages.insert(std::pair<int,std::string>(atoi(pLine.c_str()), utils::smartSubstr(line, pLine, ";")));
 	}

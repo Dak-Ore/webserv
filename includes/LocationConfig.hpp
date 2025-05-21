@@ -9,6 +9,8 @@
 # include "Config.hpp"
 # include <cstdlib>
 
+class ServerConfig;
+
 class LocationConfig : public Config
 {
 private:
@@ -18,7 +20,7 @@ private:
     std::vector<CGI> _cgis;
 public:
     // Default Constructor
-    LocationConfig(std::string content, std::vector<CGI> cgis);
+    LocationConfig(std::string content, std::vector<CGI> cgis, const ServerConfig &father);
 	// Destructor
     virtual ~LocationConfig();
     /**
@@ -33,6 +35,9 @@ public:
             - redirection check if int part is correct (>= 100 OR <= 599) and string part contains valid charecter
     */
 	void		checkConfig();
+
+
+    void heritFromFather(const ServerConfig &father);
 
     /**
         * TO DO 

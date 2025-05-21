@@ -25,10 +25,10 @@ private:
 	std::string		_method;
 	std::string		_path;
 	int				_error;
+	std::string		_rawOpt;
 	void readRequest(const HttpClient &client, const Webserv &serv);
 	bool readHeaders(int fd, std::string& headers, std::string& body);
 	bool readBody(int fd, std::string& body);
-	std::string		_rawOpt;
 	void parseRequestLine(std::istringstream& stream);
 	void parseHeaders(std::istringstream& stream);
 	void parseBody(std::istringstream& stream);
@@ -37,8 +37,8 @@ private:
 	void parseOpt();
 	void parseCookie();
 	void hasMultipart();
-	void handleUploadDir(const std::string& path);
-	void saveFile(const std::string& filename, const std::string& content, std::string &path);
+	std::string handleUploadDir();
+	void saveFile(const std::string& filename, const std::string& content);
 public:
 	HttpRequest();
     HttpRequest(const HttpClient &client, const Webserv &serv);

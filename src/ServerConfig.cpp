@@ -12,7 +12,7 @@ ServerConfig::ServerConfig(std::string content, std::vector<std::pair<std::strin
 		findElement(line);
 	for (std::vector<std::pair<std::string, std::vector<CGI> > >::iterator it = locations.begin(); it != locations.end(); it++)
 	{
-		LocationConfig loc(it->first, it->second);
+		LocationConfig loc(it->first, it->second, *this);
 		this->_locations.push_back(loc);
 	}
 	this->checkConfig();

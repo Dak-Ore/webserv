@@ -293,6 +293,11 @@ void HttpRequest::hasMultipart()
 	const std::string& contentType = it->second;
 	if (contentType.find("multipart/form-data") != 0)
 		return;
+	else if (!this->_config->getUploadEnabled())
+	{
+		this->_error = 403;
+		return;
+	}
 
 	std::string boundaryKey = "boundary=";
 	size_t boundaryPos = contentType.find(boundaryKey);
@@ -309,7 +314,6 @@ void HttpRequest::hasMultipart()
 void HttpRequest::parseMultipartBody(std::string boundary)
 {
 	size_t pos = 0;
-	std::string upload = "uploads"; // TO CHANGE
 	size_t start = this->_body.find("Content-Disposition:");
 	if (start == std::string::npos)
 		return;
@@ -352,14 +356,15 @@ void HttpRequest::parseMultipartBody(std::string boundary)
 		}
 	
 		if (!filename.empty()) {
-			saveFile(filename, content, upload); 
+			saveFile(filename, content); 
 		}
 	}
 }
 
-void HttpRequest::saveFile(const std::string& filename, const std::string& content, std::string &path)
+void HttpRequest::saveFile(const std::string& filename, const std::string& content)
 {
-	handleUploadDir(path);
+	std::string path = handleUploadDir();
+	std::cout << path << std::endl;
 	std::string	upload = utils::joinPath(path, filename);
 	std::ofstream fichier;
 	fichier.open(upload.c_str(), std::ofstream::out);
@@ -369,11 +374,22 @@ void HttpRequest::saveFile(const std::string& filename, const std::string& conte
 	fichier.close();
 }
 
-void HttpRequest::handleUploadDir(const std::string& path)
+std::string HttpRequest::handleUploadDir()
 {
+	std::string	path;
+	if (!this->_config->getUploadPath().empty())
+	{
+		std::vector<std::string>::const_iterator it = this->_config->getUploadPath().begin();
+		while (it != this->_config->getUploadPath().end() && utils::isDirectory(*it))
+			it++;
+		if (it != this->_config->getUploadPath().end())
+			return *it;
+	}	
+	path = "uploads";
 	if (!utils::isDirectory(path))
 		if (mkdir(path.c_str(), 0755) != 0)
-			throw std::runtime_error("Failed to create upload directory");
+			throw std::runtime_error("Failed to create uploads directory");
+	return (path);
 }
 
 //getter

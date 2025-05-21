@@ -70,6 +70,18 @@ public:
     const std::vector<std::string>      &getUploadPath()const;
 	const std::vector<std::string>      &getAllowedMethods()const;
 
+
+    struct Flags {
+        bool hasRoot;
+        bool hasIndex;
+        bool hasAutoIndex;
+        bool hasClientMaxBodySize;
+        bool hasUploadEnabled;
+        bool hasUploadPath;
+        bool hasAllowedMethods;
+        bool hasErrorPages;
+    } flags;
+
     /*
         Check is parsed var is valid.
         current check : 
