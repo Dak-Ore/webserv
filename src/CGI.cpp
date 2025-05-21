@@ -101,14 +101,14 @@ CGI::Running CGI::execute(int& stdin,
 ) const {
 	std::string host, port;
 	utils::parseHostAndPort(host, port, "80", request.getHeader("host"));
-	std::string content_length_str(request.getHeader("content-length"));
+	std::string content_length_str(request.getHeader("Content-Length"));
 	size_t content_length(utils::stringToNum(content_length_str));
 
 	std::map<std::string, std::string> envp;
 	envp["GATEWAY_INTERFACE"] = "CGI/1.1";
-	envp["QUERY_STRING"] = ""; // TODO!!
-	envp["REMOTE_ADDR"] = "TODO"; // TODO address of the client
-	envp["REQUEST_METHOD"] = "TODO"; // TODO "GET" / "POST" / whatever
+	envp["QUERY_STRING"] = request.getRawOpt(); // TODO!!
+	envp["REMOTE_ADDR"] = "ADD CLIENT TO REQUEST"; // TODO
+	envp["REQUEST_METHOD"] = request.getMethod();
 	envp["PATH_INFO"] = "";
 	// TODO(maybe) PATH_TRANSLATED
 	envp["SCRIPT_NAME"] = script_name;
@@ -118,7 +118,7 @@ CGI::Running CGI::execute(int& stdin,
 	envp["SERVER_SOFTWARE"] = SERVER_SOFTWARE;
 	if (content_length != 0) {
 		envp["CONTENT_LENGTH"] = content_length_str;
-		envp["CONTENT_TYPE"] = request.getHeader("content-type");
+		envp["CONTENT_TYPE"] = request.getHeader("Content-Type");
 	}
 	// TODO(maybe) HTTP_*
 

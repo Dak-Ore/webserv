@@ -28,6 +28,7 @@ private:
 	void readRequest(const HttpClient &client, const Webserv &serv);
 	bool readHeaders(int fd, std::string& headers, std::string& body);
 	bool readBody(int fd, std::string& body);
+	std::string		_rawOpt;
 	void parseRequestLine(std::istringstream& stream);
 	void parseHeaders(std::istringstream& stream);
 	void parseBody(std::istringstream& stream);
@@ -43,8 +44,9 @@ public:
     HttpRequest(const HttpClient &client, const Webserv &serv);
     ~HttpRequest();
 	const std::string &getMethod() const;
-	const std::string &getPath() const ;
+	const std::string &getPath() const;
 	Config *getConfig() const ;
+	const std::string &getRawOpt() const;
 	std::string toString() const;
 	bool		empty() const;
 	bool		isValid() const;

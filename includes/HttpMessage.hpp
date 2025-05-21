@@ -17,6 +17,7 @@ protected:
 	std::map<std::string, std::string>  _opt;
 	std::string							_body;
 	std::string							_version;
+	std::string							_rawCookie;
 public:
 	const std::map<std::string, std::string>	&getHeaders() const;
 	std::string getHeader(std::string key) const;

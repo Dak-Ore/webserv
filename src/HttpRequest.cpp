@@ -148,19 +148,19 @@ void HttpRequest::parseCookie()
 void HttpRequest::parseOpt()
 {
 	size_t	pos_start = this->_path.find("?");
-	std::string content = this->_path.substr(pos_start, this->_path.size() - pos_start);
+	this->_rawOpt = this->_path.substr(pos_start + 1);
 	this->_path = this->_path.substr(0, pos_start);
 	std::string	key;
 	std::string	value;
 	bool		pos = 0;
-	for (size_t	i = 0; i < content.size(); i++)
+	for (size_t	i = 0; i < this->_rawOpt.size(); i++)
 	{
-		if (content[i] == '=')
+		if (this->_rawOpt[i] == '=')
 		{
 			pos = 1;
 			continue;
 		}
-		if (content[i] == '&')
+		if (this->_rawOpt[i] == '&')
 		{
 			this->_opt.insert(std::pair<std::string, std::string>(key,value));
 			key.clear();
@@ -169,13 +169,14 @@ void HttpRequest::parseOpt()
 			continue;
 		}
 		if (pos == 0)
-			key += content[i];
+			key += this->_rawOpt[i];
 		else
-			value += content[i];
+			value += this->_rawOpt[i];
 	}
 	this->_opt.insert(std::pair<std::string, std::string>(key,value));
 	for (std::map<std::string, std::string>::iterator it = _opt.begin(); it != _opt.end() ; it++)
 		std::cout << it->first << " : " << it->second << std::endl;
+	std::cout << this->_rawOpt << std::endl;
 }
 
 void HttpRequest::parseRequestLine(std::istringstream& stream)
@@ -379,6 +380,7 @@ void HttpRequest::handleUploadDir(const std::string& path)
 const std::string &HttpRequest::getMethod() const {return (this->_method);}
 const std::string &HttpRequest::getPath() const {return (this->_path);}
 Config *HttpRequest::getConfig() const {return (this->_config);}
+const std::string &HttpRequest::getRawOpt() const {return (this->_rawOpt);}
 bool HttpRequest::empty() const {return (this->_is_empty);}
 
 HttpRequest::~HttpRequest(){};
