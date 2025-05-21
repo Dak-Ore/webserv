@@ -135,21 +135,21 @@ CGI::Running CGI::execute(int& stdin,
 	HttpRequest const& request
 ) const {
 	std::string host, port;
-	size_t content_length(atoi(request.getHeader("content-length").c_str()));
+	size_t content_length(atoi(request.getHeader("Content-Length").c_str()));
 	utils::parseHostAndPort(host, port, "80", request.getHeader("host"));
 	CGI::execute_arguments args = {
 		.script_pathname = script,
-		.remote_addr = "TODO",
-		.request_method = "TODO",
+		.remote_addr = "ADD CLIENT TO REQUEST",
+		.request_method = request.getMethod(),
 		.script_name = script_name,
 		.server_name = host,
 		.server_port = port,
 		.server_protocol = "HTTP/1.1",
-		.query_string = "", // TODO!!
+		.query_string = request.getRawOpt(), // TODO!!
 		.path_info = "",
-		.content_exists = true ? content_length != 0 : false,
+		.content_exists = content_length != 0,
 		.content_length = content_length,
-		.content_type = request.getHeader("content-type"),
+		.content_type = request.getHeader("Content-Type"),
 	};
 	return this->_execute(stdin, args);
 }

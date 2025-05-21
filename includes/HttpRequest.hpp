@@ -21,6 +21,7 @@ private:
 	std::string		_method;
 	std::string		_path;
 	int				_error;
+	std::string		_rawOpt;
 	void parseRequestLine(std::istringstream& stream);
 	void parseHeaders(std::istringstream& stream);
 	void parseBody(std::istringstream& stream);
@@ -32,7 +33,8 @@ public:
     HttpRequest(const std::string &request);
     ~HttpRequest();
 	const std::string &getMethod() const;
-	const std::string &getPath() const ;
+	const std::string &getPath() const;
+	const std::string &getRawOpt() const;
 	std::string toString() const;
 	bool		empty() const;
 	bool		isValid() const;
