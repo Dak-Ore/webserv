@@ -25,7 +25,6 @@ private:
 	std::string		_method;
 	std::string		_path;
 	int				_error;
-	void readRequest(const HttpClient &client, const Webserv &serv);
 	bool readHeaders(int fd, std::string& headers, std::string& body);
 	bool readBody(int fd, std::string& body);
 	void parseRequestLine(std::istringstream& stream);

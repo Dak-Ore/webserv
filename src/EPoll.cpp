@@ -61,12 +61,13 @@ void EPoll::wait()
 {
 	epoll_event raw_events[EPOLL_MAX_EVENTS];
 
+	this->_events.clear();
 	int n = epoll_wait(this->_fd, raw_events, EPOLL_MAX_EVENTS, -1);
 	for (int i = 0; i < n; i++)
-		this->_events[i] = EPollEvent(raw_events[i]);
+		this->_events.push_back(EPollEvent(raw_events[i]));
 }
 
-EPollEvent *EPoll::getEvents()
+const std::vector<EPollEvent> &EPoll::getEvents()
 {
 	this->wait();
 	return (this->_events);

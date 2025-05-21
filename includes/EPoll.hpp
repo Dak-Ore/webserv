@@ -2,8 +2,9 @@
 
 #include <set>
 #include "EPollEvent.hpp"
+#include <vector>
 
-#define EPOLL_MAX_EVENTS 10
+#define EPOLL_MAX_EVENTS 50
 
 class Socket;
 class HttpClient;
@@ -13,7 +14,7 @@ class EPoll
 private:
 	int _fd;
 	std::set<int> _fds;
-	EPollEvent _events[EPOLL_MAX_EVENTS];
+	std::vector<EPollEvent> _events;
 	static int setNonBlocking(int fd);
 	void wait();
 	void add(int fd, int flags);
@@ -24,7 +25,7 @@ public:
 	 * @brief Returns the array of triggered events.
 	 * @return Pointer to the array of EPollEvent.
 	 */
-	EPollEvent *getEvents();
+	const std::vector<EPollEvent> &getEvents();
 	/**
 	 * @brief Adds a listening socket to epoll for monitoring incoming connections.
 	 * @param fd Listening socket file descriptor.
