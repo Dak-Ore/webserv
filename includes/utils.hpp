@@ -19,6 +19,11 @@ namespace utils
 	std::string numToString(size_t value);
 
 	/**
+	 * Convert a number to a string.
+	 */
+	size_t stringToNum(std::string str);
+
+	/**
 	 * @brief Check if a file exists at the given path.
 	 * @param path The file path to check.
 	 * @return True if the file exists, false otherwise.

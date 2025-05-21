@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <cctype>
+#include <cstdlib>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <stdint.h>
@@ -20,6 +21,12 @@ std::string utils::numToString(size_t value)
 	oss << value;
 	return oss.str();
 }
+
+size_t utils::stringToNum(std::string str)
+{
+	return atoi(str.c_str());
+}
+
 
 bool utils::fileExists(const std::string &path)
 {

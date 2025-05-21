@@ -94,30 +94,38 @@ CGI::CGI(std::vector<std::string> const& argv, std::string const& extension)
 CGI::~CGI()
 {}
 
-CGI::Running CGI::_execute(int& stdin, CGI::execute_arguments const& args) const
-{
+CGI::Running CGI::execute(int& stdin,
+	std::string const& script,
+	std::string const& script_name,
+	HttpRequest const& request
+) const {
+	std::string host, port;
+	utils::parseHostAndPort(host, port, "80", request.getHeader("host"));
+	std::string content_length_str(request.getHeader("content-length"));
+	size_t content_length(utils::stringToNum(content_length_str));
+
 	std::map<std::string, std::string> envp;
 	envp["GATEWAY_INTERFACE"] = "CGI/1.1";
-	envp["QUERY_STRING"] = args.query_string.c_str();
-	envp["REMOTE_ADDR"] = args.remote_addr.c_str();
-	envp["REQUEST_METHOD"] = args.request_method.c_str();
-	envp["PATH_INFO"] = args.path_info.c_str();
+	envp["QUERY_STRING"] = ""; // TODO!!
+	envp["REMOTE_ADDR"] = "TODO"; // TODO address of the client
+	envp["REQUEST_METHOD"] = "TODO"; // TODO "GET" / "POST" / whatever
+	envp["PATH_INFO"] = "";
 	// TODO(maybe) PATH_TRANSLATED
-	envp["SCRIPT_NAME"] = args.script_name.c_str();
-	envp["SERVER_NAME"] = args.server_name.c_str();
-	envp["SERVER_PORT"] = args.server_port.c_str();
-	envp["SERVER_PROTOCOL"] = args.server_protocol.c_str();
+	envp["SCRIPT_NAME"] = script_name;
+	envp["SERVER_NAME"] = host;
+	envp["SERVER_PORT"] = port;
+	envp["SERVER_PROTOCOL"] = "HTTP/1.1";
 	envp["SERVER_SOFTWARE"] = SERVER_SOFTWARE;
-	if (args.content_exists) {
-		envp["CONTENT_LENGTH"] = utils::numToString(args.content_length).c_str();
-		envp["CONTENT_TYPE"] = args.content_type.c_str();
+	if (content_length != 0) {
+		envp["CONTENT_LENGTH"] = content_length_str;
+		envp["CONTENT_TYPE"] = request.getHeader("content-type");
 	}
 	// TODO(maybe) HTTP_*
 
 	// for some reason, this isn't specified in the specification
 	// at https://datatracker.ietf.org/doc/html/rfc3875#section-5
 	// but is necessary, at least for php-cgi
-	envp["SCRIPT_FILENAME"] = args.script_pathname;
+	envp["SCRIPT_FILENAME"] = script;
 
 	std::vector<std::string> argv(this->argv);
 	// TODO cd to the script path
@@ -127,31 +135,6 @@ CGI::Running CGI::_execute(int& stdin, CGI::execute_arguments const& args) const
 	utils::forkexec(inout, argv, envp);
 	stdin = inout[1];
 	return CGI::Running(inout[0]);
-}
-
-CGI::Running CGI::execute(int& stdin,
-	std::string const& script,
-	std::string const& script_name,
-	HttpRequest const& request
-) const {
-	std::string host, port;
-	size_t content_length(atoi(request.getHeader("content-length").c_str()));
-	utils::parseHostAndPort(host, port, "80", request.getHeader("host"));
-	CGI::execute_arguments args = {
-		.script_pathname = script,
-		.remote_addr = "TODO",
-		.request_method = "TODO",
-		.script_name = script_name,
-		.server_name = host,
-		.server_port = port,
-		.server_protocol = "HTTP/1.1",
-		.query_string = "", // TODO!!
-		.path_info = "",
-		.content_exists = true ? content_length != 0 : false,
-		.content_length = content_length,
-		.content_type = request.getHeader("content-type"),
-	};
-	return this->_execute(stdin, args);
 }
 
 bool CGI::fileForMe(std::string const& filename) const
