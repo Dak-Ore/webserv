@@ -18,6 +18,7 @@ private:
 	static int setNonBlocking(int fd);
 	void wait();
 	void add(int fd, int flags);
+	void update(int fd, int flags);
 public:
 	EPoll();
 	~EPoll();
@@ -36,6 +37,8 @@ public:
 	 * @param fd Client socket file descriptor.
 	 */
 	void addClient(const HttpClient &client);
+	void setIn(const HttpClient &client);
+	void setOut(const HttpClient &client);
 	void remove(int fd, bool close_fd = true);
 };
 

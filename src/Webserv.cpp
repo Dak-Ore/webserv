@@ -95,8 +95,6 @@ void Webserv::listen()
 		{
 			std::cout << "EVENT :" << event->getFd() << std::endl;
 			int fd = event->getFd();
-			if (fd == 0)
-				continue;
 			if (this->isServerSocket(fd))
 				this->acceptClient(fd);
 			else
