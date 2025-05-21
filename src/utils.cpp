@@ -1,6 +1,7 @@
 #include "utils.hpp"
 
 #include <sstream>
+#include <cctype>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <stdint.h>
@@ -11,6 +12,7 @@
 #include <vector>
 #include <cstring>
 #include <sstream>
+#include <dirent.h>
 
 std::string utils::numToString(size_t value)
 {
@@ -170,7 +172,7 @@ static const char** map_to_c_array(std::map<std::string, std::string> const& a)
 	return r;
 }
 
-void forkexec(int inout[2], std::vector<std::string> const argv, std::map<std::string, std::string> const envp)
+void utils::forkexec(int inout[2], std::vector<std::string> const argv, std::map<std::string, std::string> const envp)
 {
 	// create pipes
 	int pipein[2];
@@ -210,9 +212,52 @@ void forkexec(int inout[2], std::vector<std::string> const argv, std::map<std::s
 	close(pipeout[1]);
 }
 
-void lower(std::string& str)
+void utils::lower(std::string& str)
 {
 	std::transform(str.begin(), str.end(), str.begin(), tolower);
+}
+
+void utils::parseHostAndPort(std::string& host, std::string& port,
+	std::string const& default_port,
+	std::string str
+) {
+	size_t i(0);
+
+	// read host
+	host = "";
+	while (i < str.size() && str[i] != ':') {
+		host += str[i];
+		i++;
+	}
+	if (i >= str.size()) {
+		port = default_port;
+		return;
+	}
+	i++;
+
+	// read port
+	port = "";
+	for (size_t j = 0; j < 5; j++) {
+		if (i >= str.size() || !std::isdigit(str[i]))
+			throw std::runtime_error("digit or EOF expected.");
+		port += str[i];
+	}
+	if (i < str.size())
+		throw std::runtime_error("EOF expected.");
+}
+
+bool utils::startswith(std::string const& str, std::string const& substr)
+{
+	if (substr.size() > str.size())
+		return false;
+	return str.substr(0, substr.size()) == substr;
+}
+
+bool utils::endswith(std::string const& str, std::string const& substr)
+{
+	if (substr.size() > str.size())
+		return false;
+	return str.substr(str.size() - substr.size()) == substr;
 }
 
 std::string utils::generateDefaultError(int statusCode)
@@ -231,9 +276,6 @@ std::string utils::generateDefaultError(int statusCode)
 
 	return page.str();
 }
-
-#include <dirent.h>
-#include <sys/stat.h>
 
 std::string utils::generateAutoIndex(const std::string& path, const std::string& urlPath)
 {
@@ -273,6 +315,7 @@ std::string utils::generateAutoIndex(const std::string& path, const std::string&
     page << "</ul></body></html>";
     return page.str();
 }
+
 std::string	utils::regexWildcardGenerator(const std::string &path)
 {
 	std::string	regex;

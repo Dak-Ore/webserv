@@ -16,7 +16,7 @@ OBJS = $(addprefix $(OBJDIR)/, $(SOURCES:.cpp=.o))
 
 all: $(NAME)
 
-$(NAME): $(OBJS)
+$(NAME): _init_progress_bar $(OBJS) _end_progress_bar
 	@echo "$(GREEN)Compiling $(NAME)...$(RESET)"
 	@c++ $(FLAGS) $(OBJS) -o $(NAME) $(INC)
 	@echo "$(GREEN)Compilation finished successfully!$(RESET)"
@@ -24,6 +24,7 @@ $(NAME): $(OBJS)
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	@mkdir -p $(dir $@)
 	@c++ $(FLAGS) $(INC) -c $< -o $@
+	@echo -n ' '  # fill progress bar
 
 clean:
 	@echo "$(RED)Cleaning object files...$(RESET)"
@@ -38,4 +39,17 @@ re: fclean sources $(NAME)
 sources:
 	@./update_sources
 
-.PHONY: all clean fclean re sources
+_init_progress_bar:
+	@{ while kill -0 $$PPID 2> /dev/null; do true; done; echo -n '\e[?25h\e[0m'; }&
+	@echo -ne '\e[?25l\e[0;44m'
+	@for obj in $(OBJS); do \
+		if ! $(MAKE) -q $$obj; then \
+			echo -n ' ' \
+		; fi \
+	; done
+	@echo -ne '\r\e[0;46m'
+
+_end_progress_bar:
+	@echo "\e[0m\e[?25h"
+
+.PHONY: all clean fclean re sources _init_progress_bar _end_progress_bar

@@ -51,6 +51,7 @@ namespace utils
 	 * @return Path with a trailing slash.
 	 */
 	std::string addTrailingSlash(const std::string& path);
+
 	/**
 	 * @brief Remove the trailing slash from a path if it exists.
 	 * @param path Input path.
@@ -65,13 +66,48 @@ namespace utils
 	std::string generateAutoIndex(const std::string& path, const std::string& urlPath);
 	
 	std::string	regexWildcardGenerator(const std::string &path);
-	bool	isValidPath(std::string str, std::string path);
+
 	std::string getHeaderParam(const std::string& header, const std::string& key);
 
-};
-void forkexec(int inout[2], std::vector<std::string> const argv, std::map<std::string, std::string> const envp);
+	bool	isValidPath(std::string str, std::string path);
 
-/**
- * Make the given string lowercase.
- */
-void lower(std::string& str);
+	/**
+	 * Get the host and port from 'str'.
+	 * 
+	 * Syntax: host-and-port :== *char [ ":" 1*5digit ]
+	 *
+	 * 'host' and 'port' are set to the result.
+	 * 
+	 * If the port is not given, defaults to 'default_port'.
+	 */
+	void parseHostAndPort(std::string& host, std::string& port,
+		std::string const& default_port,
+		std::string str
+	);
+
+	/**
+	 * Return either the start of 'str' is 'substr'.
+	 */
+	bool startswith(std::string const& str, std::string const& substr);
+
+	/**
+	 * Return either the end of 'str' is 'substr'.
+	 */
+	bool endswith(std::string const& str, std::string const& substr);
+
+	/**
+	 * Create a subprocess from 'argv'.
+	 * 
+	 * - inout[0] and inout[1] will be set to two open file descriptors
+	 *   respectively the subprocess' stdout and stdin.
+	 * - argv are the arguments that will be given to the subprocess.
+	 *   argv[0] must be a path to the executable to call.
+	 * - envp is the environment to the subprocess.
+	 */
+	void forkexec(int inout[2], std::vector<std::string> const argv, std::map<std::string, std::string> const envp);
+
+	/**
+	 * Make the given string lowercase.
+	 */
+	void lower(std::string& str);
+};

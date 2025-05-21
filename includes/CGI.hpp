@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "HttpRequest.hpp"
 
 /**
  * Allows to execute a CGI script with a given file and other informations.
@@ -88,15 +89,21 @@ public:
 
 private:
 	CGI();
+
+public:
 	CGI(CGI const&);
 	CGI& operator=(CGI const&);
 
-public:
 	/**
 	 * - 'argv': arguments to give to the executable.
 	 *           argv[0] must be a path to the executable file.
+	 *           If any is "%f", it will be replaced by the script filename
+	 *           when calling .execute().
+	 * 
+	 * - 'extension': the file extension of this CGI's scripts
+	 *                ("php", "py"... without the '.')
 	 */
-	CGI(std::vector<std::string> const& argv);
+	CGI(std::vector<std::string> const& argv, std::string const& extension);
 
 	virtual ~CGI();
 
@@ -201,12 +208,36 @@ public:
 	 *
 	 * The return value is the link to the running CGI script
 	 * that must be used to get its response.
+	 * 
+	 * 'script_pathname' is the absolute path of the script to call.
+	 * 
+	 * 'script_name' is the URI path of the script.
 	 *
 	 * 'stdin' will be set to an fd to send the CGI script
 	 * potential request data. If it isn't used, it must be closed anyway.
+	 *
+	 * 'request' is the client's request.
+	 * 
+	 * This does not check if the file name ends with the CGI's extension.
+	 * Use this.fileForMe().
 	 */
-	CGI::Running execute(int& stdin, CGI::execute_arguments const& args);
+	CGI::Running execute(int& stdin,
+		std::string const& script_pathname,
+		std::string const& script_name,
+		HttpRequest const& request
+	) const;
+
+	/**
+	 * Checks if the given file name is a the name of a file
+	 * you can give to this CGI.
+	 * 
+	 * This checks if the file extension of 'filename' is this CGI's extension.
+	 */
+	bool fileForMe(std::string const& filename) const;
 
 private:
+	CGI::Running _execute(int& stdin, CGI::execute_arguments const& args) const;
+
 	std::vector<std::string> argv;
+	std::string extension;
 };

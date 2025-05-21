@@ -7,7 +7,10 @@
 
 Webserv* g_server = NULL;
 
-void signalHandler(int signum)
+/**
+ * Handle SIGINT.
+ */
+static void signalHandler(int signum)
 {
 	if (signum == SIGINT && g_server != NULL)
 	{
@@ -17,10 +20,8 @@ void signalHandler(int signum)
 }
 
 
-int main(int argc, char **argv, char **envp)
+int main(int argc, char **argv)
 {
-	(void)envp;
-
 	if (argc == 1)
 		std::cout << "Warning: no config, use default config" << std::endl;
 
@@ -29,6 +30,7 @@ int main(int argc, char **argv, char **envp)
 		std::cout << "Usage " << argv[0] << " <file.conf>" << std::endl;
 		return 1;
 	}
+
 	std::string config_file_name = (argc == 2) ? argv[1] : "conf/default.conf";
 	try
 	{

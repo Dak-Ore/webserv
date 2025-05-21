@@ -23,8 +23,6 @@ int	Config::parseVar(std::string key, std::string value, std::string line)
 		this->_uploadPath.push_back(value);
 	else if (key == "upload_enabled")
 		this->_uploadEnabled = true;
-	else if (key == "cgi_extension")
-		utils::ft_split(value, &this->_cgiExtension);
 	else if (key == "index")
 		utils::ft_split(value, &this->_index);
 	else if (key == "allow_methods")
@@ -65,7 +63,6 @@ void	Config::checkVar()
 
 const std::map<int, std::string>& Config::getErrorPages() const {return this->_errorPages;}
 bool Config::getAutoIndex() const {return this->_autoIndex;}
-std::vector<std::string> Config::getCgiExtension() const {return this->_cgiExtension;}
 bool Config::getUploadEnabled() const {return this->_uploadEnabled;}
 const std::vector<std::string> &Config::getUploadPath() const {return this->_uploadPath;}
 const std::string &Config::getRoot() const {return this->_root;}

@@ -33,7 +33,7 @@ static CGI::Running::ResponseHead parse_head(std::string const& head)
 		}
 		if (name.size() == 0)
 			throw std::runtime_error("field name expected.");
-		lower(name);
+		utils::lower(name);
 		i++;
 		skip_spc(head, i);
 
@@ -82,17 +82,19 @@ CGI::CGI(CGI const& other)
 CGI& CGI::operator=(CGI const& other)
 {
 	this->argv = other.argv;
+	this->extension = other.extension;
 	return *this;
 }
 
-CGI::CGI(std::vector<std::string> const& argv)
+CGI::CGI(std::vector<std::string> const& argv, std::string const& extension)
 : argv(argv)
+, extension(extension)
 {}
 
 CGI::~CGI()
 {}
 
-CGI::Running CGI::execute(int& stdin, CGI::execute_arguments const& args)
+CGI::Running CGI::_execute(int& stdin, CGI::execute_arguments const& args) const
 {
 	std::map<std::string, std::string> envp;
 	envp["GATEWAY_INTERFACE"] = "CGI/1.1";
@@ -122,10 +124,41 @@ CGI::Running CGI::execute(int& stdin, CGI::execute_arguments const& args)
 	// see https://datatracker.ietf.org/doc/html/rfc3875#section-7.2
 
 	int inout[2];
-	forkexec(inout, argv, envp);
+	utils::forkexec(inout, argv, envp);
 	stdin = inout[1];
 	return CGI::Running(inout[0]);
 }
+
+CGI::Running CGI::execute(int& stdin,
+	std::string const& script,
+	std::string const& script_name,
+	HttpRequest const& request
+) const {
+	std::string host, port;
+	size_t content_length(atoi(request.getHeader("content-length").c_str()));
+	utils::parseHostAndPort(host, port, "80", request.getHeader("host"));
+	CGI::execute_arguments args = {
+		.script_pathname = script,
+		.remote_addr = "TODO",
+		.request_method = "TODO",
+		.script_name = script_name,
+		.server_name = host,
+		.server_port = port,
+		.server_protocol = "HTTP/1.1",
+		.query_string = "", // TODO!!
+		.path_info = "",
+		.content_exists = true ? content_length != 0 : false,
+		.content_length = content_length,
+		.content_type = request.getHeader("content-type"),
+	};
+	return this->_execute(stdin, args);
+}
+
+bool CGI::fileForMe(std::string const& filename) const
+{
+	return utils::endswith(filename, "." + this->extension);
+}
+
 
 CGI::Running::Running()
 {}
