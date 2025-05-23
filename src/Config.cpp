@@ -56,7 +56,7 @@ int	Config::parseVar(std::string key, std::string value, std::string line)
 
 void	Config::checkVar()
 {
-	if (!this->_root.empty() && !utils::isValidRegex(this->_root, "^\\/[A-Za-z0-9\\/_.-]*$"))
+	if (!this->_root.empty() && !utils::isValidRegex(this->_root, "^[A-Za-z0-9\\/_.-]*$"))
 		throw std::runtime_error("Invalid root path : " + this->_root + " in configuration file");
 	for (std::vector<std::string>::iterator it = this->_allowedMethods.begin(); it != this->_allowedMethods.end(); it++)
 		if (!utils::isValidRegex(*it, "^(GET|POST|DELETE)$"))

@@ -17,6 +17,7 @@ LocationConfig::LocationConfig(std::string content): Config()
 
 void	LocationConfig::checkConfig()
 {
+	this->checkVar();
 	if (!utils::isValidRegex(this->_path, "^/[A-Za-z0-9_./*-]*$"))
 		throw std::runtime_error("Invalid path " + this->_path + " in location config");
 	if (this->_hasRedirection)
