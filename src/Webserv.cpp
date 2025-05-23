@@ -90,12 +90,11 @@ void Webserv::listen()
 {
 	while (this->_run)
 	{
-		EPollEvent *events = this->_epoll.getEvents();
-		for (int i = 0; i < EPOLL_MAX_EVENTS; ++i)
+		const std::vector<EPollEvent> &events = this->_epoll.getEvents();
+		for (std::vector<EPollEvent>::const_iterator event = events.begin(); event != events.end(); ++event)
 		{
-			int fd = events[i].getFd();
-			if (fd == 0)
-				continue;
+			std::cout << "EVENT :" << event->getFd() << std::endl;
+			int fd = event->getFd();
 			if (this->isServerSocket(fd))
 				this->acceptClient(fd);
 			else

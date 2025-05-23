@@ -38,7 +38,7 @@ void	ServerConfig::findElement(std::string line)
 
 void ServerConfig::checkConfig()
 {
-	// ADRESS PART
+	this->checkVar();
 	if (this->_adress.empty())
 		throw std::runtime_error("No listen in server block");
 	for (std::vector<Adress>::iterator it = this->_adress.begin(); it != this->_adress.end(); it++)

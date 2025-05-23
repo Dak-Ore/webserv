@@ -34,7 +34,7 @@ void EPoll::add(int fd, int flags)
 	std::memset(&ev, 0, sizeof(ev));
 	ev.events = flags;
 	ev.data.fd = fd;
-	if (epoll_ctl(this->_fd, EPOLL_CTL_ADD, fd, &ev))
+	if (::epoll_ctl(this->_fd, EPOLL_CTL_ADD, fd, &ev))
 		throw std::runtime_error("epoll_ctl failed");
 	this->_fds.insert(fd);
 }
@@ -53,21 +53,40 @@ void EPoll::remove(int fd, bool close_fd)
 {
 	if (close_fd)
 		::close(fd);
-	epoll_ctl(this->_fd, EPOLL_CTL_DEL, fd, NULL);
+	::epoll_ctl(this->_fd, EPOLL_CTL_DEL, fd, NULL);
 	this->_fds.erase(fd);
+}
+
+void EPoll::update(int fd, int flags)
+{
+    struct epoll_event event;
+    event.events = flags; //| EPOLLONESHOT;
+    event.data.fd = fd;
+	::epoll_ctl(this->_fd, EPOLL_CTL_MOD, fd, &event);
 }
 
 void EPoll::wait()
 {
 	epoll_event raw_events[EPOLL_MAX_EVENTS];
 
-	int n = epoll_wait(this->_fd, raw_events, EPOLL_MAX_EVENTS, -1);
+	this->_events.clear();
+	int n = ::epoll_wait(this->_fd, raw_events, EPOLL_MAX_EVENTS, -1);
 	for (int i = 0; i < n; i++)
-		this->_events[i] = EPollEvent(raw_events[i]);
+		this->_events.push_back(EPollEvent(raw_events[i]));
 }
 
-EPollEvent *EPoll::getEvents()
+const std::vector<EPollEvent> &EPoll::getEvents()
 {
 	this->wait();
 	return (this->_events);
+}
+
+void EPoll::setIn(const HttpClient &client)
+{
+	this->update(client.getFd(), EPOLLIN | EPOLLET);
+}
+
+void EPoll::setOut(const HttpClient &client)
+{
+	this->update(client.getFd(), EPOLLOUT);
 }
