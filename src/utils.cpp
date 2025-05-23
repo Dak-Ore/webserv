@@ -19,6 +19,14 @@ std::string utils::numToString(size_t value)
 	return oss.str();
 }
 
+int utils::stringToInt(const std::string& str)
+{
+	std::stringstream ss(str);
+	int num = 0;
+	ss >> num;
+	return num;
+}
+
 bool utils::fileExists(const std::string &path)
 {
 	struct stat fileInfo;

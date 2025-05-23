@@ -2,8 +2,6 @@
 # define HTTPREQUEST_HPP
 
 #include "HttpMessage.hpp"
-#include "Webserv.hpp"
-#include "Config.hpp"
 
 # include <iostream>
 # include <map>
@@ -17,18 +15,26 @@
 
 #define MAX_HEADERS 100
 
+class Webserv;
+class Config;
+class HttpClient;
+
 class HttpRequest : public HttpMessage
 {
 private:
 	bool			_is_empty;
+	bool			_header_ready;
+	bool			_ready;
+	std::string		_buffer;
 	Config			*_config;
 	std::string		_method;
 	std::string		_path;
 	int				_error;
-	bool readHeaders(int fd, std::string& headers, std::string& body);
-	bool readBody(int fd, std::string& body);
+
+	void readHeaders(const std::string &content);
+	void readBody(const std::string &content);
 	void parseRequestLine(std::istringstream& stream);
-	void parseHeaders(std::istringstream& stream);
+	void parseHeaders(const std::string &headers);
 	void parseBody(std::istringstream& stream);
 	void parseMultipartBody(std::string boundary);
 	void validateBodySize();
@@ -38,8 +44,7 @@ private:
 	void handleUploadDir(const std::string& path);
 	void saveFile(const std::string& filename, const std::string& content, std::string &path);
 public:
-	HttpRequest();
-    HttpRequest(const HttpClient &client, const Webserv &serv);
+    HttpRequest();
     ~HttpRequest();
 	const std::string &getMethod() const;
 	const std::string &getPath() const ;
@@ -47,7 +52,10 @@ public:
 	std::string toString() const;
 	bool		empty() const;
 	bool		isValid() const;
+	bool		isHeaderReady() const;
+	bool		isReady() const;
 	int			getErrorCode() const;
+	bool		read(const std::string &content);
 };
 
 #endif

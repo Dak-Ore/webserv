@@ -18,6 +18,8 @@ namespace utils
 	 */
 	std::string numToString(size_t value);
 
+	int stringToInt(const std::string& str);
+
 	/**
 	 * @brief Check if a file exists at the given path.
 	 * @param path The file path to check.

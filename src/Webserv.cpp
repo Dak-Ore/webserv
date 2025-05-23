@@ -9,7 +9,6 @@
 
 Webserv::Webserv(ConfigParser &parser) : _run(true)
 {
-	Socket socket;
 	std::vector<int> ports;
 	size_t count = parser.getServer().size();
 	for (size_t i = 0; i < count; i++)
@@ -23,7 +22,7 @@ Webserv::Webserv(ConfigParser &parser) : _run(true)
 			if (std::find(ports.begin(), ports.end(), adress.port()) != ports.end())
 				continue;
 			ports.push_back(adress.port());
-			socket = Socket(adress.host_str(), adress.port_str());
+			ServerSocket socket(adress);
 			std::cout << "Server launched on " << adress << std::endl;
 			this->_sockets.push_back(socket);
 			this->_epoll.addSocket(socket);
@@ -48,6 +47,10 @@ bool Webserv::isServerSocket(int fd)
 			return (true);
 	}
 	return (false);
+}
+bool Webserv::isClientSocket(int fd)
+{
+	return (this->_client_map.find(fd) != this->_client_map.end());
 }
 
 Server& Webserv::findServer(const HttpRequest &request, const HttpClient &client) const
@@ -93,17 +96,29 @@ void Webserv::listen()
 		const std::vector<EPollEvent> &events = this->_epoll.getEvents();
 		for (std::vector<EPollEvent>::const_iterator event = events.begin(); event != events.end(); ++event)
 		{
-			std::cout << "EVENT :" << event->getFd() << std::endl;
 			int fd = event->getFd();
 			if (this->isServerSocket(fd))
 				this->acceptClient(fd);
-			else
+			else if (this->isClientSocket(fd))
 			{
+				event_type type = event->getType();
 				HttpClient client = this->_client_map[fd];
-				HttpRequest const request(client, *this);
-				Server &s = this->findServer(request, client);
-				if (!s.handleRequest(request, client))
-					this->_epoll.remove(fd);
+				if (type == IN)
+				{
+					if (client.readRequest()) // ready ?
+					{
+						// handle request
+						this->_epoll.setOut(client);
+					}
+					else
+						std::cout << "PAS READY";
+
+					// Server &s = this->findServer(request, client);
+					// if (!s.handleRequest(request, client))
+						// this->_epoll.remove(fd);
+				}
+				else if (type == OUT)
+					client.send();
 			}
 		}
 	}

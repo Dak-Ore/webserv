@@ -4,6 +4,7 @@
 #include "Server.hpp"
 #include "EPoll.hpp"
 #include "HttpClient.hpp"
+#include "ServerSocket.hpp"
 
 #include <vector>
 #include <map>
@@ -18,8 +19,9 @@ private:
     EPoll _epoll;
     std::map<int, HttpClient> _client_map;
     std::vector<Server*> _servers;
-	std::vector<Socket> _sockets;
+	std::vector<ServerSocket> _sockets;
 	bool isServerSocket(int fd);
+	bool isClientSocket(int fd);
 	Server& findServer(const HttpRequest  &request, const HttpClient &client) const;
 	void acceptClient(int serverFd);
 public:

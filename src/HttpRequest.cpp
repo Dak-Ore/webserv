@@ -6,108 +6,102 @@
 
 #define REQUEST_MAX_SIZE 8192
 
-HttpRequest::HttpRequest() : HttpMessage() {}
-// Default Constructor
-HttpRequest::HttpRequest(const HttpClient &client, const Webserv &serv)
-    : HttpMessage(), _is_empty(true), _error(0)
+HttpRequest::HttpRequest() : HttpMessage(),
+ _is_empty(true), _header_ready(false), _ready(false), _error(0)
+ {
+ }
+ 
+// HttpRequest::HttpRequest(const HttpClient &client, const Webserv &serv) : HttpMessage(),
+//  _is_empty(true), _ready(false), _header_ready(false), _error(0), _client(&client)
+// {
+//     std::string headers, body;
+
+//     if (!readHeaders())
+//     {
+//         this->_error = 400;
+//         return;
+//     }
+// 	if (headers.size() > 0)
+// 	    this->_is_empty = false;
+//     std::istringstream stream(headers);
+//     parseRequestLine(stream);
+//     parseHeaders(stream);
+
+//     if (this->_headers.size() > MAX_HEADERS)
+// 	{
+//         this->_error = 431;
+//         return;
+//     }
+//     this->_config = serv.findConfig(*this, client);
+//     if (this->_config == NULL)
+// 	{
+//         this->_error = 500;
+//         return;
+//     }
+
+// 	const std::vector<std::string> &allowed = this->_config->getAllowedMethods();
+//     if (!allowed.empty()) {
+// 		if (std::find(allowed.begin(), allowed.end(), this->_method) == allowed.end())
+// 		{
+//             this->_error = 405;
+//             return;	
+// 		}
+//     }
+//     if (!readBody())
+// 	{
+//         this->_error = 413; // Payload Too Large
+//         return;
+//     }
+
+//     std::istringstream fullBodyStream(body);
+//     parseBody(fullBodyStream);
+
+//     if (_method == "POST")
+//         validateBodySize();
+
+//     if (!this->_headers["Cookie"].empty())
+//         parseCookie();
+// }
+
+bool HttpRequest::read(const std::string &content)
 {
-    std::string headers, body;
-
-    if (!readHeaders(client.getFd(), headers, body))
-    {
-        this->_error = 400;
-        return;
-    }
-	if (headers.size() > 0)
-	    this->_is_empty = false;
-    std::istringstream stream(headers);
-    parseRequestLine(stream);
-    parseHeaders(stream);
-
-    if (this->_headers.size() > MAX_HEADERS)
-	{
-        this->_error = 431;
-        return;
-    }
-    this->_config = serv.findConfig(*this, client);
-    if (this->_config == NULL)
-	{
-        this->_error = 500;
-        return;
-    }
-
-	const std::vector<std::string> &allowed = this->_config->getAllowedMethods();
-    if (!allowed.empty()) {
-		if (std::find(allowed.begin(), allowed.end(), this->_method) == allowed.end())
-		{
-            this->_error = 405;
-            return;	
-		}
-    }
-    if (!readBody(client.getFd(), body))
-	{
-        this->_error = 413; // Payload Too Large
-        return;
-    }
-
-    std::istringstream fullBodyStream(body);
-    parseBody(fullBodyStream);
-
-    if (_method == "POST")
-        validateBodySize();
-
-    if (!this->_headers["Cookie"].empty())
-        parseCookie();
+	if (!this->_header_ready)
+		this->readHeaders(content);
+	else
+		this->readBody(content);
+	return (this->_ready);
 }
 
-bool HttpRequest::readHeaders(int fd, std::string& headers, std::string& body)
-{\
-	size_t size = 0;
-	char buffer[1024];
-	int bytes;
+void HttpRequest::readHeaders(const std::string &content)
+{
 	size_t header_limit;
+	std::string body;
 
-	while (true)
+	// ( > REQUEST_MAX_SIZE)
+	// this->_error = 431;
+	this->_buffer += content;
+	if (this->_buffer.size() > 0)
+		this->_is_empty = false;
+	header_limit = this->_buffer.find("\r\n\r\n");
+	if (header_limit != std::string::npos)
 	{
-		if (size > REQUEST_MAX_SIZE)
-			return false;
-		bytes = ::recv(fd, buffer, sizeof(buffer), 0);
-		if (bytes <= 0)
-			return (false);
-		size += bytes;
-		headers.append(buffer, bytes);
-
-		header_limit = headers.find("\r\n\r\n");
-		if (header_limit != std::string::npos)
-		{
-			body = headers.substr(header_limit + 4);
-			headers.erase(header_limit, 4);
-			break ;
-		}
+		body = this->_buffer.substr(header_limit + 4);
+		this->_buffer.substr(0, header_limit);
+		this->parseHeaders(this->_buffer);
+		if (this->_buffer.size() > 0)
+			this->_is_empty = false;
+		this->_buffer.clear();
+		this->_header_ready = true;
 	}
-	return (true);
+	this->readBody(body);
 }
 
-bool HttpRequest::readBody(int fd, std::string& body)
+void HttpRequest::readBody(const std::string &content)
 {
-	if (this->_config == NULL)
-		throw std::exception();
-	size_t size = 0;
-	size_t limit = this->_config->getClientMaxBodySize();
-	char buffer[1024];
-	int bytes;
-
-	while (true)
-	{
-		if (size > limit)
-			return false;
-		bytes = ::recv(fd, buffer, sizeof(buffer), 0);
-		if (bytes <= 0)
-			break ;
-		size += bytes;
-		body.append(buffer, bytes);
-	}
-	return (true);
+	// size_t limit = this->_config->getClientMaxBodySize();
+	this->_body += content;
+	if ((unsigned int)utils::stringToInt(this->getHeader(CONTENT_LENGHT)) == this->_body.size())
+		this->_ready = true;
 }
 
 void HttpRequest::parseCookie()
@@ -199,8 +193,9 @@ void HttpRequest::parseRequestLine(std::istringstream& stream)
 }
 
 
-void HttpRequest::parseHeaders(std::istringstream& stream)
+void HttpRequest::parseHeaders(const std::string &headers)
 {
+	std::istringstream stream(headers);
 	std::string line;
 	while (std::getline(stream, line) && line != "\r") {
 		size_t pos = line.find("\r");
@@ -339,3 +334,12 @@ bool HttpRequest::empty() const {return (this->_is_empty);}
 
 HttpRequest::~HttpRequest(){};
 
+bool HttpRequest::isHeaderReady() const
+{
+	return (this->_header_ready);
+}
+
+bool HttpRequest::isReady() const
+{
+	return (this->_ready);
+}
