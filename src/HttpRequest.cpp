@@ -66,7 +66,9 @@ void HttpRequest::readHeaders(const std::string &content)
 		this->_buffer.clear();
 		this->_header_ready = true;
 	}
-	this->readBody(body);
+	if (this->_header_ready)
+		this->readBody(body);
+
 }
 
 void HttpRequest::readBody(const std::string &content)

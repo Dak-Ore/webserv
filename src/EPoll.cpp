@@ -46,7 +46,7 @@ void EPoll::addSocket(const Socket &socket)
 
 void EPoll::addClient(const HttpClient &client)
 {
-	this->add(client.getFd(), EPOLLIN | EPOLLET);
+	this->add(client.getFd(), EPOLLIN);
 }
 
 void EPoll::remove(int fd, bool close_fd)

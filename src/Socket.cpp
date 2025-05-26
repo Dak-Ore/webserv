@@ -43,7 +43,6 @@ std::string Socket::read()
 	while (size < 4096)
 	{
 		bytes = ::read(this->getFd(), buffer, sizeof(buffer));
-		std::cout << "READ " << bytes << std::endl;
 		if (bytes <= 0)
 			break ;
 		size += bytes;

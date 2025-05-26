@@ -9,6 +9,16 @@
 
 #define REQUEST_MAX_SIZE 8192
 
+static void logRequest(const HttpRequest &request)
+{
+	std::cout << request.getMethod() << " - " << request.getHeader("Host")  << request.getPath() << std::endl;
+}
+
+static void logResponse(const HttpResponse &response)
+{
+	std::cout << "\t- RESPONSE: " << response.getCode() << " " << response.getReason() << std::endl;
+}
+
 Webserv::Webserv(ConfigParser &parser) : _run(true)
 {
 	std::vector<int> ports;
@@ -124,6 +134,7 @@ void Webserv::listen()
 					if (client.readRequest()) // ready ?
 					{
 						this->handleRequest(client);
+						logResponse(client.response());
 						this->_epoll.setOut(client);
 					}
 				}
@@ -144,15 +155,17 @@ void Webserv::listen()
 		// {
 		// 	lastTimeoutCheck = now;
 
-		// 	for (std::map<int, HttpClient>::iterator it = this->_client_map.begin(); it != this->_client_map.end(); it++)
+		// 	for (std::map<int, HttpClient>::iterator it = this->_client_map.begin(); it != this->_client_map.end();)
 		// 	{
 		// 		time_t last = it->second.request().getCreatedAt();
 		// 		if (now - last > TIMEOUT_SECONDS)
 		// 		{
 		// 			int fd = it->first;
 		// 			this->_epoll.remove(fd);
-		// 			this->_client_map.erase(it);
+		// 			this->_client_map.erase(it++);
 		// 		}
+		// 		else
+		// 			it++;
 		// 	}
 		// }
 	}
@@ -164,8 +177,7 @@ void Webserv::handleRequest(HttpClient &client)
 	HttpResponse &response = client.response();
 	if (request.empty())
 		return ;
-	const std::string &path = request.getPath();
-	std::cout << request.getMethod() << " - " << request.getHeader("Host")  << path  << std::endl;
+	logRequest(request);
 	Config* config = request.getConfig();
 	LocationConfig *location = dynamic_cast<LocationConfig *>(config);
 	if (this->handleRedirect(response, location))
@@ -187,7 +199,7 @@ void Webserv::handleRequest(HttpClient &client)
 			else
 				file_path = config->findIndex(relativePath);
 		}
-		std::cout << "   - FILE: " <<  file_path << std::endl;
+		std::cout << "\t- FILE: " <<  file_path << std::endl;
 		response.setBodySource(file_path);
 	}
 	this->handleErrorPages(response, config);
