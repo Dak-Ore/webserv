@@ -23,7 +23,7 @@ $(NAME): $(OBJS)
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	@mkdir -p $(dir $@)
-	@++ $(FLAGS) $(INC) -c $< -o $@
+	@c++ $(FLAGS) $(INC) -c $< -o $@
 
 clean:
 	@echo "$(RED)Cleaning object files...$(RESET)"

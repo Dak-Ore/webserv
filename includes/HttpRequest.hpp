@@ -12,6 +12,7 @@
 # include <cstdlib>
 # include <fstream>
 # include <vector>
+#include <ctime>
 
 #define MAX_HEADERS 100
 
@@ -22,6 +23,7 @@ class HttpClient;
 class HttpRequest : public HttpMessage
 {
 private:
+	time_t			_createdAt;
 	bool			_is_empty;
 	bool			_header_ready;
 	bool			_ready;
@@ -47,8 +49,9 @@ public:
     HttpRequest();
     ~HttpRequest();
 	const std::string &getMethod() const;
-	const std::string &getPath() const ;
-	Config *getConfig() const ;
+	const std::string &getPath() const;
+	Config *getConfig() const;
+	void setConfig(Config *config);
 	std::string toString() const;
 	bool		empty() const;
 	bool		isValid() const;
@@ -56,6 +59,7 @@ public:
 	bool		isReady() const;
 	int			getErrorCode() const;
 	bool		read(const std::string &content);
+	time_t 		getCreatedAt() const;
 };
 
 #endif

@@ -7,37 +7,14 @@
 #define REQUEST_MAX_SIZE 8192
 
 HttpRequest::HttpRequest() : HttpMessage(),
- _is_empty(true), _header_ready(false), _ready(false), _error(0)
+ _is_empty(true), _header_ready(false), _ready(false), _config(NULL), _error(0)
  {
  }
  
-// HttpRequest::HttpRequest(const HttpClient &client, const Webserv &serv) : HttpMessage(),
-//  _is_empty(true), _ready(false), _header_ready(false), _error(0), _client(&client)
-// {
-//     std::string headers, body;
 
-//     if (!readHeaders())
-//     {
-//         this->_error = 400;
-//         return;
-//     }
-// 	if (headers.size() > 0)
-// 	    this->_is_empty = false;
-//     std::istringstream stream(headers);
-//     parseRequestLine(stream);
-//     parseHeaders(stream);
-
+// this->_error = 400;
 //     if (this->_headers.size() > MAX_HEADERS)
-// 	{
 //         this->_error = 431;
-//         return;
-//     }
-//     this->_config = serv.findConfig(*this, client);
-//     if (this->_config == NULL)
-// 	{
-//         this->_error = 500;
-//         return;
-//     }
 
 // 	const std::vector<std::string> &allowed = this->_config->getAllowedMethods();
 //     if (!allowed.empty()) {
@@ -52,10 +29,6 @@ HttpRequest::HttpRequest() : HttpMessage(),
 //         this->_error = 413; // Payload Too Large
 //         return;
 //     }
-
-//     std::istringstream fullBodyStream(body);
-//     parseBody(fullBodyStream);
-
 //     if (_method == "POST")
 //         validateBodySize();
 
@@ -197,6 +170,8 @@ void HttpRequest::parseHeaders(const std::string &headers)
 {
 	std::istringstream stream(headers);
 	std::string line;
+
+    this->parseRequestLine(stream);
 	while (std::getline(stream, line) && line != "\r") {
 		size_t pos = line.find("\r");
 		if (pos != std::string::npos)
@@ -330,6 +305,7 @@ void HttpRequest::handleUploadDir(const std::string& path)
 const std::string &HttpRequest::getMethod() const {return (this->_method);}
 const std::string &HttpRequest::getPath() const {return (this->_path);}
 Config *HttpRequest::getConfig() const {return (this->_config);}
+void HttpRequest::setConfig(Config *config) {this->_config = config;}
 bool HttpRequest::empty() const {return (this->_is_empty);}
 
 HttpRequest::~HttpRequest(){};
@@ -342,4 +318,9 @@ bool HttpRequest::isHeaderReady() const
 bool HttpRequest::isReady() const
 {
 	return (this->_ready);
+}
+
+time_t 		HttpRequest::getCreatedAt() const
+{
+	return (this->_createdAt);
 }

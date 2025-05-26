@@ -24,10 +24,14 @@ private:
 	bool isClientSocket(int fd);
 	Server& findServer(const HttpRequest  &request, const HttpClient &client) const;
 	void acceptClient(int serverFd);
+	bool handleRedirect(HttpResponse &response, LocationConfig *location);
+	void sendAutoindex(const HttpRequest &request, HttpResponse &response, const std::string &directory);
+	void handleErrorPages(HttpResponse &response, Config *config);
+	void handleRequest(HttpClient &client);
 public:
     Webserv(ConfigParser &parser);
     ~Webserv();
-	Config* findConfig(const HttpRequest  &request, const HttpClient &client) const;
+	Config* findConfig(const HttpClient &client) const;
     void listen();
     void stop();
 };

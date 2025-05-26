@@ -4,6 +4,8 @@
 #include "Adress.hpp"
 #include <algorithm>
 #include <vector>
+#include <ctime>
+#include <typeinfo>
 
 #define REQUEST_MAX_SIZE 8192
 
@@ -84,13 +86,27 @@ Server& Webserv::findServer(const HttpRequest &request, const HttpClient &client
 	return (*this->_servers[0]);	
 }
 
-Config* Webserv::findConfig(const HttpRequest  &request, const HttpClient &client) const
+Config* Webserv::findConfig(const HttpClient &client) const
 {
+	const HttpRequest &request = client.request();
 	return (this->findServer(request, client).getConfig(request));
+}
+
+void Webserv::acceptClient(int serverFd)
+{
+	HttpClient client(serverFd, *this);
+	if (client.getFd() != -1)
+	{
+		this->_epoll.addClient(client);
+		this->_client_map[client.getFd()] = client;
+	}
 }
 
 void Webserv::listen()
 {
+	// const int TIMEOUT_SECONDS = 10;
+	// static time_t lastTimeoutCheck = std::time(NULL);
+	
 	while (this->_run)
 	{
 		const std::vector<EPollEvent> &events = this->_epoll.getEvents();
@@ -102,36 +118,104 @@ void Webserv::listen()
 			else if (this->isClientSocket(fd))
 			{
 				event_type type = event->getType();
-				HttpClient client = this->_client_map[fd];
+				HttpClient &client = this->_client_map[fd];
 				if (type == IN)
 				{
 					if (client.readRequest()) // ready ?
 					{
-						// handle request
+						this->handleRequest(client);
 						this->_epoll.setOut(client);
 					}
-					else
-						std::cout << "PAS READY";
-
-					// Server &s = this->findServer(request, client);
-					// if (!s.handleRequest(request, client))
-						// this->_epoll.remove(fd);
 				}
 				else if (type == OUT)
+				{
 					client.send();
+					if (client.response().isDone())
+					{
+						this->_epoll.setIn(client);
+						this->_epoll.remove(client.getFd());
+						this->_client_map.erase(fd);
+					}
+				}
 			}
 		}
+		// time_t now = std::time(NULL);
+		// if (now - lastTimeoutCheck >= 2)
+		// {
+		// 	lastTimeoutCheck = now;
+
+		// 	for (std::map<int, HttpClient>::iterator it = this->_client_map.begin(); it != this->_client_map.end(); it++)
+		// 	{
+		// 		time_t last = it->second.request().getCreatedAt();
+		// 		if (now - last > TIMEOUT_SECONDS)
+		// 		{
+		// 			int fd = it->first;
+		// 			this->_epoll.remove(fd);
+		// 			this->_client_map.erase(it);
+		// 		}
+		// 	}
+		// }
 	}
 }
 
-void Webserv::acceptClient(int serverFd)
+void Webserv::handleRequest(HttpClient &client)
 {
-	HttpClient client(serverFd);
-	if (client.getFd() != -1)
+	HttpRequest &request = client.request();
+	HttpResponse &response = client.response();
+	if (request.empty())
+		return ;
+	const std::string &path = request.getPath();
+	std::cout << request.getMethod() << " - " << request.getHeader("Host")  << path  << std::endl;
+	Config* config = request.getConfig();
+	LocationConfig *location = dynamic_cast<LocationConfig *>(config);
+	if (this->handleRedirect(response, location))
+		return ;
+
+	if (!request.isValid())
+		response.setCode(request.getErrorCode());
+	else
 	{
-		this->_epoll.addClient(client);
-		this->_client_map[client.getFd()] = client;
+		std::string relativePath = config->getRelativePath(request.getPath());
+		std::string file_path = utils::joinPath(config->getRoot(), relativePath);
+		if (utils::isDirectory(file_path))
+		{
+			if (config->getAutoIndex())
+			{
+				this->sendAutoindex(request, response, file_path);
+				return ;
+			}
+			else
+				file_path = config->findIndex(relativePath);
+		}
+		std::cout << "   - FILE: " <<  file_path << std::endl;
+		response.setBodySource(file_path);
 	}
+	this->handleErrorPages(response, config);
+	return ;
+}
+
+bool Webserv::handleRedirect(HttpResponse &response, LocationConfig *location)
+{
+	if (!location || !location->getHasRedirection())
+		return (false);
+	response.setCode(location->getRedirection().first);
+	response.setHeader("Location", location->getRedirection().second);
+	return (true);
+}
+
+void Webserv::sendAutoindex(const HttpRequest &request, HttpResponse &response, const std::string &directory)
+{
+	std::string html = utils::generateAutoIndex(directory, request.getPath());
+	response.setBody(html);
+}
+
+void Webserv::handleErrorPages(HttpResponse &response, Config *config)
+{
+	std::map<int, std::string>::const_iterator it = config->getErrorPages().find(response.getCode());
+	if (!response.hasBody() && it != config->getErrorPages().end())
+		response.setBodySource(it->second);
+	if (!response.hasBody() && !response.isOK())
+		response.setBody(utils::generateDefaultError(response.getCode()));
 }
 
 void Webserv::stop()

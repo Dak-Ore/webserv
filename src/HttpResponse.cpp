@@ -13,7 +13,8 @@
 HttpResponse::HttpResponse(int status_code) : HttpMessage(),
 	_status_code(status_code),
 	_bodyFd(-1),
-	_client(NULL)
+	_sending(false),
+	_done(false)
 {
 	this->_version = "HTTP/1.1";
 }
@@ -201,40 +202,68 @@ void HttpResponse::_setContentType(const std::string& file_name)
 	this->_setHeader(CONTENT_TYPE, (it != mimeTypes.end()) ? it->second : DEFAULT_CONTENT_TYPE);
 }
 
-void HttpResponse::bindClient(const HttpClient &client)
+bool HttpResponse::isOK() const
 {
-	this->_client = &client;
+	return (this->getCode() < 400 || this->getCode() > 599);
+}
+bool HttpResponse::isDone() const
+{
+	return (this->_done);
 }
 
-void HttpResponse::send()
-{
-	if (this->_client == NULL)
-		throw std::runtime_error("Client is NULL");
-	return (this->send(this->_client->getFd()));
-}
 
-void HttpResponse::send(int fd)
+std::string &HttpResponse::read()
 {
-	std::string str = this->toString();
-	bool readBody = (this->_bodyFd != -1);
-
-	int flags = (readBody) ? MSG_MORE : 0;
-	if (::send(fd, str.c_str(), str.size(), MSG_NOSIGNAL | flags) < 0)
-		return ;
-	if (readBody)
+	if (!this->_done)
 	{
-		char buffer[1024];
-		ssize_t bytes;
-		while (true)
+		if (this->_sending == false)
 		{
-			bytes = read(this->_bodyFd, buffer, sizeof(buffer));
-			if (bytes == 0)
-				break ;
-			else if (bytes == -1)
-				break ;
-			if (::send(fd, buffer, bytes, MSG_NOSIGNAL) < 0)
-				break ;
+			this->_sending = true;
+			this->_buffer = this->toString();
 		}
-		this->closeBody();
+		size_t size = this->_buffer.size();
+		if (size < 4096)
+		{
+			if (this->_bodyFd != -1)
+			{
+				char read_buffer[4096];
+				ssize_t bytes = ::read(this->_bodyFd, read_buffer, 4096 - size);
+				if (bytes == 0)
+					this->closeBody();
+				else if (bytes == -1)
+					(void)1;
+				this->_buffer.append(read_buffer, bytes);
+			}
+		}
+		if (this->_buffer.size() == 0 && this->_bodyFd == -1)
+			this->_done = true;
 	}
+	return (this->_buffer);
 }
+
+
+// void HttpResponse::send(int fd)
+// {
+// 	std::string str = this->toString();
+// 	bool readBody = (this->_bodyFd != -1);
+
+// 	int flags = (readBody) ? MSG_MORE : 0;
+// 	if (::send(fd, str.c_str(), str.size(), MSG_NOSIGNAL | flags) < 0)
+// 		return ;
+// 	if (readBody)
+// 	{
+// 		char buffer[1024];
+// 		ssize_t bytes;
+// 		while (true)
+// 		{
+// 			bytes = read(this->_bodyFd, buffer, sizeof(buffer));
+// 			if (bytes == 0)
+// 				break ;
+// 			else if (bytes == -1)
+// 				break ;
+// 			if (::send(fd, buffer, bytes, MSG_NOSIGNAL) < 0)
+// 				break ;
+// 		}
+// 		this->closeBody();
+// 	}
+// }

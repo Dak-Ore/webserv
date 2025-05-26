@@ -1,15 +1,18 @@
 #include "HttpClient.hpp"
+#include "Webserv.hpp"
 #include "Socket.hpp"
 #include "Adress.hpp"
 #include "utils.hpp"
 #include <netdb.h>
 #include <string>
 
-HttpClient::HttpClient() : Socket()
+HttpClient::HttpClient() : Socket(),
+	_server(NULL)
 {
 }
 
-HttpClient::HttpClient(int serverFd) : Socket()
+HttpClient::HttpClient(int serverFd, Webserv &server) : Socket(),
+	_server(&server)
 {
 	sockaddr_in client_addr;
     socklen_t client_len = sizeof(client_addr);
@@ -28,10 +31,11 @@ HttpClient::HttpClient(HttpClient const &ref) : Socket()
 HttpClient &HttpClient::operator=(HttpClient const &ref)
 {
 	this->setFd(ref.getFd());
-	this->request = ref.request;
-	this->response = ref.response;
+	this->_request = ref._request;
+	this->_response = ref._response;
 	this->_adress = ref._adress;
 	this->_serverAdress = ref._serverAdress;
+	this->_server = ref._server;
 	return (*this);
 }
 
@@ -47,12 +51,36 @@ const Adress &HttpClient::getServerAdress() const
 bool HttpClient::readRequest()
 {
 	std::string content = this->read();
-	this->request.read(content);
-	return (this->request.isReady());
+	this->_request.read(content);
+	if (this->_request.getConfig() == NULL && this->_request.isHeaderReady())
+	{
+		Config *config = this->_server->findConfig(*this);
+		this->_request.setConfig(config);
+	}
+	return (this->_request.isReady());
 }
 
 void HttpClient::send()
 {
-	std::string resp = this->response.toString();
-	Socket::send(resp);
+	Socket::send(this->_response.read());
+}
+
+HttpRequest &HttpClient::request()
+{
+	return (this->_request);
+}
+
+HttpResponse &HttpClient::response()
+{
+	return (this->_response);
+}
+
+const HttpRequest &HttpClient::request() const
+{
+	return (this->_request);
+}
+
+const HttpResponse &HttpClient::response() const
+{
+	return (this->_response);
 }
