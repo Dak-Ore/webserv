@@ -42,6 +42,7 @@ private:
 	void validateBodySize();
 	void parseOpt();
 	void parseCookie();
+	void checkAllowedMethods();
 	void hasMultipart();
 	void handleUploadDir(const std::string& path);
 	void saveFile(const std::string& filename, const std::string& content, std::string &path);

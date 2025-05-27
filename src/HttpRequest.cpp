@@ -16,14 +16,6 @@ HttpRequest::HttpRequest() : HttpMessage(),
 //     if (this->_headers.size() > MAX_HEADERS)
 //         this->_error = 431;
 
-// 	const std::vector<std::string> &allowed = this->_config->getAllowedMethods();
-//     if (!allowed.empty()) {
-// 		if (std::find(allowed.begin(), allowed.end(), this->_method) == allowed.end())
-// 		{
-//             this->_error = 405;
-//             return;	
-// 		}
-//     }
 //     if (!readBody())
 // 	{
 //         this->_error = 413; // Payload Too Large
@@ -61,6 +53,8 @@ void HttpRequest::readHeaders(const std::string &content)
 		body = this->_buffer.substr(header_limit + 4);
 		this->_buffer.substr(0, header_limit);
 		this->parseHeaders(this->_buffer);
+		if (this->_error)
+			throw std::exception();
 		if (this->_buffer.size() > 0)
 			this->_is_empty = false;
 		this->_buffer.clear();
@@ -73,10 +67,13 @@ void HttpRequest::readHeaders(const std::string &content)
 
 void HttpRequest::readBody(const std::string &content)
 {
+	unsigned int expectedSize = utils::stringToInt(this->getHeader(CONTENT_LENGHT));
 	// size_t limit = this->_config->getClientMaxBodySize();
 	this->_body += content;
-	if ((unsigned int)utils::stringToInt(this->getHeader(CONTENT_LENGHT)) == this->_body.size())
+	if (expectedSize == this->_body.size())
 		this->_ready = true;
+	else if (expectedSize < this->_body.size())
+		throw std::exception();
 }
 
 void HttpRequest::parseCookie()
@@ -226,6 +223,19 @@ void HttpRequest::validateBodySize()
 	}
 }
 
+void HttpRequest::checkAllowedMethods()
+{
+	const std::vector<std::string> &allowed = this->_config->getAllowedMethods();
+    if (!allowed.empty()) 
+	{
+		if (std::find(allowed.begin(), allowed.end(), this->_method) == allowed.end())
+		{
+            this->_error = 405;
+            return;	
+		}
+    }
+}
+
 std::string HttpRequest::toString() const
 {
 	std::string request;
@@ -307,7 +317,11 @@ void HttpRequest::handleUploadDir(const std::string& path)
 const std::string &HttpRequest::getMethod() const {return (this->_method);}
 const std::string &HttpRequest::getPath() const {return (this->_path);}
 Config *HttpRequest::getConfig() const {return (this->_config);}
-void HttpRequest::setConfig(Config *config) {this->_config = config;}
+void HttpRequest::setConfig(Config *config)
+{
+	this->_config = config;
+	this->checkAllowedMethods();
+}
 bool HttpRequest::empty() const {return (this->_is_empty);}
 
 HttpRequest::~HttpRequest(){};
