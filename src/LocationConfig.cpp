@@ -74,7 +74,7 @@ void	LocationConfig::findElement(std::string line)
 		this->_redirection.second = utils::smartSubstr(value, word, ";");
 	}
 	else
-		std::cerr << "! Warning ! In configuration file: parameter '" << key << "' is unknown. Ignored." << std::endl;
+		std::cerr << "! Warning ! In configuration file: parameter '" << key << "' is unknown in location block. Ignored." << std::endl;
 }
 
 void		LocationConfig::print()

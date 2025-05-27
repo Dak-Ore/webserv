@@ -34,6 +34,8 @@ void	ServerConfig::findElement(std::string line)
 	}
 	else if (key == "server_name")
 		utils::ft_split(value, &this->_serverNames);
+	else
+		std::cerr << "! Warning ! In configuration file: parameter '" << key << "' is unknown in server block. Ignored." << std::endl;
 }
 
 void ServerConfig::checkConfig()
