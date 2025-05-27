@@ -18,6 +18,8 @@ namespace utils
 	 */
 	std::string numToString(size_t value);
 
+	int stringToInt(const std::string& str);
+
 	/**
 	 * Convert a number to a string.
 	 */

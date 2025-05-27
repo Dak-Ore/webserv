@@ -8,17 +8,18 @@
 class Socket
 {
 private:
-	void listen();
-protected:
 	int _fd;
+protected:
+	void setFd(int fd);
 	Adress _adress;
 
 public:
 	Socket();
-	Socket(std::string hostname, std::string service);
 	~Socket();
 	int getFd() const;
 	const Adress &getAdress() const;
 
 	void close();
+	std::string read();
+	void send(std::string &response);
 };

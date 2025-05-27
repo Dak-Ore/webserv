@@ -58,7 +58,7 @@ public:
     // default constructor
 	Config();
     // default destructor
-	~Config();
+	virtual ~Config();
     
     // GETTERS
 	const std::string  &getRoot() const;
@@ -98,6 +98,7 @@ public:
 	int	parseVar(std::string key, std::string value, std::string line);
 	virtual void	findElement(std::string line) = 0;
 
+	std::string findIndex(const std::string& path);
 	virtual std::string getRelativePath(const std::string& path) const = 0;
 };
 

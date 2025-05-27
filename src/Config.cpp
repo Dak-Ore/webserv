@@ -99,3 +99,18 @@ const std::string &Config::getRoot() const {return this->_root;}
 const std::vector<std::string> &Config::getIndex() const {return this->_index;}
 const std::vector<std::string> &Config::getAllowedMethods() const{return this->_allowedMethods;}
 size_t Config::getClientMaxBodySize() const {return this->_clientMaxBodySize;}
+
+std::string Config::findIndex(const std::string& path)
+{
+	const std::string& root = this->getRoot();
+	const std::vector<std::string>& indexList = this->getIndex();
+	std::string directory = utils::addTrailingSlash(utils::joinPath(root, path));
+
+	for (size_t i = 0; i < indexList.size(); ++i)
+	{
+		std::string file_path = directory + indexList[i];
+		if (utils::fileExists(file_path))
+			return (file_path);
+	}
+	return std::string();
+}

@@ -28,6 +28,14 @@ size_t utils::stringToNum(std::string str)
 }
 
 
+int utils::stringToInt(const std::string& str)
+{
+	std::stringstream ss(str);
+	int num = 0;
+	ss >> num;
+	return num;
+}
+
 bool utils::fileExists(const std::string &path)
 {
 	struct stat fileInfo;

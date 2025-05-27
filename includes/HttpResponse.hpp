@@ -21,13 +21,15 @@ class HttpClient;
 class HttpResponse : HttpMessage
 {
 private:
-	int _status_code;
-	int _bodyFd;
-	const HttpClient *_client;
+	std::string _buffer;
+	int 	_status_code;
+	int 	_bodyFd;
+	bool	_sending;
+	bool	_done;
 	// bool _keep_alive;
-	void closeBody();
-	void _setContentType(const std::string& file_name);
-	void _setHeader(const std::string &key, const std::string &value);
+	void	closeBody();
+	void 	_setContentType(const std::string& file_name);
+	void 	_setHeader(const std::string &key, const std::string &value);
 	std::string _getCookieHeader();
 public:
 	HttpResponse(int status_code = 200);
@@ -94,16 +96,7 @@ public:
 	 */
 	int getCode() const;
 
-	void		bindClient(const HttpClient &client);
-
-	/**
-	 * @brief Send the HTTP response to a socket.
-	 * @param fd File descriptor of the client socket.
-	 */
-	void send(int fd);
-
-	/**
-	 * @brief Send the HTTP response to the binded client.
-	 */
-	void send();
+	bool isOK() const;
+	bool isDone() const;
+	std::string &read();
 };
