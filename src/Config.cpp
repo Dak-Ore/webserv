@@ -32,7 +32,7 @@ int	Config::parseVar(std::string key, std::string value, std::string line)
 	}
 	else if (key == "root")
 	{
-		this->flags.hasAutoIndex = true;
+		this->flags.hasRoot = true;
 		this->_root = value;
 	}
 	else if (key == "upload_path")
