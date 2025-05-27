@@ -56,9 +56,8 @@ void ConfigParser::CgiBuilder::read(std::string line)
 		else
 			throw std::runtime_error("'pass_script_through_argv' takes either 'true' or 'false'.");
 	}
-	else {
-		throw std::runtime_error("unknown parameter in cgi block.");
-	}
+	else
+		std::cerr << "! Warning ! In configuration file: parameter '" << utils::extractKey(line) << "' is unknown in cgi block. Ignored." << std::endl;
 }
 
 ConfigParser::ConfigParser(File config)
