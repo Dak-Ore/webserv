@@ -194,7 +194,7 @@ bool ConfigParser::processCgiStart(const std::string& line, Block& waitBrace, st
 			ext = ext.substr(1);
 		else
 			throw std::runtime_error("extension for CGI must start with '.'");
-		cgiContent.extension = ext;
+		cgiContent.extension = utils::trim(ext);
 		return true;
 	}
 	return false;

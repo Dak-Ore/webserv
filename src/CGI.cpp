@@ -100,11 +100,8 @@ CGI::Running CGI::execute(int& stdin,
 	HttpClient const& client
 ) const {
 	HttpRequest const& request = client.request();
-	std::string host, port;
-	utils::parseHostAndPort(host, port, "80", request.getHeader("host"));
 	std::string content_length_str(request.getHeader("Content-Length"));
 	size_t content_length(utils::stringToNum(content_length_str));
-	std::cout << "LA" << std::endl;
 
 	std::map<std::string, std::string> envp;
 	envp["GATEWAY_INTERFACE"] = "CGI/1.1";
@@ -114,8 +111,8 @@ CGI::Running CGI::execute(int& stdin,
 	envp["PATH_INFO"] = "";
 	envp["PATH_TRANSLATED"] = "";
 	envp["SCRIPT_NAME"] = script_name;
-	envp["SERVER_NAME"] = host;
-	envp["SERVER_PORT"] = port;
+	envp["SERVER_NAME"] = client.getServerAdress().host_str();
+	envp["SERVER_PORT"] = client.getServerAdress().port_str();
 	envp["SERVER_PROTOCOL"] = "HTTP/1.1";
 	envp["SERVER_SOFTWARE"] = SERVER_SOFTWARE;
 	if (content_length != 0) {
@@ -137,7 +134,7 @@ CGI::Running CGI::execute(int& stdin,
 
 bool CGI::fileForMe(std::string const& filename) const
 {
-	return utils::endswith(filename, "." + this->extension);
+	return utils::endswith(filename, utils::trim("." + this->extension));
 }
 
 

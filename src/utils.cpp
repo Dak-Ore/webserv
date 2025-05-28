@@ -13,6 +13,7 @@
 #include <vector>
 #include <cstring>
 #include <sstream>
+#include <cstdio>
 #include <dirent.h>
 
 std::string utils::numToString(size_t value)
@@ -196,7 +197,6 @@ pid_t utils::forkexec(int inout[2], std::vector<std::string> const argv, std::ma
 	int pipeout[2];
 	if (pipe(pipeout) < 0)
 		throw std::runtime_error("pipe() failed.");
-
 	// fork
 	pid_t pid = fork();
 	if (pid < 0)
@@ -211,12 +211,16 @@ pid_t utils::forkexec(int inout[2], std::vector<std::string> const argv, std::ma
 		// arguments to c strings
 		char const* const* argv_c = vector_to_c_array(argv);
 		char const* const* envp_c = map_to_c_array(envp);
+		std::cerr << "0" << argv[0] << std::endl;
+		for (int i = 0; argv_c[i]; i++)
+			std::cerr << argv_c[i] << std::endl;
 		execve(argv[0].c_str(),
 				const_cast<char**>(argv_c),
 				const_cast<char**>(envp_c)
 			);
 		delete[] argv_c;
 		delete[] envp_c;
+		perror("execve failed");
 		throw std::runtime_error("execve() failed.");
 	}
 

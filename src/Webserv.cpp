@@ -210,18 +210,13 @@ void Webserv::handleRequest(HttpClient &client)
 
 bool Webserv::handleCgi(HttpClient &client, LocationConfig *location, std::string file_path)
 {
-	std::cout << "HERE" << std::endl;
 	if (!location)
 		return (false);
-	std::cout << file_path << std::endl;
 	const CGI *cgi = location->getCgi(file_path);
 	if (!cgi)
-	{
-		std::cout << "dont work" << std::endl;	
 		return (false); 
-	}
-	int fd = 0;
-	cgi->execute(fd, file_path, file_path, client);
+	int fd; // ???
+	cgi->execute(fd, "/home/dak/webserv/www/cgi/index.php", file_path, client);
 	return (true);	
 }
 
