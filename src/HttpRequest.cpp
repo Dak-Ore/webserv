@@ -374,6 +374,7 @@ std::string HttpRequest::handleUploadDir()
 //getter
 const std::string &HttpRequest::getMethod() const {return (this->_method);}
 const std::string &HttpRequest::getPath() const {return (this->_path);}
+const std::string &HttpRequest::getBody() const {return (this->_body);}
 Config *HttpRequest::getConfig() const {return (this->_config);}
 void HttpRequest::setConfig(Config *config)
 {

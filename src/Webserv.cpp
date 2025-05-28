@@ -3,6 +3,7 @@
 #include "HttpRequest.hpp"
 #include "Adress.hpp"
 #include <algorithm>
+#include <unistd.h>
 #include <vector>
 #include <ctime>
 #include <typeinfo>
@@ -220,8 +221,11 @@ bool Webserv::handleCgi(HttpClient &client, LocationConfig *location, std::strin
 		std::cout << "dont work" << std::endl;	
 		return (false); 
 	}
-	int fd = 0;
-	cgi->execute(fd, file_path, file_path, client);
+	int data_fd;
+	cgi->execute(data_fd, file_path, file_path, client);
+	std::string const& body(client.request().getBody());
+	write(data_fd, body.c_str(), body.size());
+	close(data_fd);
 	return (true);	
 }
 
