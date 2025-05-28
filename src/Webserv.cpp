@@ -217,10 +217,21 @@ bool Webserv::handleCgi(HttpClient &client, LocationConfig *location, std::strin
 	if (!cgi)
 		return (false); 
 	int data_fd;
-	cgi->execute(data_fd, file_path, file_path, client);
+	CGI::Running run = cgi->execute(data_fd, file_path, file_path, client);
 	std::string const& body(client.request().getBody());
 	write(data_fd, body.c_str(), body.size());
 	close(data_fd);
+	while (run.read())
+		;
+	if (run.isComplete())
+	{
+		HttpResponse &response = client.response();
+		CGI::Running::ResponseHead responseHead = run.getResponseHead();
+		response.setBody(utils::readFD(run.getResponseBodyFd(), 4098));
+		response.setCode(responseHead.status_code);
+		for (std::map<std::string, std::string>::iterator it = responseHead.fields.begin(); it != responseHead.fields.end(); it++)
+			response.setHeader(it->first, it->second);
+	}
 	return (true);	
 }
 

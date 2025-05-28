@@ -119,4 +119,9 @@ namespace utils
 	 * Make the given string lowercase.
 	 */
 	void lower(std::string& str);
+
+	/**
+	 * read from a file descriptor
+	 */
+	std::string	readFD(int fd, size_t limit);
 };

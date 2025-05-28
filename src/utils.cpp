@@ -211,9 +211,6 @@ pid_t utils::forkexec(int inout[2], std::vector<std::string> const argv, std::ma
 		// arguments to c strings
 		char const* const* argv_c = vector_to_c_array(argv);
 		char const* const* envp_c = map_to_c_array(envp);
-		std::cerr << "0" << argv[0] << std::endl;
-		for (int i = 0; argv_c[i]; i++)
-			std::cerr << argv_c[i] << std::endl;
 		execve(argv[0].c_str(),
 				const_cast<char**>(argv_c),
 				const_cast<char**>(envp_c)
@@ -372,3 +369,20 @@ std::string utils::getHeaderParam(const std::string& header, const std::string& 
 	return header.substr(start, end - start);
 }
 
+std::string	utils::readFD(int fd, size_t limit)
+{
+	std::string content;
+	size_t size = 0;
+	char buffer[1024];
+	int bytes;
+
+	while (size < limit)
+	{
+		bytes = ::read(fd, buffer, sizeof(buffer));
+		if (bytes <= 0)
+			break ;
+		size += bytes;
+		content.append(buffer, bytes);
+	}
+	return (content);
+}

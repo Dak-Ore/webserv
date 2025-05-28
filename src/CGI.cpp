@@ -185,25 +185,27 @@ bool CGI::Running::read()
 	if (len < 0)
 		throw std::runtime_error("read() failed.");
 
-	if (!len) {
-		// EOF = there is nothing more to read
-		if (!this->_head_complete)
-			throw std::runtime_error("the CGI stdout reached EOF before the "
-				"head was completely sent.");
-		if (this->_response_body_pipe_open) {
-			close(this->_response_body_pipe[1]);
-			this->_response_body_pipe_open = false;
-		}
-		this->_complete = true;
-		return false;
-	}
+    if (len == 0)
+	{
+        // Ensure that the header is completely received before handling EOF
+        if (!this->_head_complete)
+            throw std::runtime_error("CGI stdout reached EOF before the head was completely sent.");
+        
+        if (this->_response_body_pipe_open) {
+            close(this->_response_body_pipe[1]);
+            this->_response_body_pipe_open = false;
+        }
+        this->_complete = true;
+        return false;
+    }
 
+	
 	if (!this->isHeadComplete()) {
 		// head not yet completed
 		std::string& head = this->_head;
-
+		
 		head += std::string(buf, len);
-
+		
 		size_t sep;
 		size_t bodystart;
 		{
@@ -216,20 +218,19 @@ bool CGI::Running::read()
 
 		if (sep != static_cast<size_t>(-1)) {
 			// end of head reached
-
+			
 			if (pipe(this->_response_body_pipe) < 0)
 				throw std::runtime_error("pipe() failed.");
 			this->_response_body_pipe_open = true;
 			std::string body(head.substr(bodystart));
 			write(this->_response_body_pipe[1], body.c_str(), body.size());
-
 			head = head.substr(0, sep) + "\n";
-
+			
 			this->_head_complete = true;
 			this->_head_parsed = parse_head(this->_head);
 			return true;
 		}
-
+		
 		// end of head not yet reached
 		return true;
 	}
