@@ -114,7 +114,8 @@ public:
 	 * The return value is the link to the running CGI script
 	 * that must be used to get its response.
 	 * 
-	 * 'script_pathname' is the absolute path of the script to call.
+	 * 'script_pathname' is the path of the script to call.
+	 * It should be either absolute or relative to the current pwd.
 	 * 
 	 * 'script_name' is the URI path of the script.
 	 *
