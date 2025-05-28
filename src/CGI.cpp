@@ -1,5 +1,5 @@
 #include "CGI.hpp"
-#include "HttpRequest.hpp"
+#include "HttpClient.hpp"
 #include <cctype>
 #include <string>
 #include <unistd.h>
@@ -97,8 +97,9 @@ CGI::~CGI()
 CGI::Running CGI::execute(int& stdin,
 	std::string const& script,
 	std::string const& script_name,
-	HttpRequest const& request
+	HttpClient const& client
 ) const {
+	HttpRequest const& request = client.request();
 	std::string host, port;
 	utils::parseHostAndPort(host, port, "80", request.getHeader("host"));
 	std::string content_length_str(request.getHeader("Content-Length"));
@@ -107,7 +108,7 @@ CGI::Running CGI::execute(int& stdin,
 	std::map<std::string, std::string> envp;
 	envp["GATEWAY_INTERFACE"] = "CGI/1.1";
 	envp["QUERY_STRING"] = request.getRawOpt();
-	envp["REMOTE_ADDR"] = "ADD CLIENT TO REQUEST"; // TODO
+	envp["REMOTE_ADDR"] = client.getAdress().str();
 	envp["REQUEST_METHOD"] = request.getMethod();
 	envp["PATH_INFO"] = "";
 	envp["PATH_TRANSLATED"] = "";

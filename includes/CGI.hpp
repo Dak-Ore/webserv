@@ -4,7 +4,7 @@
 #include <vector>
 #include <map>
 
-class HttpRequest;
+class HttpClient;
 
 /**
  * Allows to execute a CGI script with a given file and other informations.
@@ -129,7 +129,7 @@ public:
 	CGI::Running execute(int& stdin,
 		std::string const& script_pathname,
 		std::string const& script_name,
-		HttpRequest const& request
+		HttpClient const& client
 	) const;
 
 	/**
