@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <map>
 #include <cstdlib>
+#include <climits>
 #include "utils.hpp"
 #include "const.hpp"
 
@@ -95,10 +96,11 @@ CGI::~CGI()
 {}
 
 CGI::Running CGI::execute(int& stdin,
-	std::string const& script,
+	std::string const& script_pathname,
 	std::string const& script_name,
 	HttpClient const& client
 ) const {
+	std::string script(realpath(script_pathname.c_str(), NULL));
 	HttpRequest const& request = client.request();
 	std::string content_length_str(request.getHeader("Content-Length"));
 	size_t content_length(utils::stringToNum(content_length_str));

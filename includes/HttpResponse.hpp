@@ -1,5 +1,6 @@
 #pragma once
 
+#include "CGI.hpp"
 #include "HttpMessage.hpp"
 
 #include <string>
