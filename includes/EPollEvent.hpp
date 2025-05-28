@@ -6,8 +6,7 @@
 enum event_type{
 	UNKNOWN,
 	IN,
-	OUT,
-	CGI
+	OUT
 };
 
 class EPollEvent

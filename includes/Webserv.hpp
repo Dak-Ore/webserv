@@ -28,6 +28,7 @@ private:
 	void sendAutoindex(const HttpRequest &request, HttpResponse &response, const std::string &directory);
 	void handleErrorPages(HttpResponse &response, Config *config);
 	void handleRequest(HttpClient &client);
+	bool handleCgi(HttpClient &client, LocationConfig *location, std::string file_path);
 public:
     Webserv(ConfigParser &parser);
     ~Webserv();

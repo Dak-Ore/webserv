@@ -104,6 +104,7 @@ CGI::Running CGI::execute(int& stdin,
 	utils::parseHostAndPort(host, port, "80", request.getHeader("host"));
 	std::string content_length_str(request.getHeader("Content-Length"));
 	size_t content_length(utils::stringToNum(content_length_str));
+	std::cout << "LA" << std::endl;
 
 	std::map<std::string, std::string> envp;
 	envp["GATEWAY_INTERFACE"] = "CGI/1.1";

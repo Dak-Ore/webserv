@@ -180,9 +180,9 @@ void Webserv::handleRequest(HttpClient &client)
 	logRequest(request);
 	Config* config = request.getConfig();
 	LocationConfig *location = dynamic_cast<LocationConfig *>(config);
+
 	if (this->handleRedirect(response, location))
 		return ;
-
 	if (!request.isValid())
 		response.setCode(request.getErrorCode());
 	else
@@ -200,10 +200,29 @@ void Webserv::handleRequest(HttpClient &client)
 				file_path = config->findIndex(relativePath);
 		}
 		std::cout << "\t- FILE: " <<  file_path << std::endl;
+		if (this->handleCgi(client, location, file_path))
+			return ;
 		response.setBodySource(file_path);
 	}
 	this->handleErrorPages(response, config);
 	return ;
+}
+
+bool Webserv::handleCgi(HttpClient &client, LocationConfig *location, std::string file_path)
+{
+	std::cout << "HERE" << std::endl;
+	if (!location)
+		return (false);
+	std::cout << file_path << std::endl;
+	const CGI *cgi = location->getCgi(file_path);
+	if (!cgi)
+	{
+		std::cout << "dont work" << std::endl;	
+		return (false); 
+	}
+	int fd = 0;
+	cgi->execute(fd, file_path, file_path, client);
+	return (true);	
 }
 
 bool Webserv::handleRedirect(HttpResponse &response, LocationConfig *location)
