@@ -90,7 +90,9 @@ CGI& CGI::operator=(CGI const& other)
 CGI::CGI(std::vector<std::string> const& argv, std::string const& extension)
 : argv(argv)
 , extension(extension)
-{}
+{
+	this->argv[0] = realpath(this->argv[0], NULL);
+}
 
 CGI::~CGI()
 {}
