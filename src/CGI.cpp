@@ -117,6 +117,7 @@ CGI::Running CGI::execute(int& stdin,
 	envp["SERVER_PORT"] = client.getServerAdress().port_str();
 	envp["SERVER_PROTOCOL"] = "HTTP/1.1";
 	envp["SERVER_SOFTWARE"] = SERVER_SOFTWARE;
+	envp["REDIRECT_STATUS"] = "200";
 	if (content_length != 0) {
 		envp["CONTENT_LENGTH"] = content_length_str;
 		envp["CONTENT_TYPE"] = request.getHeader("Content-Type");
