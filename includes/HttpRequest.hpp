@@ -53,6 +53,7 @@ public:
 	const std::string &getPath() const;
 	const std::string &getRawOpt() const;
 	const std::string &getBody() const;
+	const std::string &getRawCookie() const;
 	Config *getConfig() const;
 	void setConfig(Config *config);
 	std::string toString() const;

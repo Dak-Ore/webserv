@@ -222,17 +222,24 @@ bool Webserv::handleCgi(HttpClient &client, LocationConfig *location, std::strin
 	write(data_fd, body.c_str(), body.size());
 	close(data_fd);
 	while (run.read())
-		;
+	;
 	if (run.isComplete())
 	{
+		// get response of the client et response header of cgi
 		HttpResponse &response = client.response();
 		CGI::Running::ResponseHead responseHead = run.getResponseHead();
+		// 4098 for limit maybe use client_max_body_size instead ? or another value
 		response.setBody(utils::readFD(run.getResponseBodyFd(), 4098));
 		response.setCode(responseHead.status_code);
+		// set the header of the response
 		for (std::map<std::string, std::string>::iterator it = responseHead.fields.begin(); it != responseHead.fields.end(); it++)
+		{
 			response.setHeader(it->first, it->second);
+		}
+		return (true);	
 	}
-	return (true);	
+
+	return (false);
 }
 
 bool Webserv::handleRedirect(HttpResponse &response, LocationConfig *location)

@@ -124,6 +124,7 @@ void HttpResponse::setBody(const std::string &body)
 {
 	this->closeBody();
 	this->_body = body;
+	std::cout << body << std::endl;
 }
 
 bool HttpResponse::setBodySource(const std::string &file_name)

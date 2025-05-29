@@ -127,10 +127,16 @@ CGI::Running CGI::execute(int& stdin,
 	// but is necessary, at least for php-cgi
 	envp["SCRIPT_FILENAME"] = script;
 
+	// Récupérer et ajouter les cookies à l'environnement
+	std::string cookies = request.getRawCookie();
+	if (!cookies.empty()) {
+		envp["HTTP_COOKIE"] = cookies;  // Les cookies doivent être envoyés sous la forme "Cookie: ..."
+	}
+
 	std::vector<std::string> argv(this->argv);
 	int inout[2];
 	utils::forkexec(inout, argv, envp);
-	stdin = inout[1];
+	stdin = inout[1]; // why ?
 	return CGI::Running(inout[0]);
 }
 

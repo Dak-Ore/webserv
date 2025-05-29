@@ -21,7 +21,7 @@ namespace utils
 	int stringToInt(const std::string& str);
 
 	/**
-	 * Convert a number to a string.
+	 * Convert a string representing a number to a number.
 	 */
 	size_t stringToNum(std::string str);
 

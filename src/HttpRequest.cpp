@@ -105,6 +105,7 @@ void HttpRequest::parseCookie()
 			value += content[i];
 	}
 	this->_cookies.insert(std::pair<std::string, std::string>(key,value));
+	this->_rawCookie = content;
 	this->_headers.erase("Cookie");
 }
 
@@ -189,6 +190,8 @@ void HttpRequest::parseHeaders(const std::string &headers)
 			this->_headers[key] = line.substr(pos + 2);
 		}
 	}
+	if (!this->_headers["Cookie"].empty())
+		parseCookie();
 
 	if (this->_headers.find("Host") == this->_headers.end() || this->_headers["Host"].empty() )
 	{
@@ -382,6 +385,7 @@ void HttpRequest::setConfig(Config *config)
 	this->checkAllowedMethods();
 }
 const std::string &HttpRequest::getRawOpt() const {return (this->_rawOpt);}
+const std::string &HttpRequest::getRawCookie() const {return (this->_rawCookie);}
 bool HttpRequest::empty() const {return (this->_is_empty);}
 
 HttpRequest::~HttpRequest(){};
