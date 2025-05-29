@@ -137,6 +137,12 @@ CGI::Running CGI::execute(int& stdin,
 	}
 
 	std::vector<std::string> argv(this->argv);
+	for (
+	  std::vector<std::string>::iterator it = argv.begin();
+	  it != argv.end(); it++
+	)
+		if (*it == "%f")
+			*it = script;
 	int inout[2];
 	utils::forkexec(inout, argv, envp);
 	stdin = inout[1]; // why ?
