@@ -9,6 +9,7 @@
 #include <climits>
 #include "utils.hpp"
 #include "const.hpp"
+#include <cstring>
 
 #define CGI_BUFFER_SIZE 1000
 
@@ -102,7 +103,10 @@ CGI::Running CGI::execute(int& stdin,
 	std::string const& script_name,
 	HttpClient const& client
 ) const {
-	std::string script(realpath(script_pathname.c_str(), NULL));
+	char* script_c(realpath(script_pathname.c_str(), NULL));
+	if (!script_c)
+		throw std::runtime_error("error: realpath(\"" + script_pathname + "\") failed: " + std::string(strerror(errno)));
+	std::string script(script_c);
 	HttpRequest const& request = client.request();
 	std::string content_length_str(request.getHeader("Content-Length"));
 	size_t content_length(utils::stringToNum(content_length_str));
