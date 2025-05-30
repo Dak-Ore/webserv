@@ -40,3 +40,4 @@ if (isset($_POST["favoritemeal"])) {
 
 <p>(<a href="cookie/">test cookies</a>)</p>
 <p>(<a href="cookies/">test cookies 2</a>)</p>
+<p>(<a href="python.py">python cgi</a>)</p>
