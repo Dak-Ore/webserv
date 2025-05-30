@@ -69,7 +69,11 @@ void HttpRequest::readHeaders(const std::string &content)
 void HttpRequest::readBody(const std::string &content)
 {
 	unsigned int expectedSize = utils::stringToInt(this->getHeader(CONTENT_LENGHT));
-	// size_t limit = this->_config->getClientMaxBodySize();
+	if (this->_config)
+	{
+		if (expectedSize > this->_config->getClientMaxBodySize())
+			throw std::exception();
+	}
 	this->_body += content;
 	if (expectedSize == this->_body.size())
 		this->_ready = true;
