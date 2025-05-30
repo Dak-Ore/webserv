@@ -194,7 +194,6 @@ bool CGI::Running::read()
 
     if (len == 0)
 	{
-		std::cout << this->_head << std::endl;
         // Ensure that the header is completely received before handling EOF
         if (!this->_head_complete)
             throw std::runtime_error("CGI stdout reached EOF before the head was completely sent.");
@@ -213,7 +212,6 @@ bool CGI::Running::read()
 		std::string& head = this->_head;
 		
 		head += std::string(buf, len);
-		std::cout << head << std::endl;
 		size_t sep;
 		size_t bodystart;
 		{

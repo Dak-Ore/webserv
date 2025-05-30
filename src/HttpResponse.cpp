@@ -198,7 +198,11 @@ void HttpResponse::_setContentType(const std::string& file_name)
 	mimeTypes[".txt"] = "text/plain";
 	mimeTypes[".pdf"] = "application/pdf";
 
-	std::string ext = file_name.substr(file_name.find_last_of('.'));
+	size_t		pos = file_name.find_last_of('.');
+	if (pos == std::string::npos)
+		return;
+	
+	std::string ext = file_name.substr(pos);
 	std::map<std::string, std::string>::const_iterator it = mimeTypes.find(ext);
 	this->_setHeader(CONTENT_TYPE, (it != mimeTypes.end()) ? it->second : DEFAULT_CONTENT_TYPE);
 }
