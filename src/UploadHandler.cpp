@@ -111,7 +111,7 @@ std::string UploadHandler::handleUploadDir()
     if (!_config->getUploadPath().empty())
     {
         std::vector<std::string>::const_iterator it = _config->getUploadPath().begin();
-        while (it != _config->getUploadPath().end() && utils::isDirectory(*it))
+        while (it != _config->getUploadPath().end() && !utils::isDirectory(*it))
             it++;
         // Check if we find a PATH and we can write in it
         if (it != _config->getUploadPath().end())
