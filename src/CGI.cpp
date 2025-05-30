@@ -90,7 +90,9 @@ CGI& CGI::operator=(CGI const& other)
 CGI::CGI(std::vector<std::string> const& argv, std::string const& extension)
 : argv(argv)
 , extension(extension)
-{}
+{
+	this->argv[0] = realpath(this->argv[0].c_str(), NULL);
+}
 
 CGI::~CGI()
 {}
@@ -139,6 +141,12 @@ CGI::Running CGI::execute(int& stdin,
 	}
 
 	std::vector<std::string> argv(this->argv);
+	for (
+	  std::vector<std::string>::iterator it = argv.begin();
+	  it != argv.end(); it++
+	)
+		if (*it == "%f")
+			*it = script;
 	int inout[2];
 	utils::forkexec(inout, argv, envp);
 	stdin = inout[1]; // why ?

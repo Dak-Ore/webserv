@@ -32,20 +32,14 @@ int main(int argc, char **argv)
 	}
 
 	std::string config_file_name = (argc == 2) ? argv[1] : "conf/default.conf";
-	try
-	{
-		if (config_file_name.find(".conf") == std::string::npos)
-			throw std::runtime_error("Invalid config file");
-		ConfigParser parser(config_file_name);
-		Webserv server(parser);
-		g_server = &server;
-		signal(SIGINT, signalHandler);
-		server.listen();
-	}
-	catch (const std::exception &e)
-	{
-		std::cerr << "Error: " << e.what() << std::endl;
-	}
+
+	if (config_file_name.find(".conf") == std::string::npos)
+		throw std::runtime_error("Invalid config file");
+	ConfigParser parser(config_file_name);
+	Webserv server(parser);
+	g_server = &server;
+	signal(SIGINT, signalHandler);
+	server.listen();
 
 	return 0;
 }

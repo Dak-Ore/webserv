@@ -97,7 +97,9 @@ public:
 
 	/**
 	 * - 'argv': arguments to give to the executable.
-	 *           argv[0] must be a path to the executable file.
+	 *           argv[0] must be a path to the executable file
+	 *           either absolute or relative to the current pwd (when calling
+	 *           this constructor).
 	 *           If any is "%f", it will be replaced by the script filename
 	 *           when calling .execute().
 	 * 
