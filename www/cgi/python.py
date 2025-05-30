@@ -1,6 +1,6 @@
 import os
 envp = os.environ
-script_name = "/cgi/python.py"
+script_name = envp["SCRIPT_NAME"]
 
 post_a = None
 post_b = None
@@ -68,9 +68,10 @@ if get_result is not None:
 				result: {get_result}
 			</p>
 	""")
-print("""
+print(f"""
 		</fieldset>
 	</form>
+	<p>(script name: <code>{script_name}</code>)</p>
 </body>
 </html>
 """)
