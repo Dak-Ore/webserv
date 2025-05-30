@@ -39,3 +39,4 @@ if (isset($_POST["favoritemeal"])) {
 <pre><?php print_r($_SERVER); ?></pre>
 
 <p>(<a href="cookie/">test cookies</a>)</p>
+<p>(<a href="cookies/">test cookies 2</a>)</p>
