@@ -43,9 +43,7 @@ private:
 	void parseOpt();
 	void parseCookie();
 	void checkAllowedMethods();
-	void hasMultipart();
-	std::string handleUploadDir();
-	void saveFile(const std::string& filename, const std::string& content);
+
 public:
     HttpRequest();
     ~HttpRequest();
