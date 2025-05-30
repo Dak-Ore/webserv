@@ -1,46 +1,41 @@
+#!/usr/bin/python3
+
 import os
 
+# Environnement et paramètres
 envp = os.environ
 script_name = "/cgi/python.py"
 
-post_a = None
-post_b = None
+# Valeurs fixes pour a et b
+post_a = 2
+post_b = 2
 
-# Récupérer les données POST si disponibles
-try:
-    if envp["REQUEST_METHOD"] == "POST":
-        # Traiter les données de la requête POST
-        while True:
-            l = input()
-            l = l.split("&")
-            for v in l:
-                if v.startswith("a="):
-                    post_a = int(v[2:])
-                elif v.startswith("b="):
-                    post_b = int(v[2:])
-except EOFError:
-    pass
+# Calculer le résultat de l'addition
+result = post_a + post_b
 
+# Gérer la variable de résultat dans la requête GET
 get_result = None
-if envp["QUERY_STRING"].startswith("result="):
-    get_result = envp["QUERY_STRING"][7:]
+if "result" in envp["QUERY_STRING"]:
+    get_result = envp["QUERY_STRING"].split("=")[1]
 
+# Rediriger après un POST pour éviter une boucle infinie
 if envp["REQUEST_METHOD"] == "POST":
-    # Effectuer la redirection après la soumission du formulaire POST
     print("Status: 301 Moved Permanently")
-    print(f"Location: {script_name}?result={str(post_a + post_b)}")
+    print(f"Location: {script_name}?result={result}")
     print()
-    exit()
+    exit()  # Terminer le script après la redirection
 
+# Gérer les autres types de requêtes non supportées
 if envp["REQUEST_METHOD"] != "GET":
-    # Réponse pour les autres types de requêtes non supportées
     print("Status: 400 Bad Request")
+    print("Content-Type: text/html")
     print()
+    print("<html><body><p>400 Bad Request: Method not supported</p></body></html>")
     exit()
 
 # Si la méthode est GET, afficher le formulaire et le résultat
 print("Content-Type: text/html")
-print("")
+print()
 print(f"""
 <!DOCTYPE html>
 <html>
@@ -54,12 +49,7 @@ print(f"""
         <fieldset>
             <legend>Super Awesome Calculator</legend>
             <p>
-                <input name="a" type="number" value="2" />
-                +
-                <input name="b" type="number" value="2" />
-            </p>
-            <p>
-                <input type="submit" value="Calculate" />
+                2 + 2 = {result}
             </p>
         </fieldset>
     </form>
