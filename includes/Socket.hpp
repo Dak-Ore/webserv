@@ -22,4 +22,7 @@ public:
 	void close();
 	std::string read();
 	void send(std::string &response);
+
+	class closedSocketException : std::exception
+	{};
 };
