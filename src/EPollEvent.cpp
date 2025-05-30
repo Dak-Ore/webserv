@@ -39,7 +39,7 @@ const epoll_event* EPollEvent::raw() const {
 	return (&this->_event);
 }
 
-event_type EPollEvent::getType() const
+EPollEvent::type EPollEvent::getType() const
 {
 	return (this->_type);
 }

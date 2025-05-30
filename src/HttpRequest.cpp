@@ -3,11 +3,12 @@
 #include "Config.hpp"
 #include "Webserv.hpp"
 #include <algorithm>
+#include <ctime>
 
 #define REQUEST_MAX_SIZE 8192
 
 HttpRequest::HttpRequest() : HttpMessage(),
- _is_empty(true), _header_ready(false), _ready(false), _config(NULL), _error(0)
+	_createdAt(std::time(NULL)), _is_empty(true), _header_ready(false), _ready(false), _config(NULL), _error(0)
  {
  }
  

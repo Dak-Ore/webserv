@@ -3,17 +3,18 @@
 #include <sys/epoll.h>
 #include <cstring>
 
-enum event_type{
-	UNKNOWN,
-	IN,
-	OUT
-};
-
 class EPollEvent
 {
+public:
+	enum type{
+		UNKNOWN,
+		IN,
+		OUT,
+		CGI
+	};
 private:
     epoll_event _event;
-	event_type _type;
+	type _type;
 public:
     EPollEvent();
     EPollEvent(EPollEvent const &ref);
@@ -25,5 +26,5 @@ public:
     int getFd() const;
 
     const epoll_event* raw() const;
-	event_type getType() const;
+	type getType() const;
 };
