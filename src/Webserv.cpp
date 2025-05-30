@@ -2,11 +2,13 @@
 #include "HttpClient.hpp"
 #include "HttpRequest.hpp"
 #include "Adress.hpp"
+#include "UploadHandler.hpp"
 #include <algorithm>
 #include <unistd.h>
 #include <vector>
 #include <ctime>
 #include <typeinfo>
+#include <filesystem>
 
 #define REQUEST_MAX_SIZE 8192
 
@@ -176,6 +178,7 @@ void Webserv::handleRequest(HttpClient &client)
 {
 	HttpRequest &request = client.request();
 	HttpResponse &response = client.response();
+	UploadHandler upload(request, request.getConfig());
 	if (request.empty())
 		return ;
 	logRequest(request);
@@ -184,6 +187,8 @@ void Webserv::handleRequest(HttpClient &client)
 
 	if (this->handleRedirect(response, location))
 		return ;
+	if (request.getMethod() == "DELETE")
+        this->handleDeleteRequest(request, response);
 	if (!request.isValid())
 		response.setCode(request.getErrorCode());
 	else
@@ -200,14 +205,47 @@ void Webserv::handleRequest(HttpClient &client)
 			else
 				file_path = config->findIndex(relativePath);
 		}
-		std::cout << "\t- FILE: " <<  file_path << std::endl;
 		if (this->handleCgi(client, location, file_path))
 			return ;
+		if (upload.hasMultipart())
+		{
+			response.setCode(upload.getError());
+			if (upload.getError() != 200)
+				response.setBody(response.getReason(response.getCode()));
+			else
+				response.setBody("File uploaded");
+			return ;
+		}
 		response.setBodySource(file_path);
 	}
 	this->handleErrorPages(response, config);
-	return ;
 }
+
+void Webserv::handleDeleteRequest(HttpRequest &request, HttpResponse &response)
+{
+	
+	std::string filePath = request.getPath();
+	// Check if we are in location
+	size_t pos = filePath.find_last_of("/");
+	if (pos != std::string::npos)
+		filePath = filePath.substr(pos + 1);
+
+    std::string fullPath = utils::joinPath(request.getConfig()->getRoot(), filePath);
+	std::cout << fullPath << " : " << filePath << std::endl;
+    // check if file exist
+    if (!utils::fileExists(fullPath)) {
+        response.setCode(404);
+        return;
+    }
+    // delete file
+    if (remove(fullPath.c_str()) != 0) {
+        response.setCode(500);
+        return;
+    }
+    response.setCode(200);
+	response.setBody("File deleted");
+}
+
 
 bool Webserv::handleCgi(HttpClient &client, LocationConfig *location, std::string file_path)
 {
@@ -233,9 +271,7 @@ bool Webserv::handleCgi(HttpClient &client, LocationConfig *location, std::strin
 		response.setCode(responseHead.status_code);
 		// set the header of the response
 		for (std::map<std::string, std::string>::iterator it = responseHead.fields.begin(); it != responseHead.fields.end(); it++)
-		{
-			response.setHeader(it->first, it->second);
-		}
+			response.setHeader(utils::trim(it->first), utils::trim(it->second));
 		return (true);	
 	}
 

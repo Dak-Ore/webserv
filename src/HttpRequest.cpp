@@ -266,113 +266,113 @@ int HttpRequest::getErrorCode() const
 	return (this->_error);
 }
 
-void HttpRequest::hasMultipart()
-{
-	std::map<std::string, std::string>::iterator it = this->_headers.find("Content-Type");
-	if (it == _headers.end())
-		return;
+// void HttpRequest::hasMultipart()
+// {
+// 	std::map<std::string, std::string>::iterator it = this->_headers.find("Content-Type");
+// 	if (it == _headers.end())
+// 		return;
 
-	const std::string& contentType = it->second;
-	if (contentType.find("multipart/form-data") != 0)
-		return;
-	else if (!this->_config->getUploadEnabled())
-	{
-		this->_error = 403;
-		return;
-	}
+// 	const std::string& contentType = it->second;
+// 	if (contentType.find("multipart/form-data") != 0)
+// 		return;
+// 	else if (!this->_config->getUploadEnabled())
+// 	{
+// 		this->_error = 403;
+// 		return;
+// 	}
 
-	std::string boundaryKey = "boundary=";
-	size_t boundaryPos = contentType.find(boundaryKey);
-	if (boundaryPos == std::string::npos)
-	{
-		_error = 402;
-		return;
-	}
+// 	std::string boundaryKey = "boundary=";
+// 	size_t boundaryPos = contentType.find(boundaryKey);
+// 	if (boundaryPos == std::string::npos)
+// 	{
+// 		_error = 402;
+// 		return;
+// 	}
 
-	std::string boundary = "--" + contentType.substr(boundaryPos + boundaryKey.length());
-	parseMultipartBody(boundary);
-}
+// 	std::string boundary = "--" + contentType.substr(boundaryPos + boundaryKey.length());
+// 	parseMultipartBody(boundary);
+// }
 
-void HttpRequest::parseMultipartBody(std::string boundary)
-{
-	size_t pos = 0;
-	size_t start = this->_body.find("Content-Disposition:");
-	if (start == std::string::npos)
-		return;
-	size_t end = this->_body.find("\r\n", pos);
-	if (end == std::string::npos)
-		end = this->_body.length();
-	std::string contentDispositionLine = this->_body.substr(start, end - start);
-	std::string filename = utils::getHeaderParam(contentDispositionLine, "filename");
-	while ((pos = this->_body.find(boundary, pos)) != std::string::npos)
-	{
-		pos += boundary.length();
-		if (this->_body.compare(pos, 2, "\r\n") == 0)
-			pos += 2;
+// void HttpRequest::parseMultipartBody(std::string boundary)
+// {
+// 	size_t pos = 0;
+// 	size_t start = this->_body.find("Content-Disposition:");
+// 	if (start == std::string::npos)
+// 		return;
+// 	size_t end = this->_body.find("\r\n", pos);
+// 	if (end == std::string::npos)
+// 		end = this->_body.length();
+// 	std::string contentDispositionLine = this->_body.substr(start, end - start);
+// 	std::string filename = utils::getHeaderParam(contentDispositionLine, "filename");
+// 	while ((pos = this->_body.find(boundary, pos)) != std::string::npos)
+// 	{
+// 		pos += boundary.length();
+// 		if (this->_body.compare(pos, 2, "\r\n") == 0)
+// 			pos += 2;
 
-		size_t nextPart = this->_body.find(boundary, pos);
-		if (nextPart == std::string::npos)
-			break;
+// 		size_t nextPart = this->_body.find(boundary, pos);
+// 		if (nextPart == std::string::npos)
+// 			break;
 
-		std::string part = this->_body.substr(pos, nextPart - pos);
-		size_t headerEnd = part.find("\r\n\r\n");
-		if (headerEnd == std::string::npos)
-			continue;
+// 		std::string part = this->_body.substr(pos, nextPart - pos);
+// 		size_t headerEnd = part.find("\r\n\r\n");
+// 		if (headerEnd == std::string::npos)
+// 			continue;
 
-		std::string headerSection = part.substr(0, headerEnd);
-		std::string content = part.substr(headerEnd + 4);
-		if (content.size() >= 2 && content.substr(content.size() - 2) == "\r\n")
-			content = content.substr(0, content.size() - 2);
+// 		std::string headerSection = part.substr(0, headerEnd);
+// 		std::string content = part.substr(headerEnd + 4);
+// 		if (content.size() >= 2 && content.substr(content.size() - 2) == "\r\n")
+// 			content = content.substr(0, content.size() - 2);
 
-		std::istringstream headerStream(headerSection);
-		std::string line;
-		std::string name, filename;
-		while (std::getline(headerStream, line))
-		{
-			int	eof = line.size() - 1;
-			if (line[eof] == '\r') line.erase(eof);
-			if (line.find("Content-Disposition:") == 0) {
-				name = utils::getHeaderParam(line, "name");
-				filename = utils::getHeaderParam(line, "filename");
-			}
-		}
+// 		std::istringstream headerStream(headerSection);
+// 		std::string line;
+// 		std::string name, filename;
+// 		while (std::getline(headerStream, line))
+// 		{
+// 			int	eof = line.size() - 1;
+// 			if (line[eof] == '\r') line.erase(eof);
+// 			if (line.find("Content-Disposition:") == 0) {
+// 				name = utils::getHeaderParam(line, "name");
+// 				filename = utils::getHeaderParam(line, "filename");
+// 			}
+// 		}
 	
-		if (!filename.empty()) {
-			saveFile(filename, content); 
-		}
-	}
-}
+// 		if (!filename.empty()) {
+// 			saveFile(filename, content); 
+// 		}
+// 	}
+// }
 
-void HttpRequest::saveFile(const std::string& filename, const std::string& content)
-{
-	std::string path = handleUploadDir();
-	std::cout << path << std::endl;
-	std::string	upload = utils::joinPath(path, filename);
-	std::ofstream fichier;
-	fichier.open(upload.c_str(), std::ofstream::out);
-	if (!fichier.is_open())
-		throw std::runtime_error("Failed to create file: " + filename);
-	fichier << content;
-	fichier.close();
-}
+// void HttpRequest::saveFile(const std::string& filename, const std::string& content)
+// {
+// 	std::string path = handleUploadDir();
+// 	std::cout << path << std::endl;
+// 	std::string	upload = utils::joinPath(path, filename);
+// 	std::ofstream fichier;
+// 	fichier.open(upload.c_str(), std::ofstream::out);
+// 	if (!fichier.is_open())
+// 		throw std::runtime_error("Failed to create file: " + filename);
+// 	fichier << content;
+// 	fichier.close();
+// }
 
-std::string HttpRequest::handleUploadDir()
-{
-	std::string	path;
-	if (!this->_config->getUploadPath().empty())
-	{
-		std::vector<std::string>::const_iterator it = this->_config->getUploadPath().begin();
-		while (it != this->_config->getUploadPath().end() && utils::isDirectory(*it))
-			it++;
-		if (it != this->_config->getUploadPath().end())
-			return *it;
-	}	
-	path = "uploads";
-	if (!utils::isDirectory(path))
-		if (mkdir(path.c_str(), 0755) != 0)
-			throw std::runtime_error("Failed to create uploads directory");
-	return (path);
-}
+// std::string HttpRequest::handleUploadDir()
+// {
+// 	std::string	path;
+// 	if (!this->_config->getUploadPath().empty())
+// 	{
+// 		std::vector<std::string>::const_iterator it = this->_config->getUploadPath().begin();
+// 		while (it != this->_config->getUploadPath().end() && utils::isDirectory(*it))
+// 			it++;
+// 		if (it != this->_config->getUploadPath().end())
+// 			return *it;
+// 	}	
+// 	path = "uploads";
+// 	if (!utils::isDirectory(path))
+// 		if (mkdir(path.c_str(), 0755) != 0)
+// 			throw std::runtime_error("Failed to create uploads directory");
+// 	return (path);
+// }
 
 //getter
 const std::string &HttpRequest::getMethod() const {return (this->_method);}

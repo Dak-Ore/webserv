@@ -217,7 +217,6 @@ pid_t utils::forkexec(int inout[2], std::vector<std::string> const argv, std::ma
 			);
 		delete[] argv_c;
 		delete[] envp_c;
-		perror("execve failed");
 		throw std::runtime_error("execve() failed.");
 	}
 

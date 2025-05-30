@@ -29,6 +29,7 @@ private:
 	void handleErrorPages(HttpResponse &response, Config *config);
 	void handleRequest(HttpClient &client);
 	bool handleCgi(HttpClient &client, LocationConfig *location, std::string file_path);
+	void handleDeleteRequest(HttpRequest &request, HttpResponse &response);
 public:
     Webserv(ConfigParser &parser);
     ~Webserv();

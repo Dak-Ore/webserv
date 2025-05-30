@@ -10,7 +10,7 @@ INC = -I./includes
 SRCDIR = src
 OBJDIR = obj
 
-SOURCES = ./Adress.cpp ./CGI.cpp ./Config.cpp ./ConfigParser.cpp ./EPoll.cpp ./EPollEvent.cpp ./File.cpp ./HttpClient.cpp ./HttpMessage.cpp ./HttpRequest.cpp ./HttpResponse.cpp ./LocationConfig.cpp ./main.cpp ./ServerConfig.cpp ./Server.cpp ./ServerSocket.cpp ./Socket.cpp ./utils.cpp ./Webserv.cpp 
+SOURCES = ./Adress.cpp ./CGI.cpp ./Config.cpp ./ConfigParser.cpp ./EPoll.cpp ./EPollEvent.cpp ./File.cpp ./HttpClient.cpp ./HttpMessage.cpp ./HttpRequest.cpp ./HttpResponse.cpp ./LocationConfig.cpp ./main.cpp ./ServerConfig.cpp ./Server.cpp ./ServerSocket.cpp ./Socket.cpp ./UploadHandler.cpp ./utils.cpp ./Webserv.cpp 
 
 OBJS = $(addprefix $(OBJDIR)/, $(SOURCES:.cpp=.o))
 
