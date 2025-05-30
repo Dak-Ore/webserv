@@ -176,10 +176,7 @@ void Webserv::listen()
 					}
 					
 					if (client.response().isDone())
-					{
-						this->_epoll.setIn(client);
 						this->removeClient(client);
-					}
 				}
 			}
 			else if (type == EPollEvent::CGI)
@@ -205,8 +202,24 @@ void Webserv::timeout()
 				if (now - last > TIMEOUT_SECONDS)	
 				{
 					int fd = it->first;
+					HttpClient &client = it->second;
+					HttpResponse &response = client.response();
+					if (!response.isSending())
+					{
+						response.clearbody();
+						response.setCode(408);
+						if (client.response().hasCgi())
+						try
+						{
+							this->_epoll.addClient(client);
+						}
+						catch(const std::exception& e){}
+						
+						this->_epoll.setOut(client);
+					}
+					else
+						this->removeClient(fd);
 					it++;
-					this->removeClient(fd);
 				}
 				else
 					it++;

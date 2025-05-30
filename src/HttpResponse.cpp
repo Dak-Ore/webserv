@@ -23,7 +23,7 @@ HttpResponse::HttpResponse(int status_code) : HttpMessage(),
 
 HttpResponse::~HttpResponse()
 {
-	if (this->_bodyFd != -1)
+	if (this->_bodyFd != -1 && !this->_cgiProcess)
 		::close(this->_bodyFd);
 	if (this->_cgiProcess)
 		delete this->_cgiProcess;
@@ -144,6 +144,12 @@ bool HttpResponse::setBodySource(int fd, bool keep)
 	return (true);
 }
 
+void HttpResponse::clearbody()
+{
+	this->_body.clear();
+	this->closeBody();
+}
+
 bool HttpResponse::setBodySource(const std::string &file_name, bool keep)
 {
 	if (!utils::fileExists(file_name))
@@ -242,6 +248,11 @@ bool HttpResponse::isCgiHeaderOk()
 void HttpResponse::cgiHeaderOk()
 {
 	this->_cgi_header = true;
+}
+
+bool HttpResponse::isSending()
+{
+	return this->_sending;
 }
 
 std::string &HttpResponse::read()

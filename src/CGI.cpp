@@ -178,7 +178,6 @@ CGI::Running::~Running()
 {
 	kill(this->_pid, SIGKILL);
 	close(this->_stdout);
-	close(this->_response_body_pipe[0]);
 	if (this->_response_body_pipe_open)
 		close(this->_response_body_pipe[1]);
 }
@@ -209,6 +208,7 @@ bool CGI::Running::read()
         
         if (this->_response_body_pipe_open) {
             close(this->_response_body_pipe[1]);
+			this->_response_body_pipe[1] = -1;
             this->_response_body_pipe_open = false;
         }
         this->_complete = true;

@@ -92,7 +92,7 @@ void EPoll::wait()
 	epoll_event raw_events[EPOLL_MAX_EVENTS];
 
 	this->_events.clear();
-	int n = ::epoll_wait(this->_fd, raw_events, EPOLL_MAX_EVENTS, -1);
+	int n = ::epoll_wait(this->_fd, raw_events, EPOLL_MAX_EVENTS, 1);
 	for (int i = 0; i < n; i++)
 	{
 		EPollEvent event(raw_events[i]);
