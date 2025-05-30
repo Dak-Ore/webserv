@@ -91,7 +91,7 @@ CGI::CGI(std::vector<std::string> const& argv, std::string const& extension)
 : argv(argv)
 , extension(extension)
 {
-	this->argv[0] = realpath(this->argv[0], NULL);
+	this->argv[0] = realpath(this->argv[0].c_str(), NULL);
 }
 
 CGI::~CGI()
