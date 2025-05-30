@@ -9,6 +9,7 @@
 #include <climits>
 #include "utils.hpp"
 #include "const.hpp"
+#include <signal.h>
 
 #define CGI_BUFFER_SIZE 1000
 
@@ -137,11 +138,11 @@ CGI::Running *CGI::execute(std::string const& script_name, HttpClient const& cli
 
 	std::vector<std::string> argv(this->argv);
 	int pipe_fd[2];
-	utils::forkexec(pipe_fd, argv, envp);
+	pid_t pid = utils::forkexec(pipe_fd, argv, envp);
 	std::string const& body(client.request().getBody());
 	::write(pipe_fd[1], body.c_str(), body.size());
 	::close(pipe_fd[1]);
-	return new CGI::Running(pipe_fd[0]);
+	return new CGI::Running(pipe_fd[0], pid);
 }
 
 bool CGI::fileForMe(std::string const& filename) const
@@ -175,19 +176,23 @@ CGI::Running& CGI::Running::operator=(CGI::Running const& other)
 
 CGI::Running::~Running()
 {
+	kill(this->_pid, SIGKILL);
 	close(this->_stdout);
 	close(this->_response_body_pipe[0]);
 	if (this->_response_body_pipe_open)
 		close(this->_response_body_pipe[1]);
 }
 
-CGI::Running::Running(int stdout)
+CGI::Running::Running(int stdout, pid_t pid)
 : _stdout(stdout)
 , _complete(false)
 , _head("")
 , _head_complete(false)
 , _response_body_pipe_open(false)
-{}
+{
+	this->_pid = pid;
+}
+
 
 bool CGI::Running::read()
 {

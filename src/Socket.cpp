@@ -46,7 +46,7 @@ std::string Socket::read()
 		if (bytes == 0)
 			throw closedSocketException();
 		else if (bytes == -1)
-			return ;
+			return (content);
 		size += bytes;
 		content.append(buffer, bytes);
 	}
@@ -55,7 +55,7 @@ std::string Socket::read()
 
 void Socket::send(std::string &response)
 {
-	size_t bytes;
+	ssize_t bytes;
 	bytes = ::send(this->_fd , response.c_str(), response.size(), MSG_NOSIGNAL);
 	if (bytes == 0)
 		throw closedSocketException();

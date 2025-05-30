@@ -146,20 +146,35 @@ void Webserv::listen()
 				HttpClient &client = this->_clients[fd];
 				if (type == EPollEvent::IN)
 				{
-
-					if (client.readRequest()) // ready ?
+					try
 					{
-						this->handleRequest(client);
-						if (!client.response().hasCgi())
+						if (client.readRequest()) // ready ?
 						{
-							logResponse(client.response());
-							this->_epoll.setOut(client);
+							this->handleRequest(client);
+							if (!client.response().hasCgi())
+							{
+								logResponse(client.response());
+								this->_epoll.setOut(client);
+							}
 						}
+					}
+					catch(const Socket::closedSocketException& e)
+					{
+						this->removeClient(client);
 					}
 				}
 				else if (type == EPollEvent::OUT)
 				{
-					client.send();
+					try
+					{
+						client.send();
+					}
+					catch(const Socket::closedSocketException& e)
+					{
+						this->removeClient(client);
+						continue;
+					}
+					
 					if (client.response().isDone())
 					{
 						this->_epoll.setIn(client);

@@ -33,7 +33,7 @@ public:
 		 * stdout is a reading file descriptor linked
 		 * to the stdout of the CGI script.
 		 */
-		Running(int stdout);
+		Running(int stdout, pid_t pid);
 
 	public:
 		/**
@@ -78,6 +78,7 @@ public:
 		bool isComplete();
 
 	private:
+		pid_t _pid;
 		int _stdout;
 		bool _complete;
 		std::string _head;
