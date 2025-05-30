@@ -3,7 +3,9 @@
 #include "HttpRequest.hpp"
 #include "Adress.hpp"
 #include "UploadHandler.hpp"
+#include "utils.hpp"
 #include <algorithm>
+#include <string>
 #include <unistd.h>
 #include <vector>
 #include <ctime>
@@ -195,6 +197,7 @@ void Webserv::handleRequest(HttpClient &client)
 	{
 		std::string relativePath = config->getRelativePath(request.getPath());
 		std::string file_path = utils::joinPath(config->getRoot(), relativePath);
+		std::string file_path_uri = request.getPath();
 		if (utils::isDirectory(file_path))
 		{
 			if (config->getAutoIndex())
@@ -202,10 +205,13 @@ void Webserv::handleRequest(HttpClient &client)
 				this->sendAutoindex(request, response, file_path);
 				return ;
 			}
-			else
-				file_path = config->findIndex(relativePath);
+			else {
+				std::string indexFilename;
+				file_path = config->findIndex(relativePath, &indexFilename);
+				file_path_uri = utils::addTrailingSlash(file_path_uri) + indexFilename;
+			}
 		}
-		if (this->handleCgi(client, location, file_path))
+		if (this->handleCgi(client, location, file_path, file_path_uri))
 			return ;
 		if (upload.hasMultipart())
 		{
@@ -247,7 +253,7 @@ void Webserv::handleDeleteRequest(HttpRequest &request, HttpResponse &response)
 }
 
 
-bool Webserv::handleCgi(HttpClient &client, LocationConfig *location, std::string file_path)
+bool Webserv::handleCgi(HttpClient &client, LocationConfig *location, std::string file_path, std::string file_pathname)
 {
 	if (!location)
 		return (false);
@@ -255,12 +261,11 @@ bool Webserv::handleCgi(HttpClient &client, LocationConfig *location, std::strin
 	if (!cgi)
 		return (false); 
 	int data_fd;
-	CGI::Running run = cgi->execute(data_fd, file_path, file_path, client);
+	CGI::Running run = cgi->execute(data_fd, file_path, file_pathname, client);
 	std::string const& body(client.request().getBody());
 	write(data_fd, body.c_str(), body.size());
 	close(data_fd);
-	while (run.read())
-	;
+	while (run.read());
 	if (run.isComplete())
 	{
 		// get response of the client et response header of cgi

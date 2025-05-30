@@ -98,7 +98,9 @@ public:
 	int	parseVar(std::string key, std::string value, std::string line);
 	virtual void	findElement(std::string line) = 0;
 
-	std::string findIndex(const std::string& path);
+    // if filename is not null, set the pointed value to the name
+    // of the index file.
+	std::string findIndex(const std::string& path, std::string* filename = NULL);
 	virtual std::string getRelativePath(const std::string& path) const = 0;
 };
 

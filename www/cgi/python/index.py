@@ -72,7 +72,7 @@ print(f"""
 		</fieldset>
 	</form>
 	<p>(script name: <code>{script_name}</code>)</p>
-	<p>(<a href="python">use index file</a>)</p>
+	<p>(<a href="../python.py">use no index file</a>)</p>
 </body>
 </html>
 """)

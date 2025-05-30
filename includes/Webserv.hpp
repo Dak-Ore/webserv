@@ -6,6 +6,7 @@
 #include "HttpClient.hpp"
 #include "ServerSocket.hpp"
 
+#include <string>
 #include <vector>
 #include <map>
 
@@ -28,7 +29,7 @@ private:
 	void sendAutoindex(const HttpRequest &request, HttpResponse &response, const std::string &directory);
 	void handleErrorPages(HttpResponse &response, Config *config);
 	void handleRequest(HttpClient &client);
-	bool handleCgi(HttpClient &client, LocationConfig *location, std::string file_path);
+	bool handleCgi(HttpClient &client, LocationConfig *location, std::string file_path, std::string file_pathname);
 	void handleDeleteRequest(HttpRequest &request, HttpResponse &response);
 public:
     Webserv(ConfigParser &parser);

@@ -100,7 +100,7 @@ const std::vector<std::string> &Config::getIndex() const {return this->_index;}
 const std::vector<std::string> &Config::getAllowedMethods() const{return this->_allowedMethods;}
 size_t Config::getClientMaxBodySize() const {return this->_clientMaxBodySize;}
 
-std::string Config::findIndex(const std::string& path)
+std::string Config::findIndex(const std::string& path, std::string* filename)
 {
 	const std::string& root = this->getRoot();
 	const std::vector<std::string>& indexList = this->getIndex();
@@ -109,8 +109,11 @@ std::string Config::findIndex(const std::string& path)
 	for (size_t i = 0; i < indexList.size(); ++i)
 	{
 		std::string file_path = directory + indexList[i];
-		if (utils::fileExists(file_path))
+		if (utils::fileExists(file_path)) {
+			if (filename)
+				*filename = indexList[i];
 			return (file_path);
+		}
 	}
 	return std::string();
 }
