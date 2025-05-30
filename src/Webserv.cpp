@@ -148,25 +148,37 @@ void Webserv::listen()
 				HttpClient &client = this->_clients[fd];
 				if (type == EPollEvent::IN)
 				{
-
-					if (client.readRequest()) // ready ?
+					try
 					{
-						this->handleRequest(client);
-						if (!client.response().hasCgi())
+						if (client.readRequest()) // ready ?
 						{
-							logResponse(client.response());
-							this->_epoll.setOut(client);
+							this->handleRequest(client);
+							if (!client.response().hasCgi())
+							{
+								logResponse(client.response());
+								this->_epoll.setOut(client);
+							}
 						}
+					}
+					catch(const Socket::closedSocketException& e)
+					{
+						this->removeClient(client);
 					}
 				}
 				else if (type == EPollEvent::OUT)
 				{
-					client.send();
-					if (client.response().isDone())
+					try
 					{
-						this->_epoll.setIn(client);
-						this->removeClient(client);
+						client.send();
 					}
+					catch(const Socket::closedSocketException& e)
+					{
+						this->removeClient(client);
+						continue;
+					}
+					
+					if (client.response().isDone())
+						this->removeClient(client);
 				}
 			}
 			else if (type == EPollEvent::CGI)
@@ -192,8 +204,24 @@ void Webserv::timeout()
 				if (now - last > TIMEOUT_SECONDS)	
 				{
 					int fd = it->first;
+					HttpClient &client = it->second;
+					HttpResponse &response = client.response();
+					if (!response.isSending())
+					{
+						response.clearbody();
+						response.setCode(408);
+						if (client.response().hasCgi())
+						try
+						{
+							this->_epoll.addClient(client);
+						}
+						catch(const std::exception& e){}
+						
+						this->_epoll.setOut(client);
+					}
+					else
+						this->removeClient(fd);
 					it++;
-					this->removeClient(fd);
 				}
 				else
 					it++;

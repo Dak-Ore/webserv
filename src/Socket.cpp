@@ -43,8 +43,10 @@ std::string Socket::read()
 	while (size < 4096)
 	{
 		bytes = ::read(this->getFd(), buffer, sizeof(buffer));
-		if (bytes <= 0)
-			break ;
+		if (bytes == 0)
+			throw closedSocketException();
+		else if (bytes == -1)
+			return (content);
 		size += bytes;
 		content.append(buffer, bytes);
 	}
@@ -53,7 +55,10 @@ std::string Socket::read()
 
 void Socket::send(std::string &response)
 {
-	size_t bytes;
+	ssize_t bytes;
 	bytes = ::send(this->_fd , response.c_str(), response.size(), MSG_NOSIGNAL);
-	response.erase(0, bytes);
+	if (bytes == 0)
+		throw closedSocketException();
+	else if (bytes != -1)
+		response.erase(0, bytes);
 }

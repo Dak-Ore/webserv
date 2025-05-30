@@ -48,6 +48,6 @@ public:
 	void setOut(const HttpClient &client);
 	void remove(const Socket &socket, bool close_fd = true);
 	void remove(const HttpClient &client, bool close_fd = true);
-	void remove(const CGI::Running &cgiProcess, bool close_fd = true);
+	void remove(const CGI::Running &cgiProcess, bool close_fd = false);
 };
 

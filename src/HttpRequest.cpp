@@ -143,9 +143,6 @@ void HttpRequest::parseOpt()
 			value += this->_rawOpt[i];
 	}
 	this->_opt.insert(std::pair<std::string, std::string>(key,value));
-	for (std::map<std::string, std::string>::iterator it = _opt.begin(); it != _opt.end() ; it++)
-		std::cout << it->first << " : " << it->second << std::endl;
-	std::cout << this->_rawOpt << std::endl;
 }
 
 void HttpRequest::parseRequestLine(std::istringstream& stream)
@@ -236,8 +233,10 @@ void HttpRequest::validateBodySize()
 void HttpRequest::checkAllowedMethods()
 {
 	const std::vector<std::string> &allowed = this->_config->getAllowedMethods();
-    if (!allowed.empty()) 
+    std::cout << "QUOI" << std::endl;
+	if (!allowed.empty()) 
 	{
+		std::cout << this->_method << std::endl;
 		if (std::find(allowed.begin(), allowed.end(), this->_method) == allowed.end())
 		{
             this->_error = 405;

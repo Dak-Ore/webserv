@@ -63,6 +63,7 @@ public:
 	 */
 	void setBody(const std::string &body);
 	void addBody(const std::string &body);
+	void clearbody();
 
 	/**
 	 * @brief Set the response body to be read from a file.
@@ -104,7 +105,7 @@ public:
 	bool hasCgi();
 	void cgiHeaderOk();
 	bool isCgiHeaderOk();
-
+	bool isSending();
 
 	bool isOK() const;
 	bool isDone() const;
