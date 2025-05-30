@@ -17,19 +17,24 @@ class Webserv
 private:
     bool _run;
     EPoll _epoll;
-    std::map<int, HttpClient> _client_map;
+    std::map<int, HttpClient> _clients;
+    std::map<int, std::pair<CGI::Running*, HttpClient*> >_CGIs;
     std::vector<Server*> _servers;
 	std::vector<ServerSocket> _sockets;
 	bool isServerSocket(int fd);
 	bool isClientSocket(int fd);
 	Server& findServer(const HttpRequest  &request, const HttpClient &client) const;
 	void acceptClient(int serverFd);
+	void removeClient(int fd);
+	void removeClient(const HttpClient &client);
 	bool handleRedirect(HttpResponse &response, LocationConfig *location);
 	void sendAutoindex(const HttpRequest &request, HttpResponse &response, const std::string &directory);
 	void handleErrorPages(HttpResponse &response, Config *config);
 	void handleRequest(HttpClient &client);
 	bool handleCgi(HttpClient &client, LocationConfig *location, std::string file_path);
 	void handleDeleteRequest(HttpRequest &request, HttpResponse &response);
+	void timeout();
+	void readFromCgi(CGI::Running &cgiProcess, HttpClient &client);
 public:
     Webserv(ConfigParser &parser);
     ~Webserv();

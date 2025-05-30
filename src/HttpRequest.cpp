@@ -3,11 +3,12 @@
 #include "Config.hpp"
 #include "Webserv.hpp"
 #include <algorithm>
+#include <ctime>
 
 #define REQUEST_MAX_SIZE 8192
 
 HttpRequest::HttpRequest() : HttpMessage(),
- _is_empty(true), _header_ready(false), _ready(false), _config(NULL), _error(0)
+	_createdAt(std::time(NULL)), _is_empty(true), _header_ready(false), _ready(false), _config(NULL), _error(0)
  {
  }
  
@@ -68,7 +69,11 @@ void HttpRequest::readHeaders(const std::string &content)
 void HttpRequest::readBody(const std::string &content)
 {
 	unsigned int expectedSize = utils::stringToInt(this->getHeader(CONTENT_LENGHT));
-	// size_t limit = this->_config->getClientMaxBodySize();
+	if (this->_config)
+	{
+		if (expectedSize > this->_config->getClientMaxBodySize())
+			throw std::exception();
+	}
 	this->_body += content;
 	if (expectedSize == this->_body.size())
 		this->_ready = true;

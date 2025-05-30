@@ -18,6 +18,11 @@ static void skip_spc(std::string const& str, size_t &i)
 		i++;
 }
 
+int CGI::Running::getFd() const
+{
+	return (this->_stdout);
+}
+
 static CGI::Running::ResponseHead parse_head(std::string const& head)
 {
 	CGI::Running::ResponseHead r;
@@ -97,12 +102,8 @@ CGI::CGI(std::vector<std::string> const& argv, std::string const& extension)
 CGI::~CGI()
 {}
 
-CGI::Running CGI::execute(int& stdin,
-	std::string const& script_pathname,
-	std::string const& script_name,
-	HttpClient const& client
-) const {
-	std::string script(realpath(script_pathname.c_str(), NULL));
+CGI::Running *CGI::execute(std::string const& script_name, HttpClient const& client) const
+{
 	HttpRequest const& request = client.request();
 	std::string content_length_str(request.getHeader("Content-Length"));
 	size_t content_length(utils::stringToNum(content_length_str));
@@ -110,7 +111,6 @@ CGI::Running CGI::execute(int& stdin,
 	size_t pos = script_name.find("/");
 	if (pos != std::string::npos)
 		filePath = script_name.substr(pos);
-	std::cout << script << std::endl;
 	std::map<std::string, std::string> envp;
 	envp["GATEWAY_INTERFACE"] = "CGI/1.1";
 	envp["QUERY_STRING"] = request.getRawOpt();
@@ -132,7 +132,7 @@ CGI::Running CGI::execute(int& stdin,
 	// for some reason, this isn't specified in the specification
 	// at https://datatracker.ietf.org/doc/html/rfc3875#section-5
 	// but is necessary, at least for php-cgi
-	envp["SCRIPT_FILENAME"] = script;
+	envp["SCRIPT_FILENAME"] = script_name;
 
 	// Récupérer et ajouter les cookies à l'environnement
 	std::string cookies = request.getRawCookie();
@@ -141,16 +141,15 @@ CGI::Running CGI::execute(int& stdin,
 	}
 
 	std::vector<std::string> argv(this->argv);
-	for (
-	  std::vector<std::string>::iterator it = argv.begin();
-	  it != argv.end(); it++
-	)
+	for (std::vector<std::string>::iterator it = argv.begin();it != argv.end(); it++)
 		if (*it == "%f")
-			*it = script;
-	int inout[2];
-	utils::forkexec(inout, argv, envp);
-	stdin = inout[1]; // why ?
-	return CGI::Running(inout[0]);
+			*it = script_name;
+	int pipe_fd[2];
+	utils::forkexec(pipe_fd, argv, envp);
+	std::string const& body(client.request().getBody());
+	::write(pipe_fd[1], body.c_str(), body.size());
+	::close(pipe_fd[1]);
+	return new CGI::Running(pipe_fd[0]);
 }
 
 bool CGI::fileForMe(std::string const& filename) const
@@ -185,6 +184,7 @@ CGI::Running& CGI::Running::operator=(CGI::Running const& other)
 CGI::Running::~Running()
 {
 	close(this->_stdout);
+	close(this->_response_body_pipe[0]);
 	if (this->_response_body_pipe_open)
 		close(this->_response_body_pipe[1]);
 }
@@ -243,7 +243,7 @@ bool CGI::Running::read()
 			std::string body(head.substr(bodystart));
 			write(this->_response_body_pipe[1], body.c_str(), body.size());
 			head = head.substr(0, sep) + "\n";
-			
+
 			this->_head_complete = true;
 			this->_head_parsed = parse_head(this->_head);
 			return true;
@@ -258,7 +258,7 @@ bool CGI::Running::read()
 	return true;
 }
 
-bool CGI::Running::isHeadComplete()
+bool CGI::Running::isHeadComplete() const
 {
 	return this->_head_complete;
 }
@@ -268,7 +268,7 @@ CGI::Running::ResponseHead const CGI::Running::getResponseHead()
 	return this->_head_parsed;
 }
 
-int CGI::Running::getResponseBodyFd()
+int CGI::Running::getResponseBodyFd() const
 {
 	return this->_response_body_pipe[0];
 }

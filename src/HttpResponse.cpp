@@ -11,6 +11,8 @@
 #include <exception>
 
 HttpResponse::HttpResponse(int status_code) : HttpMessage(),
+	_cgi_header(false),
+	_cgiProcess	(NULL),
 	_status_code(status_code),
 	_bodyFd(-1),
 	_sending(false),
@@ -23,6 +25,8 @@ HttpResponse::~HttpResponse()
 {
 	if (this->_bodyFd != -1)
 		::close(this->_bodyFd);
+	if (this->_cgiProcess)
+		delete this->_cgiProcess;
 }
 
 std::string HttpResponse::toString()
@@ -124,24 +128,31 @@ void HttpResponse::setBody(const std::string &body)
 {
 	this->closeBody();
 	this->_body = body;
-	std::cout << body << std::endl;
 }
 
-bool HttpResponse::setBodySource(const std::string &file_name)
+bool HttpResponse::setBodySource(int fd, bool keep)
+{
+	this->closeBody();
+	if (fd == -1)
+	{
+		this->_status_code = 403;
+		return (false);
+	}
+	if (!keep)
+		this->_body.clear();
+	this->_bodyFd = fd;
+	return (true);
+}
+
+bool HttpResponse::setBodySource(const std::string &file_name, bool keep)
 {
 	if (!utils::fileExists(file_name))
 	{
 		this->_status_code = 404;
 		return (false);
 	}
-	this->closeBody();
-	this->_body.clear();
-	this->_bodyFd = open(file_name.c_str(), O_RDONLY);
-	if (this->_bodyFd == -1)
-	{
-		this->_status_code = 403;
-		return (false);
-	}
+	int fd = ::open(file_name.c_str(), O_RDONLY);
+	this->setBodySource(fd, keep);
 	this->_setContentType(file_name);
 	this->_setHeader(CONTENT_LENGHT, utils::numToString((size_t)utils::getFileSize(file_name)));
 	return (true);
@@ -216,6 +227,26 @@ bool HttpResponse::isDone() const
 	return (this->_done);
 }
 
+void HttpResponse::useCgi(const CGI::Running &cgiProcess)
+{
+	if (this->_cgiProcess)
+		delete this->_cgiProcess;
+	this->_cgiProcess = &cgiProcess;
+}
+
+bool HttpResponse::hasCgi()
+{
+	return (this->_cgiProcess);
+}
+
+bool HttpResponse::isCgiHeaderOk()
+{
+	return (this->_cgi_header);
+}
+void HttpResponse::cgiHeaderOk()
+{
+	this->_cgi_header = true;
+}
 
 std::string &HttpResponse::read()
 {
@@ -245,30 +276,3 @@ std::string &HttpResponse::read()
 	}
 	return (this->_buffer);
 }
-
-
-// void HttpResponse::send(int fd)
-// {
-// 	std::string str = this->toString();
-// 	bool readBody = (this->_bodyFd != -1);
-
-// 	int flags = (readBody) ? MSG_MORE : 0;
-// 	if (::send(fd, str.c_str(), str.size(), MSG_NOSIGNAL | flags) < 0)
-// 		return ;
-// 	if (readBody)
-// 	{
-// 		char buffer[1024];
-// 		ssize_t bytes;
-// 		while (true)
-// 		{
-// 			bytes = read(this->_bodyFd, buffer, sizeof(buffer));
-// 			if (bytes == 0)
-// 				break ;
-// 			else if (bytes == -1)
-// 				break ;
-// 			if (::send(fd, buffer, bytes, MSG_NOSIGNAL) < 0)
-// 				break ;
-// 		}
-// 		this->closeBody();
-// 	}
-// }
