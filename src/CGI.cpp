@@ -104,7 +104,11 @@ CGI::Running CGI::execute(int& stdin,
 	HttpRequest const& request = client.request();
 	std::string content_length_str(request.getHeader("Content-Length"));
 	size_t content_length(utils::stringToNum(content_length_str));
-
+	std::string filePath;
+	size_t pos = script_name.find("/");
+	if (pos != std::string::npos)
+		filePath = script_name.substr(pos);
+	std::cout << script << std::endl;
 	std::map<std::string, std::string> envp;
 	envp["GATEWAY_INTERFACE"] = "CGI/1.1";
 	envp["QUERY_STRING"] = request.getRawOpt();
@@ -112,7 +116,7 @@ CGI::Running CGI::execute(int& stdin,
 	envp["REQUEST_METHOD"] = request.getMethod();
 	envp["PATH_INFO"] = "";
 	envp["PATH_TRANSLATED"] = "";
-	envp["SCRIPT_NAME"] = script_name;
+	envp["SCRIPT_NAME"] = filePath;
 	envp["SERVER_NAME"] = client.getServerAdress().host_str();
 	envp["SERVER_PORT"] = client.getServerAdress().port_str();
 	envp["SERVER_PROTOCOL"] = "HTTP/1.1";

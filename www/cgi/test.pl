@@ -1,14 +1,7 @@
 #!/usr/bin/perl
 
-use CGI;
-
-# Créer un objet CGI
-my $query = CGI->new;
-
-# Envoyer l'en-tête HTTP Content-Type
-print $query->header('text/html');
-
-# Afficher le contenu HTML
-print "<html><body>";
-print "<h1>Bonjour, le module CGI fonctionne !</h1>";
-print "</body></html>";
+print "Content-type: text/html\n\n";
+print "<HTML><HEAD><TITLE>Exemple en Perl</TITLE></HEAD>\n";
+print "<BODY>\n";
+print "Les CGI s'exécutent bien sur votre serveur !\n";
+print "</BODY></HTML>\n"; 

@@ -15,6 +15,7 @@
 #include <sstream>
 #include <cstdio>
 #include <dirent.h>
+#include <sys/wait.h>
 
 std::string utils::numToString(size_t value)
 {
@@ -219,12 +220,11 @@ pid_t utils::forkexec(int inout[2], std::vector<std::string> const argv, std::ma
 		delete[] envp_c;
 		throw std::runtime_error("execve() failed.");
 	}
-
-	// use pipes
 	inout[0] = pipeout[0];
 	inout[1] = pipein[1];
 	close(pipein[0]);
 	close(pipeout[1]);
+	// use pipes
 	return pid;
 }
 
