@@ -18,7 +18,7 @@ private:
     bool _run;
     EPoll _epoll;
     std::map<int, HttpClient> _clients;
-    std::map<int, CGI::Running&> _CGIs;
+    std::map<int, std::pair<CGI::Running*, HttpClient*> >_CGIs;
     std::vector<Server*> _servers;
 	std::vector<ServerSocket> _sockets;
 	bool isServerSocket(int fd);
@@ -33,6 +33,7 @@ private:
 	void handleRequest(HttpClient &client);
 	bool handleCgi(HttpClient &client, LocationConfig *location, std::string file_path);
 	void timeout();
+	void readFromCgi(CGI::Running &cgiProcess, HttpClient &client);
 public:
     Webserv(ConfigParser &parser);
     ~Webserv();

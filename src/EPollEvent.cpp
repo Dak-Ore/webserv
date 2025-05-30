@@ -43,3 +43,7 @@ EPollEvent::type EPollEvent::getType() const
 {
 	return (this->_type);
 }
+void EPollEvent::setType(type _type)
+{
+	this->_type = _type;
+}

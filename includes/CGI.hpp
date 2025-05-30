@@ -26,6 +26,7 @@ public:
 		Running(Running const& other);
 		CGI::Running& operator=(Running const& other);
 		virtual ~Running();
+		int getFd() const;
 
 	private:
 		/**
@@ -48,7 +49,7 @@ public:
 		/**
 		 * Return either the CGI script has sent the complete head.
 		 */
-		bool isHeadComplete();
+		bool isHeadComplete() const;
 
 		struct ResponseHead
 		{
@@ -69,7 +70,7 @@ public:
 		 *
 		 * Call it only if this.isHeadComplete() is true!
 		 */
-		int getResponseBodyFd();
+		int getResponseBodyFd() const;
 
 		/**
 		 * Return either the CGI script has sent the complete head and body.
@@ -127,11 +128,7 @@ public:
 	 * This does not check if the file name ends with the CGI's extension.
 	 * Use this.fileForMe().
 	 */
-	CGI::Running execute(int& stdin,
-		std::string const& script_pathname,
-		std::string const& script_name,
-		HttpClient const& client
-	) const;
+	CGI::Running *execute(std::string const& script_name, HttpClient const& client) const;
 
 	/**
 	 * Checks if the given file name is a the name of a file

@@ -27,4 +27,5 @@ public:
 
     const epoll_event* raw() const;
 	type getType() const;
+	void setType(type _type);
 };

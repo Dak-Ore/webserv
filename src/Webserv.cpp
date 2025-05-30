@@ -8,7 +8,7 @@
 #include <ctime>
 #include <typeinfo>
 
-#define TIMEOUT_SECONDS 10
+#define TIMEOUT_SECONDS 2
 
 static void logRequest(const HttpRequest &request)
 {
@@ -133,11 +133,11 @@ void Webserv::listen()
 		for (std::vector<EPollEvent>::const_iterator event = events.begin(); event != events.end(); ++event)
 		{
 			int fd = event->getFd();
+			EPollEvent::type type = event->getType();
 			if (this->isServerSocket(fd))
 				this->acceptClient(fd);
 			else if (this->isClientSocket(fd))
 			{
-				EPollEvent::type type = event->getType();
 				if (this->_clients.find(fd) ==  this->_clients.end())
 				{
 					this->_epoll.remove(fd);
@@ -150,8 +150,11 @@ void Webserv::listen()
 					if (client.readRequest()) // ready ?
 					{
 						this->handleRequest(client);
-						logResponse(client.response());
-						this->_epoll.setOut(client);
+						if (!client.response().hasCgi())
+						{
+							logResponse(client.response());
+							this->_epoll.setOut(client);
+						}
 					}
 				}
 				else if (type == EPollEvent::OUT)
@@ -163,10 +166,10 @@ void Webserv::listen()
 						this->removeClient(client);
 					}
 				}
-				else if (type == EPollEvent::CGI)
-				{
-					
-				}
+			}
+			else if (type == EPollEvent::CGI)
+			{
+				this->readFromCgi(*this->_CGIs[fd].first, *this->_CGIs[fd].second);
 			}
 		}
 	}
@@ -239,27 +242,43 @@ bool Webserv::handleCgi(HttpClient &client, LocationConfig *location, std::strin
 		return (false);
 	const CGI *cgi = location->getCgi(file_path);
 	if (!cgi)
-		return (false); 
-	CGI::Running run = cgi->execute(file_path, client);
-	while (run.read())
-	;
-	if (run.isComplete())
+		return (false);
+	CGI::Running *cgiProcess = cgi->execute(file_path, client);
+	this->_CGIs[cgiProcess->getFd()] = std::pair<CGI::Running*, HttpClient*>(cgiProcess, &client);
+	this->_epoll.addNewCgi(*cgiProcess);
+	client.response().useCgi(*cgiProcess);
+	this->_epoll.remove(client, false);
+	return (true);
+}
+
+void Webserv::readFromCgi(CGI::Running &cgiProcess, HttpClient &client)
+{
+	HttpResponse &response = client.response();
+	if (!cgiProcess.read())
 	{
-		// get response of the client et response header of cgi
-		HttpResponse &response = client.response();
-		CGI::Running::ResponseHead responseHead = run.getResponseHead();
-		// 4098 for limit maybe use client_max_body_size instead ? or another value
-		response.setBody(utils::readFD(run.getResponseBodyFd(), 4098));
+		this->_epoll.remove(cgiProcess, false);
+		this->_CGIs.erase(cgiProcess.getResponseBodyFd());
+		this->_epoll.addClient(client);
+		this->_epoll.setOut(client);
+		return ;
+	}
+	if (!response.isCgiHeaderOk() && cgiProcess.isHeadComplete())
+	{
+		CGI::Running::ResponseHead responseHead = cgiProcess.getResponseHead();
 		response.setCode(responseHead.status_code);
 		// set the header of the response
 		for (std::map<std::string, std::string>::iterator it = responseHead.fields.begin(); it != responseHead.fields.end(); it++)
 		{
 			response.setHeader(utils::trim(it->first), it->second);
 		}
-		return (true);	
+		response.setBodySource(cgiProcess.getResponseBodyFd());
+		this->_epoll.setCgiReady(cgiProcess);
+		int oldFd = cgiProcess.getFd();
+		int newFd = cgiProcess.getResponseBodyFd();
+		this->_CGIs[newFd] = this->_CGIs[oldFd];
+		this->_CGIs.erase(oldFd);
+		response.cgiHeaderOk();
 	}
-
-	return (false);
 }
 
 bool Webserv::handleRedirect(HttpResponse &response, LocationConfig *location)

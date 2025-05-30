@@ -23,6 +23,8 @@ class HttpResponse : HttpMessage
 {
 private:
 	std::string _buffer;
+	bool	_cgi_header;
+	const CGI::Running *_cgiProcess;
 	int 	_status_code;
 	int 	_bodyFd;
 	bool	_sending;
@@ -60,13 +62,15 @@ public:
 	 * @param body Content to include in the response body.
 	 */
 	void setBody(const std::string &body);
+	void addBody(const std::string &body);
 
 	/**
 	 * @brief Set the response body to be read from a file.
 	 * @param file_name Path to the file.
 	 * @return true if file was successfully opened; false otherwise.
 	 */
-	bool setBodySource(const std::string &file_name);
+	bool setBodySource(const std::string &file_name, bool keep = false);
+	bool setBodySource(int fd, bool keep = false);
 
 	bool hasBody();
 
@@ -96,6 +100,11 @@ public:
 	 * @return Status code.
 	 */
 	int getCode() const;
+	void useCgi(const CGI::Running &cgiProcess);
+	bool hasCgi();
+	void cgiHeaderOk();
+	bool isCgiHeaderOk();
+
 
 	bool isOK() const;
 	bool isDone() const;
