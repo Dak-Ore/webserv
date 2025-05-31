@@ -16,9 +16,9 @@ OBJS = $(addprefix $(OBJDIR)/, $(SOURCES:.cpp=.o))
 
 all: $(NAME)
 
-$(NAME): _init_progress_bar $(OBJS) _end_progress_bar
+$(NAME): $(OBJS)
 	@echo "$(GREEN)Compiling $(NAME)...$(RESET)"
-	@c++ $(FLAGS) $(OBJS) -o $(NAME) $(INC)
+	c++ $(FLAGS) $(OBJS) -o $(NAME) $(INC)
 	@echo "$(GREEN)Compilation finished successfully!$(RESET)"
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
@@ -34,7 +34,7 @@ fclean: clean
 	@echo "$(RED)Cleaning all...$(RESET)"
 	@rm -f $(NAME)
 
-re: fclean sources $(NAME)
+re: fclean $(NAME)
 
 sources:
 	@./update_sources
