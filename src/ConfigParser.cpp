@@ -107,6 +107,12 @@ ConfigParser::ConfigParser(File config)
 			blockstack.pop();
 			switch (block) {
 			case CGIBLOCK:
+				if (cgiContent.extension != "php" && cgiContent.extension != "py")
+				{
+					std::cout << "Warning cgi " << cgiContent.extension << " not aproved" << std::endl;
+					cgiContent.clear();
+					break;
+				}
 				locationCgis.push_back(cgiContent.toCgi());
 				cgiContent.clear();
 				break;

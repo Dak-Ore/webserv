@@ -233,10 +233,8 @@ void HttpRequest::validateBodySize()
 void HttpRequest::checkAllowedMethods()
 {
 	const std::vector<std::string> &allowed = this->_config->getAllowedMethods();
-    std::cout << "QUOI" << std::endl;
 	if (!allowed.empty()) 
 	{
-		std::cout << this->_method << std::endl;
 		if (std::find(allowed.begin(), allowed.end(), this->_method) == allowed.end())
 		{
             this->_error = 405;
