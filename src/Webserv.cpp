@@ -12,7 +12,7 @@
 
 static void logRequest(const HttpRequest &request)
 {
-	std::cout << request.getMethod() << " - " << request.getHeader("Host")  << request.getPath() << std::endl;
+	std::cout << request.getMethod() << " - " << request.getHeader("Host") << request.getPath() << std::endl;
 }
 
 static void logResponse(const HttpResponse &response)
@@ -66,7 +66,7 @@ bool Webserv::isClientSocket(int fd)
 	return (this->_clients.find(fd) != this->_clients.end());
 }
 
-Server& Webserv::findServer(const HttpRequest &request, const HttpClient &client) const
+Server &Webserv::findServer(const HttpRequest &request, const HttpClient &client) const
 {
 	std::vector<Server *> matches;
 	for (size_t i = 0; i < this->_servers.size(); i++)
@@ -86,7 +86,7 @@ Server& Webserv::findServer(const HttpRequest &request, const HttpClient &client
 			host = host.substr(0, pos);
 		for (size_t i = 0; i < matches.size(); ++i)
 		{
-			const std::vector<std::string>& names = matches[i]->_config.getServerNames();
+			const std::vector<std::string> &names = matches[i]->_config.getServerNames();
 			if (std::find(names.begin(), names.end(), host) != names.end())
 				return (*matches[i]);
 		}
@@ -94,10 +94,10 @@ Server& Webserv::findServer(const HttpRequest &request, const HttpClient &client
 			return (*matches[0]);
 	}
 
-	return (*this->_servers[0]);	
+	return (*this->_servers[0]);
 }
 
-Config* Webserv::findConfig(const HttpClient &client) const
+Config *Webserv::findConfig(const HttpClient &client) const
 {
 	const HttpRequest &request = client.request();
 	return (this->findServer(request, client).getConfig(request));
@@ -125,7 +125,7 @@ void Webserv::removeClient(const HttpClient &client)
 }
 
 void Webserv::listen()
-{	
+{
 	while (this->_run)
 	{
 		this->timeout();
@@ -138,10 +138,10 @@ void Webserv::listen()
 				this->acceptClient(fd);
 			else if (this->isClientSocket(fd))
 			{
-				if (this->_clients.find(fd) ==  this->_clients.end())
+				if (this->_clients.find(fd) == this->_clients.end())
 				{
 					this->_epoll.remove(fd);
-					continue ;
+					continue;
 				}
 				HttpClient &client = this->_clients[fd];
 				if (type == EPollEvent::IN)
@@ -158,7 +158,7 @@ void Webserv::listen()
 							}
 						}
 					}
-					catch(const Socket::closedSocketException& e)
+					catch (const Socket::closedSocketException &e)
 					{
 						this->removeClient(client);
 					}
@@ -169,12 +169,12 @@ void Webserv::listen()
 					{
 						client.send();
 					}
-					catch(const Socket::closedSocketException& e)
+					catch (const Socket::closedSocketException &e)
 					{
 						this->removeClient(client);
 						continue;
 					}
-					
+
 					if (client.response().isDone())
 						this->removeClient(client);
 				}
@@ -189,42 +189,44 @@ void Webserv::listen()
 
 void Webserv::timeout()
 {
-		static time_t lastTimeoutCheck = std::time(NULL);
+	static time_t lastTimeoutCheck = std::time(NULL);
 
-		time_t now = std::time(NULL);
-		if (now - lastTimeoutCheck >= 2)
+	time_t now = std::time(NULL);
+	if (now - lastTimeoutCheck >= 2)
+	{
+		lastTimeoutCheck = now;
+
+		for (std::map<int, HttpClient>::iterator it = this->_clients.begin(); it != this->_clients.end();)
 		{
-			lastTimeoutCheck = now;
-
-			for (std::map<int, HttpClient>::iterator it = this->_clients.begin(); it != this->_clients.end();)
+			time_t last = it->second.request().getCreatedAt();
+			if (now - last > TIMEOUT_SECONDS)
 			{
-				time_t last = it->second.request().getCreatedAt();
-				if (now - last > TIMEOUT_SECONDS)	
+				int fd = it->first;
+				HttpClient &client = it->second;
+				HttpResponse &response = client.response();
+				if (!response.isSending())
 				{
-					int fd = it->first;
-					HttpClient &client = it->second;
-					HttpResponse &response = client.response();
-					if (!response.isSending())
-					{
-						response.clearbody();
-						response.setCode(408);
-						if (client.response().hasCgi())
+					response.clearbody();
+					response.setCode(408);
+					if (client.response().hasCgi())
 						try
 						{
 							this->_epoll.addClient(client);
 						}
-						catch(const std::exception& e){}
-						
-						this->_epoll.setOut(client);
-					}
-					else
-						this->removeClient(fd);
-					it++;
+						catch (const std::exception &e)
+						{
+						}
+
+					this->_epoll.setOut(client);
 				}
 				else
-					it++;
+					this->removeClient(fd);
+				it++;
 			}
+			else
+				it++;
 		}
+	}
 }
 
 void Webserv::handleRequest(HttpClient &client)
@@ -232,13 +234,13 @@ void Webserv::handleRequest(HttpClient &client)
 	HttpRequest &request = client.request();
 	HttpResponse &response = client.response();
 	if (request.empty())
-		return ;
+		return;
 	logRequest(request);
-	Config* config = request.getConfig();
+	Config *config = request.getConfig();
 	LocationConfig *location = dynamic_cast<LocationConfig *>(config);
 
 	if (this->handleRedirect(response, location))
-		return ;
+		return;
 	if (!request.isValid())
 		response.setCode(request.getErrorCode());
 	else
@@ -250,18 +252,18 @@ void Webserv::handleRequest(HttpClient &client)
 			if (config->getAutoIndex())
 			{
 				this->sendAutoindex(request, response, file_path);
-				return ;
+				return;
 			}
 			else
 				file_path = config->findIndex(relativePath);
 		}
-		std::cout << "\t- FILE: " <<  file_path << std::endl;
+		std::cout << "\t- FILE: " << file_path << std::endl;
 		if (this->handleCgi(client, location, file_path))
-			return ;
+			return;
 		response.setBodySource(file_path);
 	}
 	this->handleErrorPages(response, config);
-	return ;
+	return;
 }
 
 bool Webserv::handleCgi(HttpClient &client, LocationConfig *location, std::string file_path)
@@ -272,7 +274,7 @@ bool Webserv::handleCgi(HttpClient &client, LocationConfig *location, std::strin
 	if (!cgi)
 		return (false);
 	CGI::Running *cgiProcess = cgi->execute(file_path, client);
-	this->_CGIs[cgiProcess->getFd()] = std::pair<CGI::Running*, HttpClient*>(cgiProcess, &client);
+	this->_CGIs[cgiProcess->getFd()] = std::pair<CGI::Running *, HttpClient *>(cgiProcess, &client);
 	this->_epoll.addNewCgi(*cgiProcess);
 	client.response().useCgi(*cgiProcess);
 	this->_epoll.remove(client, false);
@@ -282,13 +284,22 @@ bool Webserv::handleCgi(HttpClient &client, LocationConfig *location, std::strin
 void Webserv::readFromCgi(CGI::Running &cgiProcess, HttpClient &client)
 {
 	HttpResponse &response = client.response();
-	if (!cgiProcess.read())
+	try
+	{
+		if (!cgiProcess.read())
+		{
+			this->_epoll.remove(cgiProcess, false);
+			this->_CGIs.erase(cgiProcess.getResponseBodyFd());
+			this->_epoll.addClient(client);
+			this->_epoll.setOut(client);
+			return;
+		}
+	}
+	catch (const utils::execve_error &e)
 	{
 		this->_epoll.remove(cgiProcess, false);
-		this->_CGIs.erase(cgiProcess.getResponseBodyFd());
-		this->_epoll.addClient(client);
-		this->_epoll.setOut(client);
-		return ;
+		this->_CGIs.erase(cgiProcess.getFd());
+		return;
 	}
 	if (!response.isCgiHeaderOk() && cgiProcess.isHeadComplete())
 	{

@@ -13,7 +13,7 @@
 
 #define CGI_BUFFER_SIZE 1000
 
-static void skip_spc(std::string const& str, size_t &i)
+static void skip_spc(std::string const &str, size_t &i)
 {
 	while (i < str.size() && str[i] == ' ')
 		i++;
@@ -24,17 +24,19 @@ int CGI::Running::getFd() const
 	return (this->_stdout);
 }
 
-static CGI::Running::ResponseHead parse_head(std::string const& head)
+static CGI::Running::ResponseHead parse_head(std::string const &head)
 {
 	CGI::Running::ResponseHead r;
 	r.status_code = 200;
 	r.status_reason = "OK";
 
 	size_t i = 0;
-	while (i < head.size()) {
+	while (i < head.size())
+	{
 		// read field name
 		std::string name("");
-		while (i < head.size() && head[i] != ':') {
+		while (i < head.size() && head[i] != ':')
+		{
 			name += head[i];
 			i++;
 		}
@@ -44,10 +46,12 @@ static CGI::Running::ResponseHead parse_head(std::string const& head)
 		i++;
 		skip_spc(head, i);
 
-		if (name == "status") {
+		if (name == "status")
+		{
 			// read status code
 			std::string status("");
-			for (size_t j = 0; j < 3; j++) {
+			for (size_t j = 0; j < 3; j++)
+			{
 				if (i >= head.size() || !isdigit(head[i]))
 					throw std::runtime_error("status code expected.");
 				status += head[i];
@@ -58,16 +62,19 @@ static CGI::Running::ResponseHead parse_head(std::string const& head)
 
 			// read status reason
 			std::string reason("");
-			while (i < head.size() && head[i] != '\n' && head[i] != '\r') {
+			while (i < head.size() && head[i] != '\n' && head[i] != '\r')
+			{
 				reason += head[i];
 				i++;
 			}
 			r.status_reason = reason;
 		}
-		else {
+		else
+		{
 			// read field value
 			std::string value("");
-			while (i < head.size() && head[i] != '\n' && head[i] != '\r') {
+			while (i < head.size() && head[i] != '\n' && head[i] != '\r')
+			{
 				value += head[i];
 				i++;
 			}
@@ -79,31 +86,34 @@ static CGI::Running::ResponseHead parse_head(std::string const& head)
 }
 
 CGI::CGI()
-{}
+{
+}
 
-CGI::CGI(CGI const& other)
+CGI::CGI(CGI const &other)
 {
 	*this = other;
 }
 
-CGI& CGI::operator=(CGI const& other)
+CGI &CGI::operator=(CGI const &other)
 {
 	this->argv = other.argv;
 	this->extension = other.extension;
 	return *this;
 }
 
-CGI::CGI(std::vector<std::string> const& argv, std::string const& extension)
-: argv(argv)
-, extension(extension)
-{}
+CGI::CGI(std::vector<std::string> const &argv, std::string const &extension)
+	: argv(argv), extension(extension)
+{
+}
 
 CGI::~CGI()
-{}
-
-CGI::Running *CGI::execute(std::string const& script_name, HttpClient const& client) const
 {
-	HttpRequest const& request = client.request();
+}
+
+CGI::Running *CGI::execute(std::string const &script_name, HttpClient const &client) const
+{
+
+	HttpRequest const &request = client.request();
 	std::string content_length_str(request.getHeader("Content-Length"));
 	size_t content_length(utils::stringToNum(content_length_str));
 
@@ -120,7 +130,8 @@ CGI::Running *CGI::execute(std::string const& script_name, HttpClient const& cli
 	envp["SERVER_PROTOCOL"] = "HTTP/1.1";
 	envp["SERVER_SOFTWARE"] = SERVER_SOFTWARE;
 	envp["REDIRECT_STATUS"] = "200";
-	if (content_length != 0) {
+	if (content_length != 0)
+	{
 		envp["CONTENT_LENGTH"] = content_length_str;
 		envp["CONTENT_TYPE"] = request.getHeader("Content-Type");
 	}
@@ -132,34 +143,35 @@ CGI::Running *CGI::execute(std::string const& script_name, HttpClient const& cli
 
 	// Récupérer et ajouter les cookies à l'environnement
 	std::string cookies = request.getRawCookie();
-	if (!cookies.empty()) {
-		envp["HTTP_COOKIE"] = cookies;  // Les cookies doivent être envoyés sous la forme "Cookie: ..."
+	if (!cookies.empty())
+	{
+		envp["HTTP_COOKIE"] = cookies; // Les cookies doivent être envoyés sous la forme "Cookie: ..."
 	}
 
 	std::vector<std::string> argv(this->argv);
 	int pipe_fd[2];
-	pid_t pid = utils::forkexec(pipe_fd, argv, envp);
-	std::string const& body(client.request().getBody());
+	int pid = utils::forkexec(pipe_fd, argv, envp);
+	std::string const &body(client.request().getBody());
 	::write(pipe_fd[1], body.c_str(), body.size());
 	::close(pipe_fd[1]);
 	return new CGI::Running(pipe_fd[0], pid);
 }
 
-bool CGI::fileForMe(std::string const& filename) const
+bool CGI::fileForMe(std::string const &filename) const
 {
 	return utils::endswith(filename, utils::trim("." + this->extension));
 }
 
-
 CGI::Running::Running()
-{}
+{
+}
 
-CGI::Running::Running(CGI::Running const& other)
+CGI::Running::Running(CGI::Running const &other)
 {
 	*this = other;
 }
 
-CGI::Running& CGI::Running::operator=(CGI::Running const& other)
+CGI::Running &CGI::Running::operator=(CGI::Running const &other)
 {
 	this->_stdout = dup(other._stdout);
 	this->_complete = other._complete;
@@ -167,7 +179,8 @@ CGI::Running& CGI::Running::operator=(CGI::Running const& other)
 	this->_head_complete = other._head_complete;
 	this->_head_parsed = other._head_parsed;
 	this->_response_body_pipe_open = other._response_body_pipe_open;
-	if (other._response_body_pipe_open) {
+	if (other._response_body_pipe_open)
+	{
 		this->_response_body_pipe[0] = dup(other._response_body_pipe[0]);
 		this->_response_body_pipe[1] = dup(other._response_body_pipe[1]);
 	}
@@ -182,16 +195,11 @@ CGI::Running::~Running()
 		close(this->_response_body_pipe[1]);
 }
 
-CGI::Running::Running(int stdout, pid_t pid)
-: _stdout(stdout)
-, _complete(false)
-, _head("")
-, _head_complete(false)
-, _response_body_pipe_open(false)
+CGI::Running::Running(int stdout, int pid)
+	: _stdout(stdout), _complete(false), _head(""), _head_complete(false), _response_body_pipe_open(false)
 {
 	this->_pid = pid;
 }
-
 
 bool CGI::Running::read()
 {
@@ -200,28 +208,28 @@ bool CGI::Running::read()
 	if (len < 0)
 		throw std::runtime_error("read() failed.");
 
-    if (len == 0)
+	if (len == 0)
 	{
-        // Ensure that the header is completely received before handling EOF
-        if (!this->_head_complete)
-            throw std::runtime_error("CGI stdout reached EOF before the head was completely sent.");
-        
-        if (this->_response_body_pipe_open) {
-            close(this->_response_body_pipe[1]);
+		// Ensure that the header is completely received before handling EOF
+		if (!this->_head_complete)
+			throw utils::execve_error();
+		if (this->_response_body_pipe_open)
+		{
+			close(this->_response_body_pipe[1]);
 			this->_response_body_pipe[1] = -1;
-            this->_response_body_pipe_open = false;
-        }
-        this->_complete = true;
-        return false;
-    }
+			this->_response_body_pipe_open = false;
+		}
+		this->_complete = true;
+		return false;
+	}
 
-	
-	if (!this->isHeadComplete()) {
+	if (!this->isHeadComplete())
+	{
 		// head not yet completed
-		std::string& head = this->_head;
-		
+		std::string &head = this->_head;
+
 		head += std::string(buf, len);
-		
+
 		size_t sep;
 		size_t bodystart;
 		{
@@ -232,9 +240,10 @@ bool CGI::Running::read()
 			bodystart = sep == sep2 ? sep + 4 : sep + 2;
 		}
 
-		if (sep != static_cast<size_t>(-1)) {
+		if (sep != static_cast<size_t>(-1))
+		{
 			// end of head reached
-			
+
 			if (pipe(this->_response_body_pipe) < 0)
 				throw std::runtime_error("pipe() failed.");
 			this->_response_body_pipe_open = true;
@@ -246,7 +255,7 @@ bool CGI::Running::read()
 			this->_head_parsed = parse_head(this->_head);
 			return true;
 		}
-		
+
 		// end of head not yet reached
 		return true;
 	}
