@@ -18,13 +18,12 @@ all: $(NAME)
 
 $(NAME): $(OBJS)
 	@echo "$(GREEN)Compiling $(NAME)...$(RESET)"
-	c++ $(FLAGS) $(OBJS) -o $(NAME) $(INC)
+	@c++ $(FLAGS) $(OBJS) -o $(NAME) $(INC)
 	@echo "$(GREEN)Compilation finished successfully!$(RESET)"
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	@mkdir -p $(dir $@)
 	@c++ $(FLAGS) $(INC) -c $< -o $@
-	@echo -n ' '  # fill progress bar
 
 clean:
 	@echo "$(RED)Cleaning object files...$(RESET)"
